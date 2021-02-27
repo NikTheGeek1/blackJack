@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 public class UserController {
 
     @Autowired
     UserRepository userRepository;
 
-    @PostMapping("/sign-in")
+    @PostMapping("/user/sign-in")
     public ResponseEntity signUserIn(
             @RequestParam(name = "email") String email,
             @RequestParam(name = "password") String password) {
@@ -30,15 +28,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
-    @PostMapping("/sign-up")
+    @PostMapping("/user/sign-up")
     public ResponseEntity signUserUp(@RequestBody User user) {
-//        try {
+        try {
             userRepository.save(user);
-//        } catch () {
-
-//        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with that email already exists.");
+        }
     }
 
 
