@@ -1,5 +1,7 @@
 package com.blackjack.server.models;
 
+import com.blackjack.server.models.game.Player;
+
 import javax.persistence.*;
 
 @Entity
@@ -23,11 +25,16 @@ public class User {
 
     public User() {}
 
-    public User(String name, String email, String password, double money) {
+    public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.money = money;
+    }
+
+    public User(User user) {
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.password = user.getPassword();
     }
 
     public long getId() {

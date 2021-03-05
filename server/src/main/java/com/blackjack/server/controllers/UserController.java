@@ -2,8 +2,10 @@ package com.blackjack.server.controllers;
 
 import com.blackjack.server.models.User;
 import com.blackjack.server.repositories.UserRepository;
+import com.blackjack.server.urls.URLs;
 import com.blackjack.server.utils.User.UserValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,26 +19,24 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @PostMapping("/user/sign-in")
+    @PostMapping(URLs.SIGN_USER_IN)
     public ResponseEntity signUserIn(
             @RequestParam(name = "email") String email,
             @RequestParam(name = "password") String password) {
         User user = userRepository.findByEmail(UserValidation.makeEmailValid(email));
-        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email does not exist.");
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("Email does not exist."));
         if (!UserValidation.isPasswordCorrect(user.getPassword(), password))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Wrong password");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Wrong password."));
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
-    @PostMapping("/user/sign-up")
+    @PostMapping(URLs.SIGN_USER_UP)
     public ResponseEntity signUserUp(@RequestBody User user) {
         try {
             userRepository.save(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with that email already exists.");
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("User with that email already exists."));
         }
     }
-
-
 }

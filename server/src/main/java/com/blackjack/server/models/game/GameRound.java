@@ -1,7 +1,6 @@
 package com.blackjack.server.models.game;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class GameRound {
     private static HashMap<String, Player> playerWon(Player dealer, Player player) {

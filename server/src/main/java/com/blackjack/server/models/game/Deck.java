@@ -33,9 +33,12 @@ public class Deck {
     public void resetDeck() {
         cards.clear();
         setCards();
+        shuffle();
     }
 
-    public Card dealCard() {
-        return cards.remove(0);
+    public Card dealCard(CardVisibility cardVisibility) {
+        Card cardToDeal = cards.remove(0);
+        cardToDeal.setVisibility(cardVisibility);
+        return cardToDeal;
     }
 }
