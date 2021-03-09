@@ -4,8 +4,9 @@ import { useStore } from '../../hooks-store/store';
 import './LandingPage.css';
 import { isUserCookieValid, getCookie, USER_COOKIE } from '../../utils/cookie-utils';
 import { fetchUserByEmailAndPassword } from '../../services/user/fetch-user';
-import signUpORUserInterface from '../../utils/signUpOrUserInterface';
+import signUpORUserInterfaceDecider from '../../utils/signUpOrUserInterface';
 import { LOG_USER_IN } from '../../hooks-store/stores/user-credential-store';
+import matchPageDecider from '../../utils/matchPageDecider';
 
 const LandingPage = () => {
     const [globalState, dispatch] = useStore();
@@ -20,12 +21,14 @@ const LandingPage = () => {
             errResp => console.log(errResp));
     }, []);
 
-    const slashRouteJSX = signUpORUserInterface(globalState.userState.isLoggedIn);
+    const slashRouteJSX = signUpORUserInterfaceDecider(globalState.userState.isLoggedIn);
+    const slashMatchRouteJSX = matchPageDecider(globalState.userState.isLoggedIn, globalState.matchState.inMatch);
 
     return (
         <Router>
             <Switch>
                 <Route exact path="/">{slashRouteJSX}</Route>
+                {slashMatchRouteJSX}
             </Switch>
         </Router>
     );

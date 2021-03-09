@@ -4,10 +4,7 @@ import com.blackjack.server.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +22,9 @@ class GameTest {
         user = new User();
         player1 = new Player(user);
         player2 = new Player(user);
-        List<Player> players = Arrays.asList(player1, player2);
+        LinkedList<Player> players = new LinkedList<>();
+        players.add(player1);
+        players.add(player2);
         dealer = new Player(user);
         dealer.setMoney(100);
         dealer.setIsDealer(true);
@@ -224,14 +223,14 @@ class GameTest {
     @Test
     void playerCanBetIfEnoughMoney() throws Exception {
         player1.setMoney(10);
-        player1.setBet(10);
-        assertEquals(10, player1.getBet());
+        player1.setBet(new Bet(player1.getEmail(), 10));
+        assertEquals(10, player1.getBet().getBetValue());
     }
 
     @Test
     void playerCannotBetIfNotEnoughMoney() {
         player1.setMoney(10);
-        Exception exception = assertThrows(Exception.class, () -> player1.setBet(15));
+        Exception exception = assertThrows(Exception.class, () -> player1.setBet(new Bet(player1.getEmail(), 20)));
     }
 
     @Test
@@ -239,8 +238,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBet(new Bet(player2.getEmail(), 10));
+            player1.setBet(new Bet(player1.getEmail(), 10));
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -263,8 +262,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBet(new Bet(player2.getEmail(), 10));
+            player1.setBet(new Bet(player1.getEmail(), 10));
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -288,8 +287,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBet(new Bet(player2.getEmail(), 10));
+            player1.setBet(new Bet(player1.getEmail(), 10));
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -311,8 +310,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBet(new Bet(player2.getEmail(), 10));
+            player1.setBet(new Bet(player1.getEmail(), 10));
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -382,7 +381,7 @@ class GameTest {
         game.dealCards();
         for (Player player : game.players) {
             player.setMoney(10);
-            player.setBet(10);
+            player.setBet(new Bet(player.getEmail(), 10));
             turnSimulator(player);
         }
         turnSimulator(dealer);

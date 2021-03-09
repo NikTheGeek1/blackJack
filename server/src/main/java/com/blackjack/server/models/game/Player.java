@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Player extends User{
     private List<Card> cards;
-    private double bet;
+    private Bet bet;
     private double money;
     private boolean isDealer;
     private PlayerStatus status;
@@ -32,7 +32,7 @@ public class Player extends User{
     }
 
     public void setIsDealer(boolean isDealer) {
-        isDealer = isDealer;
+        this.isDealer = isDealer;
     }
 
     public PlayerStatus getStatus() {
@@ -47,8 +47,8 @@ public class Player extends User{
         return cards;
     }
 
-    public void setBet(double bet) throws Exception {
-        if (money - bet < 0) throw new Exception("Not enough money");
+    public void setBet(Bet bet) throws Exception {
+        if (money - bet.getBetValue() < 0) throw new Exception("Not enough money");
         this.bet = bet;
     }
 
@@ -56,7 +56,7 @@ public class Player extends User{
         this.cards = cards;
     }
 
-    public double getBet() {
+    public Bet getBet() {
         return bet;
     }
 
@@ -77,7 +77,7 @@ public class Player extends User{
     }
 
     public void prepareForNextRound() {
-        bet = 0;
+        bet = new Bet(this.getEmail(), 0);
         status = PlayerStatus.WAITING;
     }
 

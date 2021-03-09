@@ -2,8 +2,34 @@ class URLs {
     // DEV SERVER
     static DEV_SERVER = "http://localhost:8080";
     
+    // WEBSOCKETS GAME
+    static WEBSOCKETS_GAME = this.DEV_SERVER + "/websockets/game";
+    static ENTER_GAME (gameName) {
+        return `/app/websockets/game/enter-game/${gameName}`;
+    }
+    static LEAVE_GAME (gameName) {
+        return `/app/websockets/game/leave-game/${gameName}`;
+    }
+    static UPDATE_GAME (gameName) {
+        return `/topic/update-game/${gameName}`;
+    }
+    static START_HUMANS_GAME (gameName) {
+        return `/app/websockets/game/start-humans-game/${gameName}`;
+    }
+    static PLACE_BET (gameName) {
+        return `/app/websockets/game/place-bet/${gameName}`;
+    }
+
     // WEBSOCKETS MATCHES REST
-    static ADD_MATCH = "/websockets/REST/matches/add-match";
+    static ADD_USER_TO_MATCH (matchName, userEmail) {
+        return this.DEV_SERVER + `/websockets/REST/matches/add-user-to-match?matchName=${matchName}&userEmail=${userEmail}`;
+    }
+    static REMOVE_USER_FROM_MATCH (matchName, userEmail) {
+        return this.DEV_SERVER + `/websockets/REST/matches/remove-user-from-match?matchName=${matchName}&userEmail=${userEmail}`;
+    }
+    static ADD_MATCH (userEmail) {
+        return this.DEV_SERVER + `/websockets/REST/matches/add-match?userEmail=${userEmail}`;  
+    } 
 
     // WEBSOCKETS MATCHES
     static WEBSOCKETS_MATCHES = this.DEV_SERVER + "/websockets/matches";

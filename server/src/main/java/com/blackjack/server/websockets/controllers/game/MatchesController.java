@@ -7,12 +7,15 @@ import com.blackjack.server.websockets.interfaces.ActiveMatchesChangeListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.HashMap;
 
+@EnableScheduling
 @Controller
 public class MatchesController implements ActiveMatchesChangeListener {
 
@@ -41,7 +44,17 @@ public class MatchesController implements ActiveMatchesChangeListener {
     @MessageMapping(URLs.ON_LIST_OF_MATCHES)
     public void getListOfMatches() {
         System.out.println("getting list of matches");
-        webSocket.convertAndSend(URLs.REPLY_TO_LIST_OF_MATCHES, "List of matches");
+        HashMap<String, Match> publicMatches = activeMatchesManager.getPublicAndAvailableMatches();
+        webSocket.convertAndSend(URLs.REPLY_TO_LIST_OF_MATCHES, publicMatches);
+    }
+
+    @Scheduled(fixedRate = 5000)
+    public void getListOfMatchesPeriodically() {
+        System.out.println(activeMatchesManager.getAll());
+        activeMatchesManager.updateMatchesDuration();
+        activeMatchesManager.removeEmptyMatches();
+        HashMap<String, Match> publicMatches = activeMatchesManager.getPublicAndAvailableMatches();
+        webSocket.convertAndSend(URLs.REPLY_TO_LIST_OF_MATCHES, publicMatches);
     }
 
 }

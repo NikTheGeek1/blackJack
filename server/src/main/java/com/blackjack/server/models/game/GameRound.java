@@ -38,4 +38,9 @@ public class GameRound {
         if (dealer.getStatus() == PlayerStatus.BUSTED && player.getStatus() == PlayerStatus.BUSTED) return dealerWon(dealer, player);
         return playerWon(dealer, player);
     }
+
+    public static void startRound(Game game) {
+        Player firstPlayer = game.players.get(0);
+        firstPlayer.setStatus(PlayerStatus.PLAYING);
+    }
 }

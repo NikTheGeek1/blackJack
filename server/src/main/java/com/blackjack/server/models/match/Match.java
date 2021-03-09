@@ -3,16 +3,18 @@ package com.blackjack.server.models.match;
 import com.blackjack.server.models.game.Player;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Match {
 
     private final String matchName;
-    private List<Player> players;
+    private LinkedList<Player> players;
     private int duration;
+    private Date onset;
     private final int maxNumberOfPlayers;
     private final GameType gameType;
-    private String remoteAddr;
     private final GamePrivacy privacy;
 
     public Match(String matchName, int maxNumPlayers, GameType gameType, GamePrivacy privacy) {
@@ -20,31 +22,58 @@ public class Match {
         this.duration = 0;
         this.maxNumberOfPlayers = maxNumPlayers;
         this.gameType = gameType;
-        this.players = new ArrayList<>();
+        this.players = new LinkedList<>();
         this.privacy = privacy;
+        this.onset = new Date();
+    }
+
+
+    public Date getOnset() {
+        return onset;
+    }
+
+    public void setOnset(Date onset) {
+        this.onset = onset;
     }
 
     public GamePrivacy getPrivacy() {
         return privacy;
     }
 
-    public String getRemoteAddr() {
-        return remoteAddr;
-    }
-
-    public void setRemoteAddr(String remoteAddr) {
-        this.remoteAddr = remoteAddr;
-    }
-
     public String getMatchName() {
         return matchName;
     }
 
-    public List<Player> getPlayers() {
+    public LinkedList<Player> getPlayers() {
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
+    public boolean hasSpace() {
+        return this.players.size() < this.maxNumberOfPlayers;
+    }
+
+    public void addPlayer(Player player) {
+        if (hasSpace())
+            players.add(player);
+        else
+            throw new IndexOutOfBoundsException("There is no space in that room");
+    }
+
+    public Player getPlayerByEmail(String playerEmail) {
+        for (Player player : players) {
+            if (player.getEmail().equals(playerEmail))
+                return player;
+        }
+        return null;
+    }
+
+    public Player removePlayer(String playerEmail) {
+        Player player = getPlayerByEmail(playerEmail);
+        players.remove(player);
+        return player;
+    }
+
+    public void setPlayers(LinkedList<Player> players) {
         this.players = players;
     }
 
@@ -52,8 +81,9 @@ public class Match {
         return duration;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setDuration() {
+        int diffInMinutes = (int) (new Date().getTime() - onset.getTime()) / (60 * 1000);
+        this.duration = diffInMinutes;
     }
 
     public int getMaxNumberOfPlayers() {
@@ -62,5 +92,9 @@ public class Match {
 
     public GameType getGameType() {
         return gameType;
+    }
+
+    public boolean isEmpty() {
+        return players.size() == 0;
     }
 }

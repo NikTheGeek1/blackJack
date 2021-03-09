@@ -1,16 +1,16 @@
 package com.blackjack.server.models.game;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 
 public class Game {
 
-    List<Player> players;
+    LinkedList<Player> players;
     Player dealer;
     Deck deck;
 
 
-    public Game(List<Player> players, Player dealer, Deck deck) {
+    public Game(LinkedList<Player> players, Player dealer, Deck deck) {
         this.players = players;
         this.dealer = dealer;
         this.deck = deck;
@@ -18,10 +18,10 @@ public class Game {
 
     public void verdict() {
         for (Player player : players) {
-            double bet = player.getBet();
+            Bet bet = player.getBet();
             HashMap<String, Player> gameResults = GameRound.whoWon(dealer, player);
-            gameResults.get("Winner").increaseMoney(bet);
-            gameResults.get("Loser").decreaseMoney(bet);
+            gameResults.get("Winner").increaseMoney(bet.getBetValue());
+            gameResults.get("Loser").decreaseMoney(bet.getBetValue());
             player.prepareForNextRound();
         }
         dealer.prepareForNextRound();
@@ -39,4 +39,25 @@ public class Game {
             player.addCard(deck.dealCard(cardVisibility));
         }
     }
+
+    public void startRound() {
+        GameRound.startRound(this);
+    }
+
+    public void nextTurn() {
+        LinkedList<Player> allPlayers = new LinkedList<>(players);
+        allPlayers.add(dealer);
+        for (Player player : players) {
+            if (player.getStatus() == PlayerStatus.PLAYING) {
+                int indexOfCurrentPlayer = players.indexOf(player);
+//                player.setStatus(P);
+                Player nextPlayer = players.get(indexOfCurrentPlayer + 1);
+                nextPlayer.setStatus(PlayerStatus.PLAYING);
+                break;
+            }
+        }
+    }
+
+
+
 }

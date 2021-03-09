@@ -1,16 +1,25 @@
 import { useStore } from '../../hooks-store/store';
+import { SET_MATCH } from '../../hooks-store/stores/match-store';
+import { SET_PLAYER } from '../../hooks-store/stores/player-store';
 import { LOG_USER_OUT } from '../../hooks-store/stores/user-credential-store';
 import './UserInterface.css';
 import { initSocket } from '../../websockets/web-sockets-matches-rep';
 import { useEffect, useState } from 'react';
+import { addMatch, addUserToMatch } from '../../services/websocketsREST/match-services';
 import { addLobbyUser, removeLobbyUser } from '../../services/websocketsREST/lobby-user-services';
 import URLs from '../../services/DEV-URLs';
+import { useHistory } from 'react-router';
+import NewMatchForm from '../../components/NewMatch/NewMatchForm/NewMatchForm';
+import Player from '../../models/matches/Player';
+import Match from '../../models/matches/Match';
 
 let matchesSocket;
 
 const UserInterface = () => {
     const [globalState, dispatch] = useStore();
-    
+    const [matches, setMatches] = useState([]);
+    const history = useHistory();
+
     useEffect(() => {
         matchesSocket = initSocket();
     }, []);
@@ -19,14 +28,15 @@ const UserInterface = () => {
         let availableMatchesSubscription;
         matchesSocket.connect({}, frame => {
             availableMatchesSubscription = matchesSocket.subscribe(URLs.REPLY_TO_LIST_OF_MATCHES, (msg) => {
-                console.log(msg, 'UserInterface.js', 'line: ', '19');
+                const matchesParsed = JSON.parse(msg.body);
+                setMatches(Object.values(matchesParsed));
             });
             matchesSocket.send(URLs.REQUEST_LIST_OF_MATCHES, {}, "requesting list of matches");
         });
 
 
         return () => {
-            removeLobbyUser(globalState.userState.userObj.email, succRes => console.log(succRes), errRes => console.log(errRes));
+            removeLobbyUser(globalState.userState.userObj.email, sucRes => console.log(sucRes), errRes => console.log(errRes));
             availableMatchesSubscription && availableMatchesSubscription.unsubscribe();
             matchesSocket.disconnect();
         };
@@ -35,16 +45,53 @@ const UserInterface = () => {
     useEffect(() => {
         if (matchesSocket) {
             addLobbyUser(globalState.userState.userObj,
-                succRes => console.log(succRes),
+                sucRes => console.log(sucRes),
                 errorRes => console.log(errorRes)
-                );
+            );
         }
     }, []);
+
+    const joinMatchHandler = (matchName) => {
+        addUserToMatch(matchName, globalState.userState.userObj.email,
+            sucRes => goToMatchPage(sucRes),
+            errRes => console.log(errRes))
+    };
+
+    const addMatchHandler = (match) => {
+        addMatch(match, globalState.userState.userObj.email,
+            resSucc => goToMatchPage(resSucc),
+            resError => console.log(resError))
+    };
+
+    const goToMatchPage = (response) => {
+        const match = new Match(response.match.matchName, response.match.maxNumberOfPlayers, response.match.gameType, response.match.privacy, response.match.duration, response.match.onset, response.match.players);
+        dispatch(SET_MATCH, match);
+        const player = new Player(response.player.name, response.player.email, response.player.password, response.player.money, response.player.cards, response.player.bet, response.player.isDealer, response.player.status, response.player.id);
+        dispatch(SET_PLAYER, player);
+        history.push("/match");
+    };
+
+    const matchesJSX = matches.map(match => {
+        return (
+            <div key={match.matchName}>
+                <p>{match.matchName} max players: {match.maxNumberOfPlayers} players num: {match.players.length} duration: {match.duration}</p>
+                <button onClick={() => joinMatchHandler(match.matchName)}>Join</button>
+            </div>
+        );
+    });
 
     return (
         <>
             <p>this is the user interface page</p>
             <button onClick={() => dispatch(LOG_USER_OUT)}>Logout</button>
+            <NewMatchForm addMatchHandler={addMatchHandler}/>
+            <p>
+            start working on humans game logic <br/>
+            represent players as a table (in MatchGame component) <br/>
+            the creator decides when the game starts, if the players num {'>'}= 2<br/>
+            </p>
+            <p>List of matches</p>
+            {matchesJSX}
         </>
     );
 };

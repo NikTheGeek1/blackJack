@@ -35,6 +35,8 @@ public class User {
         this.name = user.getName();
         this.email = user.getEmail();
         this.password = user.getPassword();
+        this.money = user.getMoney();
+        this.id = user.getId();
     }
 
     public long getId() {
