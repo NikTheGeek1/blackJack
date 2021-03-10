@@ -38,7 +38,7 @@ const MatchPage = () => {
                 console.log(fetchedMatch, 'MatchPage.js', 'line: ', '31');
                 dispatch(SET_MATCH, fetchedMatch);
                 const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, matchParsed.players);
-                const fetchedThisPlayer = new Player(thisPlayerUpdated.name, thisPlayerUpdated.email, thisPlayerUpdated.password, thisPlayerUpdated.money, thisPlayerUpdated.cardTotal, thisPlayerUpdated.firstRevealedCard, thisPlayerUpdated.hiddenCard, thisPlayerUpdated.cards, thisPlayerUpdated.bet, thisPlayerUpdated.isDealer, thisPlayerUpdated.status, thisPlayerUpdated.id);
+                const fetchedThisPlayer = new Player(thisPlayerUpdated.name, thisPlayerUpdated.email, thisPlayerUpdated.money, thisPlayerUpdated.revealedCards, thisPlayerUpdated.bet, thisPlayerUpdated.isDealer, thisPlayerUpdated.status, thisPlayerUpdated.id);
                 dispatch(SET_PLAYER, fetchedThisPlayer);
             });
             !!match.players.length && gameSocket.send(URLs.SET_DEALER, {}, thisPlayer.email);
@@ -68,27 +68,53 @@ const MatchPage = () => {
         gameSocket.send(URLs.START_HUMANS_GAME(match.matchName), {}, "starting game");
     };
 
-    const betHandler = () => {
+    const betHandler = e => {
+        e.preventDefault();
         // TODO: validate bet
-        if (!!betValue) return;
+        if (!!!betValue) return;
         const bet = new Bet(betValue, thisPlayer.email);
-        gameSocket.send(URLs.PLACE_BET(match.matchName), {}, bet);
-        // YOU LEFT HERE. U NEED TO RECEIVE THE BET FROM THE BACK-END 
-        // AND UPDATE THE STATE OF THE GAME
+        gameSocket.send(URLs.PLACE_BET(match.matchName), {}, JSON.stringify(bet));
+    };
+
+    const stickHandler = () => {
+        gameSocket.send(URLs.STICK(match.matchName), {}, "sticking");
+    };
+
+    const drawHandler = () => {
+        gameSocket.send(URLs.DRAW(match.matchName), {}, "drawing");
     };
 
     const playersJSX = match.players.map(player => {
         let turnControlsJSX;
-        if (player.email === thisPlayer.email) {
-            turnControlsJSX = <h3>Please wait your turn</h3>;
-            if (thisPlayer.status === PlayerStatus.PLAYING) {
+        if (thisPlayer.status === PlayerStatus.WAITING_GAME) {
+            turnControlsJSX = <h3>Please wait for the dealer to start the game</h3>;
+        }
+        if (thisPlayer.status === PlayerStatus.WAITING_GAME && thisPlayer.isDealer) {
+            turnControlsJSX = <h3>Please wait for at least one more player</h3>;
+            if (match.players.length > 1) {
                 turnControlsJSX = (
-                    <form onSubmit={betHandler}>
-                        <FormInput type="number" title="Bet" otherProps={{ min: 1, max: 10 }} value={bet} onChange={e => setBet(e.target.value)} />
-                        <FormButton title="Bet" />
-                    </form>
+                    <button onClick={startHumansGameHandler}>Start game</button>
                 );
             }
+        }
+        if (thisPlayer.status === PlayerStatus.WAITING_TURN) {
+            turnControlsJSX = <h3>Please wait your turn</h3>;
+        }
+        if (thisPlayer.status === PlayerStatus.PLAYING) {
+            turnControlsJSX = (
+                <>
+                    <button onClick={stickHandler}>Stick</button>
+                    <button onClick={drawHandler}>Draw</button>
+                </>
+            );
+        }
+        if (thisPlayer.status === PlayerStatus.BETTING) {
+            turnControlsJSX = (
+                <form onSubmit={betHandler}>
+                    <FormInput type="number" title="Bet" otherProps={{ min: 1, max: 10 }} value={betValue} onChange={e => setBetValue(e.target.value)} />
+                    <FormButton title="Bet" />
+                </form>
+            );
         }
 
         return (
@@ -98,28 +124,16 @@ const MatchPage = () => {
                 <div>Money: {player.money}</div>
                 <div>Is dealer? {player.isDealer ? "Yes" : "No"}</div>
                 <div>Status: {player.status}</div>
-                <div>Cards: {player.cards.map(card => card.suit + " " + card.rank + " || ")}</div>
-                <div>CardTotal: {player.cardTotal}</div>
-                {turnControlsJSX}
+                <div>Reveald Cards: {player.revealedCards?.map(card => card.suit + " " + card.rank + " || ")}</div>
+                {thisPlayer.email === player.email && turnControlsJSX}
                 <hr />
             </div>
         );
     });
 
-    let startGameBtnJSX = <h3>Please wait until the dealer starts the game</h3>;
-    if (thisPlayer.isDealer) {
-        startGameBtnJSX = <h3>Please wait for at least one more player</h3>;
-        if (match.players.length > 1) {
-            startGameBtnJSX = (
-                <button onClick={startHumansGameHandler}>Start game</button>
-            );
-        }
-    }
-
     return (
         <div>
             {playersJSX}
-            {startGameBtnJSX}
         </div>
     );
 };

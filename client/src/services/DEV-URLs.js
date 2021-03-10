@@ -19,6 +19,12 @@ class URLs {
     static PLACE_BET (gameName) {
         return `/app/websockets/game/place-bet/${gameName}`;
     }
+    static STICK (gameName) {
+        return `/app/websockets/game/stick/${gameName}`;
+    }
+    static DRAW (gameName) {
+        return `/app/websockets/game/draw/${gameName}`;
+    }
 
     // WEBSOCKETS MATCHES REST
     static ADD_USER_TO_MATCH (matchName, userEmail) {

@@ -50,7 +50,6 @@ public class MatchesController implements ActiveMatchesChangeListener {
 
     @Scheduled(fixedRate = 5000)
     public void getListOfMatchesPeriodically() {
-        System.out.println(activeMatchesManager.getAll());
         activeMatchesManager.updateMatchesDuration();
         activeMatchesManager.removeEmptyMatches();
         HashMap<String, Match> publicMatches = activeMatchesManager.getPublicAndAvailableMatches();

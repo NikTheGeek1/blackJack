@@ -51,8 +51,73 @@ public class GamePrep {
         Player dealer = getDealer(match.getPlayers());
         LinkedList<Player> playersOtherThanDealer = getPlayersOtherThanDealer(match.getPlayers());
         Game game = new Game(playersOtherThanDealer, dealer, deck);
-        deck.shuffle();
-        game.dealCards();
-        game.startRound();
+        match.setGame(game);
+        game.nextRound();
+    }
+
+    public static void placeBet(Match match, String email, double bet) {
+        Player player = match.getPlayerByEmail(email);
+        try {
+            player.setBet(bet);
+            player.setStatus(PlayerStatus.WAITING_TURN);
+            if (match.getGame().hasEveryoneBet()) match.getGame().startRound();
+        } catch (ArithmeticException e) {
+            throw new ArithmeticException("Not enough money");
+        }
+    }
+
+
+
+    public static void sticks(Match match) {
+        //// ORDER MATTERS HERE ////
+        Player playingPlayer = match.getGame().grabPlayingPlayer();
+        if (playingPlayer.getIsDealer()) {
+            playingPlayer.setStatus(PlayerStatus.STICK);
+            match.getGame().verdict();
+        } else {
+            Player nextPlayer = match.getGame().grabNextPlayingPlayer();
+            playingPlayer.setStatus(PlayerStatus.STICK);
+            nextPlayer.setStatus(PlayerStatus.PLAYING);
+        }
+
+
+    }
+
+    public static void draws(Match match) {
+        //// ORDER MATTERS HERE ////
+        Player playingPlayer = match.getGame().grabPlayingPlayer();
+
+        if (playingPlayer.getIsDealer()) {
+            // round will end -- current player is dealer
+            playingPlayer.drawCard(match.getGame().getDeck().dealCard(CardVisibility.REVEALED));
+            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) {
+                // playing player either busted or blackjacked
+                match.getGame().verdict();
+            } else {
+                // playing player keeps playing
+            }
+        } else {
+            // round will not end -- there is still another player after the current player
+            Player nextPlayer = match.getGame().grabNextPlayingPlayer();
+            playingPlayer.drawCard(match.getGame().getDeck().dealCard(CardVisibility.REVEALED));
+            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) {
+                // playing player either busted or blackjacked
+                if (nextPlayer.getIsDealer() && match.getGame().haveAllPlayersBusted()) {
+                    // if next player is dealer and if everyone else is busted, send out verdice
+                    nextPlayer.setStatus(PlayerStatus.STICK);
+                    match.getGame().verdict();
+                } else {
+                    nextPlayer.setStatus(PlayerStatus.PLAYING);
+                }
+            } else {
+                // playing player keeps playing
+            }
+        }
+
+
+    }
+
+    public static void nextRound(Match match) {
+        match.getGame().nextRound();
     }
 }

@@ -10,7 +10,11 @@ public class URLs {
     }
     public final static String LEAVE_GAME = "/websockets/game/leave-game/{gameName}";
     public final static String START_HUMANS_GAME = "/websockets/game/start-humans-game/{gameName}";
-    public final static String PLACE_BET = "/app/websockets/game/place-bet/{gameName}";
+    public final static String PLACE_BET = "/websockets/game/place-bet/{gameName}";
+    public final static String STICK = "/websockets/game/stick/{gameName}";
+    public final static String DRAW = "/websockets/game/draw/{gameName}";
+
+
     // WEBSOCKETS GAME REST
 
     // WEBSOCKETS MATCHES REST

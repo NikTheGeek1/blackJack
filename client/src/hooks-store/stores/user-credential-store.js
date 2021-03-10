@@ -1,5 +1,4 @@
 import { initStore } from '../store';
-import { storeUserCookie, removeUserCookie } from '../../utils/cookie-utils';
 
 export const LOG_USER_OUT = "LOG_USER_OUT";
 export const LOG_USER_IN = "LOG_USER_IN";
@@ -7,11 +6,10 @@ export const LOG_USER_IN = "LOG_USER_IN";
 const configureStore = () => {
     const actions = {
         [LOG_USER_IN]: (curState, userObj) => {
-            storeUserCookie(userObj.email, userObj.password);
+            console.log(userObj, 'user-credential-store.js', 'line: ', '9');
             return { userState: { isLoggedIn: true, userObj: userObj }};
         },
         [LOG_USER_OUT]: () => {
-            removeUserCookie();
             return { userState: { isLoggedIn: false, userObj: null }};
         }
     }

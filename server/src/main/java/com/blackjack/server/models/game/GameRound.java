@@ -7,6 +7,7 @@ public class GameRound {
         HashMap<String, Player> results = new HashMap<>();
         results.put("Winner", player);
         results.put("Loser", dealer);
+        player.setStatus(PlayerStatus.WON);
         return results;
     }
 
@@ -14,6 +15,7 @@ public class GameRound {
         HashMap<String, Player> results = new HashMap<>();
         results.put("Winner", dealer);
         results.put("Loser", player);
+        player.setStatus(PlayerStatus.LOST);
         return results;
     }
 
@@ -30,8 +32,8 @@ public class GameRound {
             if (player.getStatus() == PlayerStatus.BLACKJACK) return playerWon(dealer, player);
             if (player.getStatus() == PlayerStatus.BUSTED) return dealerWon(dealer, player);
             if (player.getStatus() == PlayerStatus.STICK) {
-                if (dealer.getCardTotal() >= player.getCardTotal()) return dealerWon(dealer, player);
-                if (dealer.getCardTotal() < player.getCardTotal()) return playerWon(dealer, player);
+                if (dealer.cardTotal() >= player.cardTotal()) return dealerWon(dealer, player);
+                if (dealer.cardTotal() < player.cardTotal()) return playerWon(dealer, player);
             }
         }
 
@@ -40,7 +42,7 @@ public class GameRound {
     }
 
     public static void startRound(Game game) {
-        Player firstPlayer = game.players.get(0);
+        Player firstPlayer = game.getPlayers().get(0);
         firstPlayer.setStatus(PlayerStatus.PLAYING);
     }
 }

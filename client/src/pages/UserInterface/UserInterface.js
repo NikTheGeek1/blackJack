@@ -66,7 +66,7 @@ const UserInterface = () => {
     const goToMatchPage = (response) => {
         const match = new Match(response.match.matchName, response.match.maxNumberOfPlayers, response.match.gameType, response.match.privacy, response.match.duration, response.match.onset, response.match.players);
         dispatch(SET_MATCH, match);
-        const player = new Player(response.player.name, response.player.email, response.player.password, response.player.money, response.player.cards, response.player.bet, response.player.isDealer, response.player.status, response.player.id);
+        const player = new Player(response.player.name, response.player.email, response.player.money, response.player.revealedCards, response.player.bet, response.player.isDealer, response.player.status, response.player.id);
         dispatch(SET_PLAYER, player);
         history.push("/match");
     };

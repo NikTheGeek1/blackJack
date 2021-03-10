@@ -1,6 +1,8 @@
 package com.blackjack.server.models;
 
 import com.blackjack.server.models.game.Player;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -18,6 +20,7 @@ public class User {
     private String email;
 
     @Column
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column
@@ -78,5 +81,13 @@ public class User {
 
     public void setMoney(double money) {
         this.money = money;
+    }
+
+    public void increaseMoney(double amount) {
+        money += amount;
+    }
+
+    public void decreaseMoney(double amount) {
+        money -= amount;
     }
 }

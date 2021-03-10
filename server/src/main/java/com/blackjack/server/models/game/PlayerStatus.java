@@ -4,6 +4,10 @@ public enum PlayerStatus {
     BLACKJACK,
     BUSTED,
     STICK,
-    WAITING,
-    PLAYING
+    WAITING_TURN,
+    WAITING_GAME,
+    PLAYING,
+    BETTING,
+    WON,
+    LOST
 }

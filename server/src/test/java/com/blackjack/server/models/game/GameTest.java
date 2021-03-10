@@ -223,14 +223,14 @@ class GameTest {
     @Test
     void playerCanBetIfEnoughMoney() throws Exception {
         player1.setMoney(10);
-        player1.setBet(new Bet(player1.getEmail(), 10));
-        assertEquals(10, player1.getBet().getBetValue());
+        player1.setBet(10);
+        assertEquals(10, player1.getBet());
     }
 
     @Test
     void playerCannotBetIfNotEnoughMoney() {
-        player1.setMoney(10);
-        Exception exception = assertThrows(Exception.class, () -> player1.setBet(new Bet(player1.getEmail(), 20)));
+        player1.setMoney(0);
+        Exception exception = assertThrows(Exception.class, () -> player1.setBet(10));
     }
 
     @Test
@@ -238,8 +238,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(new Bet(player2.getEmail(), 10));
-            player1.setBet(new Bet(player1.getEmail(), 10));
+            player2.setBet(10);
+            player1.setBet(10);
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -262,8 +262,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(new Bet(player2.getEmail(), 10));
-            player1.setBet(new Bet(player1.getEmail(), 10));
+            player2.setBet(10);
+            player1.setBet(10);
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -287,8 +287,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(new Bet(player2.getEmail(), 10));
-            player1.setBet(new Bet(player1.getEmail(), 10));
+            player2.setBet(10);
+            player1.setBet(10);
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -310,8 +310,8 @@ class GameTest {
         player1.setMoney(10);
         player2.setMoney(10);
         try {
-            player2.setBet(new Bet(player2.getEmail(), 10));
-            player1.setBet(new Bet(player1.getEmail(), 10));
+            player2.setBet(10);
+            player1.setBet(10);
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -330,13 +330,13 @@ class GameTest {
     }
 
     public void turnSimulator(Player player) {
-        player.getHiddenCard().setVisibility(CardVisibility.REVEALED);
-        while (player.getCardTotal() < 16) {
+        player.hiddenCard().setVisibility(CardVisibility.REVEALED);
+        while (player.cardTotal() < 16) {
             player.addCard(deck.dealCard(CardVisibility.REVEALED));
         }
-        if (player.getCardTotal() == 21) player.setStatus(PlayerStatus.BLACKJACK);
-        if (player.getCardTotal() > 21) player.setStatus(PlayerStatus.BUSTED);
-        if (player.getCardTotal() < 21) player.setStatus(PlayerStatus.STICK);
+        if (player.cardTotal() == 21) player.setStatus(PlayerStatus.BLACKJACK);
+        if (player.cardTotal() > 21) player.setStatus(PlayerStatus.BUSTED);
+        if (player.cardTotal() < 21) player.setStatus(PlayerStatus.STICK);
     }
 
     @Test
@@ -372,16 +372,16 @@ class GameTest {
         player1.addCard(new Card(Suit.CLUBS, Rank.ACE11));
         player1.addCard(new Card(Suit.CLUBS, Rank.EIGHT));
         player1.addCard(new Card(Suit.CLUBS, Rank.NINE));
-        assertEquals(18, player1.getCardTotal());
+        assertEquals(18, player1.cardTotal());
     }
 
     @Test
     void simulateAGameFromTheBeginning() throws Exception{
         deck.shuffle();
         game.dealCards();
-        for (Player player : game.players) {
+        for (Player player : game.getPlayers()) {
             player.setMoney(10);
-            player.setBet(new Bet(player.getEmail(), 10));
+            player.setBet(10);
             turnSimulator(player);
         }
         turnSimulator(dealer);

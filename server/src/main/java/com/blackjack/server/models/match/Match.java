@@ -1,11 +1,11 @@
 package com.blackjack.server.models.match;
 
+import com.blackjack.server.models.game.Game;
 import com.blackjack.server.models.game.Player;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Match {
 
@@ -16,6 +16,8 @@ public class Match {
     private final int maxNumberOfPlayers;
     private final GameType gameType;
     private final GamePrivacy privacy;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Game game;
 
     public Match(String matchName, int maxNumPlayers, GameType gameType, GamePrivacy privacy) {
         this.matchName = matchName;
@@ -27,6 +29,13 @@ public class Match {
         this.onset = new Date();
     }
 
+    public Game getGame() {
+        return game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
 
     public Date getOnset() {
         return onset;

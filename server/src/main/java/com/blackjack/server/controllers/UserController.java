@@ -33,6 +33,7 @@ public class UserController {
     @PostMapping(URLs.SIGN_USER_UP)
     public ResponseEntity signUserUp(@RequestBody User user) {
         try {
+            user.setMoney(1000);
             userRepository.save(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
         } catch (DataIntegrityViolationException e) {

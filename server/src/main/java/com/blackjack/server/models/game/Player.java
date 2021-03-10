@@ -1,31 +1,45 @@
 package com.blackjack.server.models.game;
 
 import com.blackjack.server.models.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends User{
+public class Player extends User {
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Card> cards;
-    private Bet bet;
-    private double money;
+    private List<Card> revealedCards;
+    private double bet;
     private boolean isDealer;
     private PlayerStatus status;
 
     public Player(User user) {
         super(user);
-        status = PlayerStatus.WAITING;
+        status = PlayerStatus.WAITING_GAME;
         isDealer = false;
         cards = new ArrayList<>();
+        revealedCards = new ArrayList<>();
     }
 
-    public double getMoney() {
-        return money;
+    public void resetCards() {
+        this.cards.clear();
+        this.revealedCards.clear();
     }
 
-    public void setMoney(double money) {
-        this.money = money;
+    public List<Card> getRevealedCards() {
+        return revealedCards;
     }
+
+    public void setRevealedCards() {
+        List<Card> revCards = new ArrayList<>();
+        for (Card card : cards) {
+            if (card.getVisibility() == CardVisibility.REVEALED) revCards.add(card);
+        }
+        this.revealedCards = revCards;
+    }
+
 
     public boolean getIsDealer() {
         return isDealer;
@@ -41,14 +55,19 @@ public class Player extends User{
 
     public void setStatus(PlayerStatus status) {
         this.status = status;
+        if (status == PlayerStatus.PLAYING) {
+            this.hiddenCard().setVisibility(CardVisibility.REVEALED);
+            this.setRevealedCards();
+            statusAfterPlaying();
+        }
     }
 
     public List<Card> getCards() {
         return cards;
     }
 
-    public void setBet(Bet bet) throws Exception {
-        if (money - bet.getBetValue() < 0) throw new Exception("Not enough money");
+    public void setBet(double bet) throws ArithmeticException {
+        if (super.getMoney() - bet < 0) throw new ArithmeticException("Not enough money");
         this.bet = bet;
     }
 
@@ -56,11 +75,11 @@ public class Player extends User{
         this.cards = cards;
     }
 
-    public Bet getBet() {
+    public double getBet() {
         return bet;
     }
 
-    public int getCardTotal() {
+    public int cardTotal() {
         int total = 0;
         for (Card card : cards) {
             total += card.getRank().getValue();
@@ -68,32 +87,35 @@ public class Player extends User{
         return total;
     }
 
-    public void increaseMoney(double amount) {
-        money += amount;
-    }
-
-    public void decreaseMoney(double amount) {
-        money -= amount;
-    }
-
     public void prepareForNextRound() {
-        bet = new Bet(this.getEmail(), 0);
-        status = PlayerStatus.WAITING;
+        bet = 0;
+        status = PlayerStatus.BETTING;
     }
 
     public void addCard(Card card) {
         cards.add(card);
         handleAces();
+        setRevealedCards();
     }
 
-    public Card getHiddenCard() {
+    public void statusAfterPlaying () {
+        if (this.cardTotal() == 21) this.setStatus(PlayerStatus.BLACKJACK);
+        if (this.cardTotal() > 21) this.setStatus(PlayerStatus.BUSTED);
+    }
+
+    public void drawCard(Card card) {
+        this.addCard(card);
+        statusAfterPlaying();
+    }
+
+    public Card hiddenCard() {
         for (Card card : cards) {
             if (card.getVisibility() == CardVisibility.HIDDEN) return card;
         }
         return null;
     }
 
-    public Card getFirstRevealedCard() {
+    public Card firstRevealedCard() {
         for (Card card : cards) {
             if (card.getVisibility() == CardVisibility.REVEALED) return card;
         }
@@ -102,7 +124,8 @@ public class Player extends User{
 
     private void handleAces() {
         for (Card card : cards) {
-            if (card.getRank() == Rank.ACE11 && getCardTotal() > 21) card.setRank(Rank.ACE1);
+            if (card.getRank() == Rank.ACE11 && cardTotal() > 21) card.setRank(Rank.ACE1);
         }
     }
+
 }

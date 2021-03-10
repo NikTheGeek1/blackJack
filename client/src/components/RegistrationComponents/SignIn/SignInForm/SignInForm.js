@@ -22,7 +22,7 @@ const SignInForm = () => {
     };
 
     const onSuccessfulResponse = response => {
-        const user = new User(response);
+        const user = new User(response.name, response.email, response.money, response.id);
         dispatch(LOG_USER_IN, user);
     };
 
