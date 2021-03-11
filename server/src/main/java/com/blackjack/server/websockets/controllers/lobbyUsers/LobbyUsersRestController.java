@@ -45,6 +45,4 @@ public class LobbyUsersRestController {
         return ResponseEntity.status(HttpStatus.OK).body(new SuccessMessage("User removed from lobby."));
     }
 
-
-
 }

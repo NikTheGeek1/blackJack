@@ -1,24 +1,51 @@
 package com.blackjack.server.models.game;
 
-import com.blackjack.server.models.match.Match;
 
-import java.util.HashMap;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.LinkedList;
 
-public class Game {
+public abstract class Game {
 
     private LinkedList<Player> players;
-    private Player dealer;
+    private Dealer dealer;
+    private LinkedList<Player> allPlayersDealerFirst;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Deck deck;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean isVerdictOut;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Player playerWhoJustGotDealtBlackJack;
 
 
-    public Game(LinkedList<Player> players, Player dealer, Deck deck) {
+    public Game(LinkedList<Player> players, Dealer dealer, Deck deck) {
         this.players = players;
         this.dealer = dealer;
         this.deck = deck;
         this.isVerdictOut = false;
+        setAllPlayersDealerFirst();
     }
+
+    public Game(Dealer dealer, Deck deck) {
+        this.players = new LinkedList<>();
+        this.dealer = dealer;
+        this.deck = deck;
+        this.isVerdictOut = false;
+        this.allPlayersDealerFirst = new LinkedList<>();
+        setAllPlayersDealerFirst();
+    }
+
+    public Game() { }
+
+
+    public Player getPlayerWhoJustGotDealtBlackJack() {
+        return playerWhoJustGotDealtBlackJack;
+    }
+
+    public void setPlayerWhoJustGotDealtBlackJack(Player hasNextPlayerBlackJacked) {
+        this.playerWhoJustGotDealtBlackJack = hasNextPlayerBlackJacked;
+    }
+
 
     public boolean isVerdictOut() {
         return isVerdictOut;
@@ -28,27 +55,19 @@ public class Game {
         isVerdictOut = verdictOut;
     }
 
-    public void verdict() {
-        setVerdictOut(true);
-        for (Player player : players) {
-            double bet = player.getBet();
-            HashMap<String, Player> gameResults = GameRound.whoWon(dealer, player);
-            gameResults.get("Winner").increaseMoney(bet);
-            gameResults.get("Loser").decreaseMoney(bet);
-            player.setBet(0);
+
+    public Player getPlayerByEmail(String playerEmail) {
+        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
+        for (Player player : allPlayers) {
+            if (player.getEmail().equals(playerEmail))
+                return player;
         }
+        return null;
     }
 
-    public void dealCards() {
-        oneRoundOfCards(CardVisibility.HIDDEN);
-        oneRoundOfCards(CardVisibility.REVEALED);
-    }
-
-    private void oneRoundOfCards(CardVisibility cardVisibility) {
-        dealer.addCard(deck.dealCard(cardVisibility));
-        for (Player player : players) {
-            player.addCard(deck.dealCard(cardVisibility));
-        }
+    public void addPlayer(Player player) {
+        this.players.add(player);
+        setAllPlayersDealerFirst();
     }
 
     public LinkedList<Player> getPlayers() {
@@ -57,14 +76,16 @@ public class Game {
 
     public void setPlayers(LinkedList<Player> players) {
         this.players = players;
+        setAllPlayersDealerFirst();
     }
 
     public Player getDealer() {
         return dealer;
     }
 
-    public void setDealer(Player dealer) {
+    public void setDealer(Dealer dealer) {
         this.dealer = dealer;
+        setAllPlayersDealerFirst();
     }
 
     public Deck getDeck() {
@@ -75,36 +96,24 @@ public class Game {
         this.deck = deck;
     }
 
-
-    public void startRound() {
-        GameRound.startRound(this);
-    }
-
-    private LinkedList<Player> addDealerToListOfPlayers_LastPosition () {
+    public LinkedList<Player> listOfAllPlayersAndDealer_LastPosition() {
         LinkedList<Player> allPlayers = new LinkedList<>(players);
         allPlayers.add(dealer);
         return allPlayers;
     }
 
-    public boolean hasEveryoneBet() {
-        boolean haveAllBet = true;
-        for (Player player : players) {
-            if (player.getStatus() == PlayerStatus.BETTING) {
-                haveAllBet = false;
-                break;
-            }
-        }
-        return haveAllBet;
+    public LinkedList<Player> getAllPlayersDealerFirst() {
+        return allPlayersDealerFirst;
     }
 
-
-    public void placingBets () {
-        players.forEach(player -> player.setStatus(PlayerStatus.BETTING));
-        dealer.setStatus(PlayerStatus.WAITING_TURN);
+    public void setAllPlayersDealerFirst() {
+        this.allPlayersDealerFirst.clear();
+        this.allPlayersDealerFirst.add(dealer);
+        this.allPlayersDealerFirst.addAll(players);
     }
 
     public Player grabPlayingPlayer () {
-        LinkedList<Player> allPlayers = addDealerToListOfPlayers_LastPosition();
+        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
         for (Player player : allPlayers) {
             if (player.getStatus() == PlayerStatus.PLAYING) {
                 return player;
@@ -114,7 +123,7 @@ public class Game {
     }
 
     public Player grabNextPlayingPlayer() {
-        LinkedList<Player> allPlayers = addDealerToListOfPlayers_LastPosition();
+        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
         int playersNum = allPlayers.size();
         for (int playerIdx = 0; playerIdx < playersNum; playerIdx++) {
             Player currPlayer = allPlayers.get(playerIdx);
@@ -125,14 +134,12 @@ public class Game {
         return null;
     }
 
-    public void nextRound() {
-        LinkedList<Player> allPlayers = addDealerToListOfPlayers_LastPosition();
-        allPlayers.forEach(player -> player.resetCards());
-        deck.resetDeck();
-        dealCards();
-        placingBets();
-        setVerdictOut(false);
+    public Player grabNextPlayingPlayer(Player currentPlayer) {
+        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
+        int idxOfCurrentPlayer = allPlayers.indexOf(currentPlayer);
+        return allPlayers.get(idxOfCurrentPlayer+1);
     }
+
 
     public boolean haveAllPlayersBusted() {
         boolean haveAllBusted = true;
@@ -144,4 +151,5 @@ public class Game {
         }
         return haveAllBusted;
     }
+
 }

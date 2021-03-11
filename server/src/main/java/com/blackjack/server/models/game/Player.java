@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends User {
+public class Player extends User  {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Card> cards;
@@ -21,6 +21,14 @@ public class Player extends User {
         isDealer = false;
         cards = new ArrayList<>();
         revealedCards = new ArrayList<>();
+    }
+
+    public Player (Player player) {
+        super(player);
+        this.status = player.getStatus();
+        this.isDealer = player.getIsDealer();
+        this.cards = player.getCards();
+        this.revealedCards = player.revealedCards;
     }
 
     public void resetCards() {

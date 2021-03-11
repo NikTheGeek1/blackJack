@@ -34,14 +34,13 @@ const MatchPage = () => {
             updateGameSubscription = gameSocket.subscribe(URLs.UPDATE_GAME(match.matchName), (msg) => {
                 // triggered when someone's entering the match
                 const matchParsed = JSON.parse(msg.body);
-                const fetchedMatch = new Match(matchParsed.matchName, matchParsed.maxNumberOfPlayers, matchParsed.gameType, matchParsed.privacy, matchParsed.duration, matchParsed.onset, matchParsed.players);
+                const fetchedMatch = new Match(matchParsed.matchName, matchParsed.maxNumberOfPlayers, matchParsed.gameType, matchParsed.privacy, matchParsed.duration, matchParsed.onset, matchParsed.users, matchParsed.game);
                 console.log(fetchedMatch, 'MatchPage.js', 'line: ', '31');
                 dispatch(SET_MATCH, fetchedMatch);
-                const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, matchParsed.players);
+                const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, fetchedMatch.game.allPlayersDealerFirst);
                 const fetchedThisPlayer = new Player(thisPlayerUpdated.name, thisPlayerUpdated.email, thisPlayerUpdated.money, thisPlayerUpdated.revealedCards, thisPlayerUpdated.bet, thisPlayerUpdated.isDealer, thisPlayerUpdated.status, thisPlayerUpdated.id);
                 dispatch(SET_PLAYER, fetchedThisPlayer);
             });
-            !!match.players.length && gameSocket.send(URLs.SET_DEALER, {}, thisPlayer.email);
             gameSocket.send(URLs.ENTER_GAME(match.matchName), {}, "entered game");
         });
 
@@ -83,15 +82,15 @@ const MatchPage = () => {
     const drawHandler = () => {
         gameSocket.send(URLs.DRAW(match.matchName), {}, "drawing");
     };
-
-    const playersJSX = match.players.map(player => {
+    console.log(match, 'MatchPage.js', 'line: ', '86');
+    const playersJSX = match.game?.allPlayersDealerFirst.map(player => {
         let turnControlsJSX;
         if (thisPlayer.status === PlayerStatus.WAITING_GAME) {
             turnControlsJSX = <h3>Please wait for the dealer to start the game</h3>;
         }
         if (thisPlayer.status === PlayerStatus.WAITING_GAME && thisPlayer.isDealer) {
             turnControlsJSX = <h3>Please wait for at least one more player</h3>;
-            if (match.players.length > 1) {
+            if (match.game.players) {
                 turnControlsJSX = (
                     <button onClick={startHumansGameHandler}>Start game</button>
                 );

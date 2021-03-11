@@ -23,7 +23,7 @@ public class UserController {
     public ResponseEntity signUserIn(
             @RequestParam(name = "email") String email,
             @RequestParam(name = "password") String password) {
-        User user = userRepository.findByEmail(UserValidation.makeEmailValid(email));
+        User user = userRepository.findByEmail(UserValidation.normaliseEmail(email));
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("Email does not exist."));
         if (!UserValidation.isPasswordCorrect(user.getPassword(), password))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Wrong password."));

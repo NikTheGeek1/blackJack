@@ -13,9 +13,9 @@ class GameTest {
     User user;
     Player player1;
     Player player2;
-    Player dealer;
+    Dealer dealer;
     Deck deck;
-    Game game;
+    GameRound game;
 
     @BeforeEach
     void setUp() {
@@ -25,11 +25,11 @@ class GameTest {
         LinkedList<Player> players = new LinkedList<>();
         players.add(player1);
         players.add(player2);
-        dealer = new Player(user);
+        dealer = new Dealer(user);
         dealer.setMoney(100);
         dealer.setIsDealer(true);
         deck = new Deck();
-        game = new Game(players, dealer, deck);
+        game = new GameRound(players, dealer, deck);
     }
 
     @Test
@@ -80,7 +80,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.STICK);
         expectedResults.put("Winner", player1);
         expectedResults.put("Loser", dealer);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -90,7 +90,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BUSTED);
         expectedResults.put("Winner", player1);
         expectedResults.put("Loser", dealer);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -100,7 +100,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BLACKJACK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -110,7 +110,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.STICK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -120,7 +120,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BUSTED);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -132,7 +132,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.STICK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
 
@@ -145,7 +145,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.STICK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -157,7 +157,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.STICK);
         expectedResults.put("Winner", player1);
         expectedResults.put("Loser", dealer);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -172,7 +172,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BLACKJACK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -186,7 +186,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BLACKJACK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -202,7 +202,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BLACKJACK);
         expectedResults.put("Winner", dealer);
         expectedResults.put("Loser", player1);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test
@@ -217,7 +217,7 @@ class GameTest {
         dealer.setStatus(PlayerStatus.BLACKJACK);
         expectedResults.put("Winner", player1);
         expectedResults.put("Loser", dealer);
-        assertEquals(expectedResults, GameRound.whoWon(dealer, player1));
+        assertEquals(expectedResults, game.whoWon(dealer, player1));
     }
 
     @Test

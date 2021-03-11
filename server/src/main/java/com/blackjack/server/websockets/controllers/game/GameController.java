@@ -27,21 +27,21 @@ public class GameController {
     @MessageMapping(URLs.ENTER_GAME)
     public void enterGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.calibrateGame(match);
+        GamePrep.setUpGameOrAddPlayer(match);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
     @MessageMapping(URLs.LEAVE_GAME)
     public void leaveGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.calibrateGame(match);
+        GamePrep.setUpGameOrAddPlayer(match);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
     @MessageMapping(URLs.START_HUMANS_GAME)
     public void startGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.startGame(match);
+        GamePrep.setUpGameAndStart(match);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
@@ -49,8 +49,11 @@ public class GameController {
     public void placeBet(@DestinationVariable String gameName, @Payload Bet bet) {
         Match match = activeMatchesManager.getMatch(gameName);
         try {
-            GamePrep.placeBet(match, bet.getPlayerEmail(), bet.getBetValue());
+            match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetValue());
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
+            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+                sendChangedTurn_Delayed(match);
+            }
         } catch (ArithmeticException e) {
             // send to just this user to let them know that they have less money than they bet
         }
@@ -61,8 +64,28 @@ public class GameController {
                 new TimerTask() {
                     @Override
                     public void run() {
-                            GamePrep.nextRound(match);
+                            match.getGame().nextRound();
                             webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), match);
+                    }
+                },
+                5000
+        );
+    }
+
+
+    private void sendChangedTurn_Delayed(Match match) {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        match.getGame().nextTurn();
+                        if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+                            sendChangedTurn_Delayed(match);
+                        }
+                        webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), match);
+                        if (match.getGame().isVerdictOut()) {
+                            sendChangedRound_Delayed(match);
+                        }
                     }
                 },
                 5000
@@ -72,18 +95,25 @@ public class GameController {
     @MessageMapping(URLs.STICK)
     public void stick(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.sticks(match);
+        match.getGame().sticks();
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
+        if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+            sendChangedTurn_Delayed(match);
+        }
         if (match.getGame().isVerdictOut()) {
             sendChangedRound_Delayed(match);
         }
     }
 
+
     @MessageMapping(URLs.DRAW)
     public void draw(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.draws(match);
+        match.getGame().draws();
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
+        if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+            sendChangedTurn_Delayed(match);
+        }
         if (match.getGame().isVerdictOut()) {
             sendChangedRound_Delayed(match);
         }

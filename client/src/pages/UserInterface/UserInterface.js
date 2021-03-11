@@ -64,7 +64,7 @@ const UserInterface = () => {
     };
 
     const goToMatchPage = (response) => {
-        const match = new Match(response.match.matchName, response.match.maxNumberOfPlayers, response.match.gameType, response.match.privacy, response.match.duration, response.match.onset, response.match.players);
+        const match = new Match(response.match.matchName, response.match.maxNumberOfPlayers, response.match.gameType, response.match.privacy, response.match.duration, response.match.onset, response.match.users, response.match.game);
         dispatch(SET_MATCH, match);
         const player = new Player(response.player.name, response.player.email, response.player.money, response.player.revealedCards, response.player.bet, response.player.isDealer, response.player.status, response.player.id);
         dispatch(SET_PLAYER, player);
@@ -74,7 +74,7 @@ const UserInterface = () => {
     const matchesJSX = matches.map(match => {
         return (
             <div key={match.matchName}>
-                <p>{match.matchName} max players: {match.maxNumberOfPlayers} players num: {match.players.length} duration: {match.duration}</p>
+                <p>{match.matchName} max players: {match.maxNumberOfPlayers} players num: {match.users.length} duration: {match.duration}</p>
                 <button onClick={() => joinMatchHandler(match.matchName)}>Join</button>
             </div>
         );

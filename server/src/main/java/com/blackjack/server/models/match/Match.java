@@ -1,39 +1,37 @@
 package com.blackjack.server.models.match;
 
-import com.blackjack.server.models.game.Game;
-import com.blackjack.server.models.game.Player;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.blackjack.server.models.User;
+import com.blackjack.server.models.game.GameRound;
 
 import java.util.Date;
 import java.util.LinkedList;
 
 public class Match {
-
+    // TODO: FRONT-END TODO: make a Game class and a Dealer class
     private final String matchName;
-    private LinkedList<Player> players;
+    private LinkedList<User> users;
     private int duration;
     private Date onset;
     private final int maxNumberOfPlayers;
     private final GameType gameType;
     private final GamePrivacy privacy;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Game game;
+    private GameRound game;
 
-    public Match(String matchName, int maxNumPlayers, GameType gameType, GamePrivacy privacy) {
+    public Match(String matchName, int maxNumberOfPlayers, GameType gameType, GamePrivacy privacy) {
         this.matchName = matchName;
         this.duration = 0;
-        this.maxNumberOfPlayers = maxNumPlayers;
+        this.maxNumberOfPlayers = maxNumberOfPlayers;
         this.gameType = gameType;
-        this.players = new LinkedList<>();
+        this.users = new LinkedList<User>();
         this.privacy = privacy;
         this.onset = new Date();
     }
 
-    public Game getGame() {
+    public GameRound getGame() {
         return game;
     }
 
-    public void setGame(Game game) {
+    public void setGame(GameRound game) {
         this.game = game;
     }
 
@@ -53,37 +51,38 @@ public class Match {
         return matchName;
     }
 
-    public LinkedList<Player> getPlayers() {
-        return players;
+    public LinkedList<User> getUsers() {
+        return users;
     }
 
     public boolean hasSpace() {
-        return this.players.size() < this.maxNumberOfPlayers;
+        return this.users.size() < this.maxNumberOfPlayers;
     }
 
-    public void addPlayer(Player player) {
+    public void addUser(User user) {
         if (hasSpace())
-            players.add(player);
+            users.add(user);
         else
             throw new IndexOutOfBoundsException("There is no space in that room");
     }
 
-    public Player getPlayerByEmail(String playerEmail) {
-        for (Player player : players) {
+    public User getPlayerByEmail(String playerEmail) {
+        for (User player : users) {
             if (player.getEmail().equals(playerEmail))
                 return player;
         }
         return null;
     }
 
-    public Player removePlayer(String playerEmail) {
-        Player player = getPlayerByEmail(playerEmail);
-        players.remove(player);
-        return player;
+    public User removeUser(String userEmail) {
+        // TODO: when removing a user from the match, also remove them from the game
+        User user = getPlayerByEmail(userEmail);
+        users.remove(user);
+        return user;
     }
 
-    public void setPlayers(LinkedList<Player> players) {
-        this.players = players;
+    public void setUsers(LinkedList<User> users) {
+        this.users = users;
     }
 
     public int getDuration() {
@@ -104,6 +103,6 @@ public class Match {
     }
 
     public boolean isEmpty() {
-        return players.size() == 0;
+        return users.size() == 0;
     }
 }
