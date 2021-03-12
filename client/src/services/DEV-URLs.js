@@ -30,9 +30,7 @@ class URLs {
     static ADD_USER_TO_MATCH (matchName, userEmail) {
         return this.DEV_SERVER + `/websockets/REST/matches/add-user-to-match?matchName=${matchName}&userEmail=${userEmail}`;
     }
-    static REMOVE_USER_FROM_MATCH (matchName, userEmail) {
-        return this.DEV_SERVER + `/websockets/REST/matches/remove-user-from-match?matchName=${matchName}&userEmail=${userEmail}`;
-    }
+    
     static ADD_MATCH (userEmail) {
         return this.DEV_SERVER + `/websockets/REST/matches/add-match?userEmail=${userEmail}`;  
     } 

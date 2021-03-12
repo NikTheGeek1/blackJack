@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { fetchUserByEmailAndPassword } from '../../../../services/user/fetch-user';
 import { useStore } from '../../../../hooks-store/store';
 import { LOG_USER_IN } from '../../../../hooks-store/stores/user-credential-store';
-import User from '../../../../models/users/User';
 
 const SignInForm = () => {
     const dispatch = useStore()[1];
@@ -22,8 +21,7 @@ const SignInForm = () => {
     };
 
     const onSuccessfulResponse = response => {
-        const user = new User(response.name, response.email, response.money, response.id);
-        dispatch(LOG_USER_IN, user);
+        dispatch(LOG_USER_IN, response);
     };
 
     const errorHandler = err => {

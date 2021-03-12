@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.LinkedList;
 
 public class Match {
-    // TODO: FRONT-END TODO: make a Game class and a Dealer class
     private final String matchName;
     private LinkedList<User> users;
     private int duration;
@@ -66,18 +65,20 @@ public class Match {
             throw new IndexOutOfBoundsException("There is no space in that room");
     }
 
-    public User getPlayerByEmail(String playerEmail) {
-        for (User player : users) {
-            if (player.getEmail().equals(playerEmail))
-                return player;
+    public User getUserByEmail(String userEmail) {
+        for (User user : users) {
+            if (user.getEmail().equals(userEmail))
+                return user;
         }
         return null;
     }
 
-    public User removeUser(String userEmail) {
-        // TODO: when removing a user from the match, also remove them from the game
-        User user = getPlayerByEmail(userEmail);
+    public User removeUser(String email) {
+        User user = getUserByEmail(email);
         users.remove(user);
+        if (game != null) {
+            game.removePlayerByEmail(email);
+        }
         return user;
     }
 

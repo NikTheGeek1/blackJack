@@ -1,9 +1,9 @@
 class User {
-    constructor(name, email, money, id) {
-        this.name = name;
-        this.email = email;
-        this.money = money;
-        this.id = id;
+    constructor(fetchedUser) {
+        this.name = fetchedUser.name;
+        this.email = fetchedUser.email;
+        this.money = fetchedUser.money;
+        this.id = fetchedUser.id;
     }
 }
 

@@ -66,7 +66,7 @@ public abstract class Game {
     }
 
     public void addPlayer(Player player) {
-        this.players.add(player);
+        this.players.add( player);
         setAllPlayersDealerFirst();
     }
 
@@ -79,8 +79,12 @@ public abstract class Game {
         setAllPlayersDealerFirst();
     }
 
-    public Player getDealer() {
+    public Dealer getDealer() {
         return dealer;
+    }
+
+    public void removeDealer() {
+        this.dealer = null;
     }
 
     public void setDealer(Dealer dealer) {
@@ -115,11 +119,63 @@ public abstract class Game {
     public Player grabPlayingPlayer () {
         LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
         for (Player player : allPlayers) {
-            if (player.getStatus() == PlayerStatus.PLAYING) {
+            if (isThisThePlayingPlayer(player)) {
                 return player;
             }
         }
         return null;
+    }
+
+    public Player grabPreviousPlayer(Player currentPlayer) {
+        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
+        int idxOfCurrentPlayer = allPlayers.indexOf(currentPlayer);
+        if (idxOfCurrentPlayer == 0) return null;
+        int i = 1; // this is the number which will be decrement to the current players idx to find the first playing player
+        try {
+            while (allPlayers.get(idxOfCurrentPlayer - i).getCards().isEmpty()) {
+                i++;
+            }
+            return allPlayers.get(idxOfCurrentPlayer - i);
+        } catch (IndexOutOfBoundsException e) {
+            // ALL PLAYERS HAVE EMPTY HANDS. MEANING THAT ITS THE START OF THE GAME
+            // SO PLAYER 1 GOES FIRST
+            return allPlayers.get(0);
+        }
+    }
+
+    public boolean isThisThePlayingPlayer(Player player) {
+        if (player.getStatus() == PlayerStatus.PLAYING) return true;
+        if (player.getStatus() == PlayerStatus.BETTING) return false;
+        Player previousPlayer = grabPreviousPlayer(player);
+        Player nextPlayer = grabNextPlayingPlayer(player);
+        if (previousPlayer == null && (nextPlayer.getStatus() == PlayerStatus.WAITING_TURN)) {
+            return true;
+        }
+        if (previousPlayer == null && (nextPlayer.getStatus() != PlayerStatus.WAITING_TURN)) {
+            return false;
+        }
+        if (nextPlayer == null &&
+                (previousPlayer.getStatus() == PlayerStatus.BLACKJACK ||
+                        previousPlayer.getStatus() == PlayerStatus.STICK ||
+                        previousPlayer.getStatus() == PlayerStatus.BUSTED)) {
+            return true;
+        }
+        if (nextPlayer == null &&
+                (previousPlayer.getStatus() != PlayerStatus.BLACKJACK &&
+                        previousPlayer.getStatus() != PlayerStatus.STICK &&
+                        previousPlayer.getStatus() != PlayerStatus.BUSTED)) {
+            return false;
+        }
+        if (
+                (previousPlayer.getStatus() == PlayerStatus.BLACKJACK ||
+                        previousPlayer.getStatus() == PlayerStatus.STICK ||
+                        previousPlayer.getStatus() == PlayerStatus.BUSTED)
+                        &&
+                        (nextPlayer.getStatus() == PlayerStatus.WAITING_TURN)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     public Player grabNextPlayingPlayer() {
@@ -127,17 +183,33 @@ public abstract class Game {
         int playersNum = allPlayers.size();
         for (int playerIdx = 0; playerIdx < playersNum; playerIdx++) {
             Player currPlayer = allPlayers.get(playerIdx);
-            if (currPlayer.getStatus() == PlayerStatus.PLAYING) {
-                return allPlayers.get(playerIdx+1);
+            if (isThisThePlayingPlayer(currPlayer)) {
+                int i = 1; // this is the number which will be added to the current players idx to find the first playing player
+                while (allPlayers.get(playerIdx + i).getCards().isEmpty()) {
+                    i++;
+                }
+                return allPlayers.get(playerIdx+i);
             }
         }
         return null;
     }
 
+
     public Player grabNextPlayingPlayer(Player currentPlayer) {
         LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
         int idxOfCurrentPlayer = allPlayers.indexOf(currentPlayer);
-        return allPlayers.get(idxOfCurrentPlayer+1);
+        if (idxOfCurrentPlayer == allPlayers.size() - 1) return null;
+        int i = 1; // this is the number which will be added to the current players idx to find the first playing player
+        try {
+            while (allPlayers.get(idxOfCurrentPlayer + i).getCards().isEmpty()) {
+                i++;
+            }
+            return allPlayers.get(idxOfCurrentPlayer+i);
+        } catch (IndexOutOfBoundsException e) {
+            // ALL PLAYERS HAVE EMPTY HANDS. MEANING THAT ITS THE START OF THE GAME
+            // SO PLAYER 1 GOES FIRST
+            return allPlayers.get(0);
+        }
     }
 
 

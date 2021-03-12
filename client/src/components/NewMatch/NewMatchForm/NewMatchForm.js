@@ -4,29 +4,29 @@ import { useState } from 'react';
 import Match from '../../../models/matches/Match';
 
 const NewMatchForm = ({ addMatchHandler }) => {
-    const [gameName, setGameName] = useState('');
-    const [maxNumOfPlayers, setMaxNumOfPlayers] = useState(2);
-    const [gamePrivacy, setGamePrivacy] = useState('');
+    const [matchName, setMatchName] = useState('');
+    const [maxNumberOfPlayers, setMaxNumberOfPlayers] = useState(2);
+    const [privacy, setPrivacy] = useState('');
     const [gameType, setGameType] = useState('');
 
     const submitFormHandler = e => {
         e.preventDefault();
         // TODO: elaborate validation
-        if (!gameName || !gamePrivacy || !gameType) return;
-        const match = new Match(
-            gameName,
-            maxNumOfPlayers,
-            gameType,
-            gamePrivacy
-        );
+        if (!matchName || !privacy || !gameType) return;
+        const match = {
+            matchName: matchName,
+            maxNumberOfPlayers: maxNumberOfPlayers,
+            privacy: privacy.toUpperCase(),
+            gameType: gameType.toUpperCase(),
+        };
         addMatchHandler(match);
     };
 
     return (
         <form onSubmit={submitFormHandler}>
-            <FormInput title="Game name" type="text" onChange={(e) => setGameName(e.target.value)} value={gameName} />
-            <FormInput title="Maximum number of players" type="number" onChange={e => setMaxNumOfPlayers(e.target.value)} value={maxNumOfPlayers} otherProps={{ min: 2, max: 7 }} />
-            <FormSelect defaultValue="Privacy" onChange={e => setGamePrivacy(e.target.value)} value={gamePrivacy}>
+            <FormInput title="Game name" type="text" onChange={(e) => setMatchName(e.target.value)} value={matchName} />
+            <FormInput title="Maximum number of players" type="number" onChange={e => setMaxNumberOfPlayers(e.target.value)} value={maxNumberOfPlayers} otherProps={{ min: 2, max: 7 }} />
+            <FormSelect defaultValue="Privacy" onChange={e => setPrivacy(e.target.value)} value={privacy}>
                 <FormOption title="Private" />
                 <FormOption title="Public" />
             </FormSelect>

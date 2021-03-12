@@ -1,5 +1,6 @@
 package com.blackjack.server.websockets.controllers.game;
 
+import com.blackjack.server.models.User;
 import com.blackjack.server.models.game.Bet;
 import com.blackjack.server.models.game.GamePrep;
 import com.blackjack.server.models.match.Match;
@@ -32,16 +33,21 @@ public class GameController {
     }
 
     @MessageMapping(URLs.LEAVE_GAME)
-    public void leaveGame(@DestinationVariable String gameName) {
+    public void leaveGame(@DestinationVariable String gameName, @Payload String userEmail) {
+        System.out.println("removing user from match");
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.setUpGameOrAddPlayer(match);
+        if (match.getUsers().size() == 1) {// the leaver is the last player
+            activeMatchesManager.remove(gameName);
+        } else {
+            GamePrep.dropOutManager(match, userEmail);
+        }
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
     @MessageMapping(URLs.START_HUMANS_GAME)
     public void startGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
-        GamePrep.setUpGameAndStart(match);
+        GamePrep.startGame(match);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
@@ -50,6 +56,7 @@ public class GameController {
         Match match = activeMatchesManager.getMatch(gameName);
         try {
             match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetValue());
+            if (match.getGame().hasEveryoneBet()) match.getGame().startRound();
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
             if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                 sendChangedTurn_Delayed(match);

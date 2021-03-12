@@ -34,6 +34,7 @@ public class GameRound extends Game {
     public void verdict() {
         setVerdictOut(true);
         for (Player player : getPlayers()) {
+            if (player.getStatus() == PlayerStatus.WAITING_TURN) continue;
             double bet = player.getBet();
             HashMap<String, Player> gameResults = whoWon(getDealer(), player);
             gameResults.get("Winner").increaseMoney(bet);
@@ -65,16 +66,19 @@ public class GameRound extends Game {
     }
 
     public void startRound() {
-        Player firstPlayer = getPlayers().get(0);
-        firstPlayer.setStatus(PlayerStatus.PLAYING);
-        if (firstPlayer.getStatus() == PlayerStatus.BLACKJACK) {
-            setPlayerWhoJustGotDealtBlackJack(firstPlayer);
-        }
+        Player firstPlayer = fetchFirstPlayingPlayer();
+        putStatusPlayingAndCheckIfBJ(firstPlayer);
     }
 
-    public void placingBetsStatus() {
+    private Player fetchFirstPlayingPlayer() {
+        for (Player player : getPlayers()) {
+            if (!player.getCards().isEmpty()) return player;
+        }
+        return null;
+    }
+
+    public void placingBetsForPlayersStatus() {
         getPlayers().forEach(player -> player.setStatus(PlayerStatus.BETTING));
-        getDealer().setStatus(PlayerStatus.WAITING_TURN);
     }
 
 
@@ -83,7 +87,6 @@ public class GameRound extends Game {
         try {
             player.setBet(bet);
             player.setStatus(PlayerStatus.WAITING_TURN);
-            if (hasEveryoneBet()) startRound();
         } catch (ArithmeticException e) {
             throw new ArithmeticException("Not enough money");
         }
@@ -92,7 +95,6 @@ public class GameRound extends Game {
 
 
     public void sticks() {
-        // TODO: export these to different functions. line by line if it needs be
         //// ORDER MATTERS HERE ////
         Player playingPlayer = grabPlayingPlayer();
         if (playingPlayer.getIsDealer()) {
@@ -101,53 +103,43 @@ public class GameRound extends Game {
         } else {
             Player nextPlayer = grabNextPlayingPlayer();
             playingPlayer.setStatus(PlayerStatus.STICK);
-            nextPlayer.setStatus(PlayerStatus.PLAYING);
-            if (nextPlayer.getStatus() == PlayerStatus.BLACKJACK) {
-                setPlayerWhoJustGotDealtBlackJack(nextPlayer);
-            }
+            putStatusPlayingAndCheckIfBJ(nextPlayer);
         }
+    }
 
-
+    public void putStatusPlayingAndCheckIfBJ(Player player) {
+        player.setStatus(PlayerStatus.PLAYING);
+        if (player.getStatus() == PlayerStatus.BLACKJACK) {
+            setPlayerWhoJustGotDealtBlackJack(player);
+        }
     }
 
     public void draws() {
-        // TODO: export these to different functions. line by line if it needs be
         //// ORDER MATTERS HERE ////
         Player playingPlayer = grabPlayingPlayer();
 
         if (playingPlayer.getIsDealer()) {
             // round will end -- current player is dealer
             playingPlayer.drawCard(getDeck().dealCard(CardVisibility.REVEALED));
-            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) {
-                // playing player either busted or blackjacked
+            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) { // playing player either busted or blackjacked
                 verdict();
-            } else {
-                // playing player keeps playing
-            }
-        } else {
-            // round will not end -- there is still another player after the current player
+            } else {}// playing player keeps playing (we're doing nothing yet)
+
+        } else {// round will not end -- there is still another player after the current player
             Player nextPlayer = grabNextPlayingPlayer();
             playingPlayer.drawCard(getDeck().dealCard(CardVisibility.REVEALED));
-            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) {
-                // playing player either busted or blackjacked
-                if (nextPlayer.getIsDealer() && haveAllPlayersBusted()) {
-                    // if next player is dealer and if everyone else is busted, send out verdict
+            if (playingPlayer.getStatus() != PlayerStatus.PLAYING) {// playing player either busted or blackjacked
+                if (nextPlayer.getIsDealer() && haveAllPlayersBusted()) {// if next player is dealer and if everyone else is busted, send out verdict
                     nextPlayer.setStatus(PlayerStatus.STICK);
                     verdict();
                 } else {
-                    nextPlayer.setStatus(PlayerStatus.PLAYING);
-                    if (nextPlayer.getStatus() == PlayerStatus.BLACKJACK) {
-                        setPlayerWhoJustGotDealtBlackJack(nextPlayer);
-                    }
+                    putStatusPlayingAndCheckIfBJ(nextPlayer);
                 }
-            } else {
-                // playing player keeps playing
-            }
+            } else {}// playing player keeps playing
         }
     }
 
     public void nextTurn() {
-        // TODO: export these to different functions. line by line if it needs be
         //// ORDER MATTERS HERE ////
         Player playingPlayer = getPlayerWhoJustGotDealtBlackJack();
         setPlayerWhoJustGotDealtBlackJack(null);
@@ -155,36 +147,59 @@ public class GameRound extends Game {
             verdict();
         } else {
             Player nextPlayer = grabNextPlayingPlayer(playingPlayer);
-            nextPlayer.setStatus(PlayerStatus.PLAYING);
-            if (nextPlayer.getStatus() == PlayerStatus.BLACKJACK) {
-                setPlayerWhoJustGotDealtBlackJack(nextPlayer);
-            }
+            putStatusPlayingAndCheckIfBJ(nextPlayer);
         }
     }
 
     public void nextRound() {
-        LinkedList<Player> allPlayers = listOfAllPlayersAndDealer_LastPosition();
-        allPlayers.forEach(player -> player.resetCards());
+        getPlayers().forEach(player -> preparePlayerForNextRound(player, false));
         getDeck().resetDeck();
-        changeDealerIfBustedTwice();
+        changeDealerIfBusted();
+        prepareDealerForNextRound(false);
         dealCards();
-        placingBetsStatus();
+        placingBetsForPlayersStatus();
         setVerdictOut(false);
     }
 
-    private void changeDealerIfBustedTwice() {
+    public void preparePlayerForNextRound(Player player, boolean hasTheGameStarted) {
+        player.setIsDealer(false);
+        player.resetCards();
+        player.setBet(0);
+        if (hasTheGameStarted) {
+            player.setStatus(PlayerStatus.WAITING_TURN);
+        } else {
+            player.setStatus(PlayerStatus.WAITING_GAME);
+        }
+    }
+
+    public void prepareDealerForNextRound(boolean restartGame) {
+        getDealer().setIsDealer(true);
+        getDealer().resetCards();
+        getDealer().setBet(0);
+        if (restartGame) {
+            getDealer().setStatus(PlayerStatus.WAITING_GAME);
+        } else {
+            getDealer().setStatus(PlayerStatus.WAITING_TURN);
+        }
+    }
+
+    private void changeDealerIfBusted() {
         Dealer oldDealer = (Dealer) getDealer();
 
-        if (oldDealer.getNumOfBusts() > 1) {
-
-            oldDealer.setIsDealer(false);
-            getPlayers().add(new Player(oldDealer));
-
+        // wants to do the dealer for more or less than numOfMaxBusts busts
+        int numOfMaxBusts = 2;
+        if (oldDealer.getNumOfBusts() >= numOfMaxBusts) {
             Dealer newDealer = new Dealer(getPlayers().remove(0));
-            newDealer.setIsDealer(true);
-
-            setDealer(newDealer);
+            swapDealer(newDealer);
         }
+    }
+
+    public void swapDealer(Dealer newDealer) {
+        Dealer oldDealer = (Dealer) getDealer();
+        oldDealer.setIsDealer(false);
+        getPlayers().add(new Player(oldDealer));
+        newDealer.setIsDealer(true);
+        setDealer(newDealer);
     }
 
     public boolean hasEveryoneBet() {
@@ -209,4 +224,24 @@ public class GameRound extends Game {
             player.addCard(getDeck().dealCard(cardVisibility));
         }
     }
+
+    public void removePlayerByEmail(String playerEmail) {
+        Player player = getPlayerByEmail(playerEmail);
+        getPlayers().remove(player);
+        removePlayerInAllPlayersDealerFirstByEmail(playerEmail);
+        if (getDealer().getEmail().equals(playerEmail)) removeDealer();
+        if (getPlayerWhoJustGotDealtBlackJack() != null &&
+                getPlayerWhoJustGotDealtBlackJack().getEmail().equals(playerEmail))
+            setPlayerWhoJustGotDealtBlackJack(null);
+    }
+
+
+    public void removePlayerInAllPlayersDealerFirstByEmail(String playerEmail) {
+        for (int playerIdx = 0; playerIdx < getAllPlayersDealerFirst().size(); playerIdx++) {
+            Player player = getAllPlayersDealerFirst().get(playerIdx);
+            if (player.getEmail().equals(playerEmail)) getAllPlayersDealerFirst().remove(player);
+        }
+    }
+
+
 }

@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../../hooks-store/store';
 import './MatchPage.css';
-import { removeUserFromMatch } from '../../services/websocketsREST/match-services';
 import { initSocket } from '../../websockets/web-sockets-game-rep';
 import URLs from '../../services/DEV-URLs';
 import { SET_MATCH } from '../../hooks-store/stores/match-store';
 import { SET_PLAYER } from '../../hooks-store/stores/player-store';
 import PlayerUtils from '../../utils/game-utils/players-utils';
-import Player from '../../models/matches/Player';
 import Match from '../../models/matches/Match';
 import PlayerStatus from '../../constants/PlayerStatus';
 import { FormButton, FormInput } from '../../components/Form/components';
@@ -34,12 +32,11 @@ const MatchPage = () => {
             updateGameSubscription = gameSocket.subscribe(URLs.UPDATE_GAME(match.matchName), (msg) => {
                 // triggered when someone's entering the match
                 const matchParsed = JSON.parse(msg.body);
-                const fetchedMatch = new Match(matchParsed.matchName, matchParsed.maxNumberOfPlayers, matchParsed.gameType, matchParsed.privacy, matchParsed.duration, matchParsed.onset, matchParsed.users, matchParsed.game);
+                const fetchedMatch = new Match(matchParsed);
                 console.log(fetchedMatch, 'MatchPage.js', 'line: ', '31');
                 dispatch(SET_MATCH, fetchedMatch);
                 const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, fetchedMatch.game.allPlayersDealerFirst);
-                const fetchedThisPlayer = new Player(thisPlayerUpdated.name, thisPlayerUpdated.email, thisPlayerUpdated.money, thisPlayerUpdated.revealedCards, thisPlayerUpdated.bet, thisPlayerUpdated.isDealer, thisPlayerUpdated.status, thisPlayerUpdated.id);
-                dispatch(SET_PLAYER, fetchedThisPlayer);
+                dispatch(SET_PLAYER, thisPlayerUpdated);
             });
             gameSocket.send(URLs.ENTER_GAME(match.matchName), {}, "entered game");
         });
@@ -54,13 +51,8 @@ const MatchPage = () => {
         for (const sub of subscriptions) {
             sub.unsubscribe();
         }
-
-        removeUserFromMatch(match.matchName, thisPlayer.email,
-            sucRes => {
-                gameSocket.send(URLs.LEAVE_GAME(match.matchName), {}, "left game");
-                gameSocket.disconnect();
-            },
-            errRes => console.log(errRes));
+        gameSocket.send(URLs.LEAVE_GAME(match.matchName), {}, thisPlayer.email);
+        gameSocket.disconnect();
     };
 
     const startHumansGameHandler = () => {
@@ -91,6 +83,7 @@ const MatchPage = () => {
         if (thisPlayer.status === PlayerStatus.WAITING_GAME && thisPlayer.isDealer) {
             turnControlsJSX = <h3>Please wait for at least one more player</h3>;
             if (match.game.players) {
+                console.log(match.game.players, 'I AM HERE BECAUSE THE START GAME BUTTON APPEARS EVEN WITH ONLY 1 PLAYER IN THE GAME', 'line: ', '86');
                 turnControlsJSX = (
                     <button onClick={startHumansGameHandler}>Start game</button>
                 );

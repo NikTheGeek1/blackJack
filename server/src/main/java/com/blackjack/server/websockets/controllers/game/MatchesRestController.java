@@ -58,17 +58,5 @@ public class MatchesRestController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(URLs.REMOVE_USER_FROM_MATCH)
-    public ResponseEntity removeUserFromMatch(@RequestParam("userEmail") String userEmail,
-                                         @RequestParam("matchName") String matchName) {
-        Match match = activeMatchesManager.getMatch(matchName);
-        User user = match.removeUser(userEmail);
-        System.out.println("removing user from match");
-        if (match.isEmpty()) {
-            activeMatchesManager.remove(matchName);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(new SuccessMessage("User " + userEmail + " removed from match " + matchName));
-    }
-
 
 }

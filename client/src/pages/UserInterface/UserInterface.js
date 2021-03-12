@@ -10,8 +10,6 @@ import { addLobbyUser, removeLobbyUser } from '../../services/websocketsREST/lob
 import URLs from '../../services/DEV-URLs';
 import { useHistory } from 'react-router';
 import NewMatchForm from '../../components/NewMatch/NewMatchForm/NewMatchForm';
-import Player from '../../models/matches/Player';
-import Match from '../../models/matches/Match';
 
 let matchesSocket;
 
@@ -64,10 +62,8 @@ const UserInterface = () => {
     };
 
     const goToMatchPage = (response) => {
-        const match = new Match(response.match.matchName, response.match.maxNumberOfPlayers, response.match.gameType, response.match.privacy, response.match.duration, response.match.onset, response.match.users, response.match.game);
-        dispatch(SET_MATCH, match);
-        const player = new Player(response.player.name, response.player.email, response.player.money, response.player.revealedCards, response.player.bet, response.player.isDealer, response.player.status, response.player.id);
-        dispatch(SET_PLAYER, player);
+        dispatch(SET_MATCH, response.match);
+        dispatch(SET_PLAYER, response.player);
         history.push("/match");
     };
 

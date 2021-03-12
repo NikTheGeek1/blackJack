@@ -1,13 +1,15 @@
+import Game from './Game';
+
 class Match {
-    constructor(matchName, maxNumberOfPlayers, gameType, privacy, duration, onset, users, game) {
-        this.matchName = matchName;
-        this.maxNumberOfPlayers = maxNumberOfPlayers;
-        this.gameType = gameType.toUpperCase();
-        this.privacy = privacy.toUpperCase();
-        this.duration = duration;
-        this.onset = onset;
-        this.users = users;
-        this.game = game;
+    constructor(fetchedMatch) {
+        this.matchName = fetchedMatch.matchName;
+        this.maxNumberOfPlayers = fetchedMatch.maxNumberOfPlayers;
+        this.gameType = fetchedMatch.gameType.toUpperCase();
+        this.privacy = fetchedMatch.privacy.toUpperCase();
+        this.duration = fetchedMatch.duration;
+        this.onset = fetchedMatch.onset;
+        this.users = fetchedMatch.users;
+        this.game = fetchedMatch.game && new Game(fetchedMatch.game) ;
     }
 }
 
