@@ -1,5 +1,9 @@
 package com.blackjack.server.models.game;
 
+import com.blackjack.server.models.match.GameType;
+import com.blackjack.server.models.match.Match;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -29,6 +33,11 @@ public class GameRound extends Game {
         results.put("Loser", player);
         player.setStatus(PlayerStatus.LOST);
         return results;
+    }
+
+    public void verdict(Match thisMatch) {
+        thisMatch.setHasSimulationStared(false);
+        verdict();
     }
 
     public void verdict() {
@@ -65,9 +74,12 @@ public class GameRound extends Game {
         return playerWon(dealer, player);
     }
 
-    public void startRound() {
+    public void startRound(Match match) {
         Player firstPlayer = fetchFirstPlayingPlayer();
         putStatusPlayingAndCheckIfBJ(firstPlayer);
+        if (firstPlayer.getIsDealer() && match.getGameType() == GameType.COMPUTER) {
+            match.setHasSimulationStared(true);
+        }
     }
 
     private Player fetchFirstPlayingPlayer() {
@@ -92,17 +104,20 @@ public class GameRound extends Game {
         }
     }
 
-
+    @JsonIgnore
+    public boolean isNextPlayerDealer() {
+        Player nextPlayer = grabNextPlayingPlayer();
+        return nextPlayer.getIsDealer();
+    }
 
     public void sticks() {
         //// ORDER MATTERS HERE ////
         Player playingPlayer = grabPlayingPlayer();
+        playingPlayer.setStatus(PlayerStatus.STICK);
         if (playingPlayer.getIsDealer()) {
-            playingPlayer.setStatus(PlayerStatus.STICK);
             verdict();
         } else {
             Player nextPlayer = grabNextPlayingPlayer();
-            playingPlayer.setStatus(PlayerStatus.STICK);
             putStatusPlayingAndCheckIfBJ(nextPlayer);
         }
     }
@@ -114,7 +129,7 @@ public class GameRound extends Game {
         }
     }
 
-    public void draws() {
+    public void draws(Match match) { // TODO: check if we need this argument after all
         //// ORDER MATTERS HERE ////
         Player playingPlayer = grabPlayingPlayer();
 
@@ -134,12 +149,17 @@ public class GameRound extends Game {
                     verdict();
                 } else {
                     putStatusPlayingAndCheckIfBJ(nextPlayer);
+                    if (nextPlayer.getIsDealer() && match.getGameType() == GameType.COMPUTER) {
+                        match.setHasSimulationStared(true);
+                    }
                 }
+
+
             } else {}// playing player keeps playing
         }
     }
 
-    public void nextTurn() {
+    public void nextTurn(Match match) {
         //// ORDER MATTERS HERE ////
         Player playingPlayer = getPlayerWhoJustGotDealtBlackJack();
         setPlayerWhoJustGotDealtBlackJack(null);
@@ -148,14 +168,19 @@ public class GameRound extends Game {
         } else {
             Player nextPlayer = grabNextPlayingPlayer(playingPlayer);
             putStatusPlayingAndCheckIfBJ(nextPlayer);
+            if (nextPlayer.getIsDealer() && match.getGameType() == GameType.COMPUTER) {
+                match.setHasSimulationStared(true);
+            }
         }
     }
 
-    public void nextRound() {
-        getPlayers().forEach(player -> preparePlayerForNextRound(player, false));
+    public void nextRound(GameType gameType) {
+        if (gameType == GameType.HUMANS) {
+            changeDealerIfBusted();
+        }
+        getPlayers().forEach(player -> preparePlayerForNextRound(player, true));
         getDeck().resetDeck();
-        changeDealerIfBusted();
-        prepareDealerForNextRound(false);
+        prepareDealerForNextRound(true);
         dealCards();
         placingBetsForPlayersStatus();
         setVerdictOut(false);
@@ -172,20 +197,19 @@ public class GameRound extends Game {
         }
     }
 
-    public void prepareDealerForNextRound(boolean restartGame) {
+    public void prepareDealerForNextRound(boolean hasTheGameStarted) {
         getDealer().setIsDealer(true);
         getDealer().resetCards();
         getDealer().setBet(0);
-        if (restartGame) {
-            getDealer().setStatus(PlayerStatus.WAITING_GAME);
-        } else {
+        if (hasTheGameStarted) {
             getDealer().setStatus(PlayerStatus.WAITING_TURN);
+        } else {
+            getDealer().setStatus(PlayerStatus.WAITING_GAME);
         }
     }
 
     private void changeDealerIfBusted() {
         Dealer oldDealer = (Dealer) getDealer();
-
         // wants to do the dealer for more or less than numOfMaxBusts busts
         int numOfMaxBusts = 2;
         if (oldDealer.getNumOfBusts() >= numOfMaxBusts) {
@@ -244,4 +268,27 @@ public class GameRound extends Game {
     }
 
 
+    public void nextSimulatedTurn(Match thisMatch) {
+        //TODO: If all of the .getPlayers() have BJ then dealer do not stop drawing
+        // until he either busts or BJs
+        if (getDealer().getStatus() ==  PlayerStatus.BLACKJACK) {
+            verdict(thisMatch);
+        } else if (getDealer().getStatus() == PlayerStatus.PLAYING) {
+            if (getDealer().cardTotal() < 17) {
+                // draws
+                getDealer().drawCard(getDeck().dealCard(CardVisibility.REVEALED));
+                if (getDealer().getStatus() != PlayerStatus.PLAYING) { // playing player either busted or blackjacked
+                    verdict(thisMatch);
+                }
+            } else if (getDealer().cardTotal() > 16 && getDealer().cardTotal() < 21) {
+                // sticks
+                getDealer().setStatus(PlayerStatus.STICK);
+                verdict(thisMatch);
+            }
+        } else {
+            // TODO: DELETE THIS. IT'S ONLY FOR TESTING
+            System.out.println("ERROR: at this point, dealer can only be BJ or Playing, everything else is wrong");
+        }
+
+    }
 }

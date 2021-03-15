@@ -33,6 +33,8 @@ class Helper3 {
     Dealer dealer;
     Player player1;
     Player player2;
+    HashMap<String, Double> playerMoneyBeforeSomeoneLeave = new HashMap<>();
+    HashMap<String, Double> playerBetBeforeSomeoneLeave = new HashMap<>();
 
 
     public Helper3() {
@@ -122,6 +124,117 @@ class Helper3 {
         assertEquals(1, player.getRevealedCards().size());
     }
 
+    public void assertIfPlayerIsInStartingPosition(Player player) {
+        assertEquals(PlayerStatus.WAITING_GAME, player.getStatus());
+        if (player == match.getGame().getDealer()) {
+            assertTrue(player.getIsDealer());
+        } else {
+            assertFalse(player.getIsDealer());
+        }
+        assertEquals(0, player.getCards().size());
+        assertEquals(0, player.getRevealedCards().size());
+        assertEquals(0, player.getBet());
+    }
+    public void assertIfGameResetProperly (String type) {
+        switch (type) {
+            case "PLAYER_LEFT": {
+                for (Player player : match.getGame().getPlayers()) {
+                    assertNotEquals(PlayerStatus.WAITING_GAME, player.getStatus());
+                    assertEquals(2, player.getCards().size());
+                }
+                assertNotEquals(PlayerStatus.WAITING_GAME, match.getGame().getDealer().getStatus());
+                assertEquals(2, match.getGame().getDealer().getCards().size());
+                break;
+            }
+
+            case "DEALER_LEFT_OR_PLAYER_LEFT_ALONE": {
+                for (Player player : match.getGame().getPlayers()) {
+                    assertIfPlayerIsInStartingPosition(player);
+                }
+                assertNotNull(match.getGame().getDealer());
+                assertIfPlayerIsInStartingPosition(match.getGame().getDealer());
+                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
+                break;
+            }
+            default: {
+                fail("NO CASE SELECTED");
+            }
+        }
+
+    }
+
+    public void assertIfPlayerArrivedProperly(String type, Player newComer) {
+        switch (type) {
+            case "AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE": {
+                assertIfPlayerIsInStartingPosition(newComer);
+                break;
+            }
+            case "WHEN_GAME_IS_ALREADY_ON": {
+                assertEquals(PlayerStatus.WAITING_GAME, newComer.getStatus());
+                assertFalse(newComer.getIsDealer());
+                assertEquals(0, newComer.getCards().size());
+                assertEquals(0, newComer.getRevealedCards().size());
+                assertEquals(0, newComer.getBet());
+                break;
+            }
+            default:
+                fail("WRONG TYPE");
+        }
+    }
+
+    public void setPlayerMoneyAndBetBeforeSomeoneLeave() {
+        match.getGame().getPlayers().forEach(player -> playerMoneyBeforeSomeoneLeave.put(player.getEmail(), player.getMoney()));
+        playerMoneyBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getMoney());
+        match.getGame().getPlayers().forEach(player -> playerBetBeforeSomeoneLeave.put(player.getEmail(), player.getBet()));
+        playerBetBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getBet());
+    }
+    public double getTotalSumOfBets() {
+        double total = 0;
+        for(String playerEmail : playerBetBeforeSomeoneLeave.keySet()) {
+            total += playerBetBeforeSomeoneLeave.get(playerEmail);
+        }
+        return total;
+    }
+    public void assertIfDebts (String type, User leaver) {
+        //TODO: assert if debts transactions go through when a player/dealer leaves.
+        // Add this assertion to all tests where a player/dealer leaves.
+        switch (type) {
+            case "DEALER_LEFT_ILLEGAL":{
+                match.getGame().getPlayers().forEach(player -> {
+                    assertEquals(
+                            playerMoneyBeforeSomeoneLeave.get(player.getEmail()) + playerBetBeforeSomeoneLeave.get(player.getEmail()),
+                            player.getMoney());
+                });
+                assertEquals(
+                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - getTotalSumOfBets(),
+                        leaver.getMoney());
+                break;
+            }
+            case "PLAYER_LEFT_ILLEGAL": {
+                assertEquals(
+                        playerMoneyBeforeSomeoneLeave.get(dealer.getEmail()) + playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
+                        dealer.getMoney());
+                assertEquals(
+                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
+                        leaver.getMoney());
+                break;
+            }
+            case "PLAYER_LEFT_LEGAL": {
+                match.getGame().getPlayers().forEach(player -> {
+                    assertEquals(
+                            playerMoneyBeforeSomeoneLeave.get(player.getEmail()),
+                            player.getMoney());
+                });
+                assertEquals(
+                        playerMoneyBeforeSomeoneLeave.get(match.getGame().getDealer().getEmail()),
+                        match.getGame().getDealer().getMoney());
+                break;
+            }
+            default:
+                fail("WRONG TYPE");
+        }
+    }
+
 
     public void playerTurn() {
         Player nextPlayer = match.getGame().grabPlayingPlayer();
@@ -141,7 +254,7 @@ class Helper3 {
                 assertEquals(PlayerStatus.BLACKJACK, dealer.getStatus());
             }
 
-            changeTurn();
+            match.getGame().nextTurn(match);
         } else {
             if (player1 != null && nextPlayer.getEmail() == player1.getEmail()) {
 
@@ -159,10 +272,6 @@ class Helper3 {
             }
             match.getGame().sticks();
         }
-    }
-
-    public void changeTurn() {
-        match.getGame().nextTurn();
     }
 
     public void checkIfFinishedProperly () {
@@ -236,10 +345,10 @@ class DroppingInAndOutOfGame {
     }
 
     private void sendChangedRound(Match match) {
-        match.getGame().nextRound();
+        match.getGame().nextRound(match.getGameType());
     }
     private void sendChangedTurn(Match match) {
-        match.getGame().nextTurn();
+        match.getGame().nextTurn(match);
     }
 
 
@@ -265,7 +374,7 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet1);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
@@ -273,107 +382,6 @@ class DroppingInAndOutOfGame {
 
 
 
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -407,19 +415,23 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet1);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
             helper3.startGame();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
@@ -428,112 +440,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
+
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -566,17 +478,21 @@ class DroppingInAndOutOfGame {
             Player player1 = match.getGame().getPlayers().get(0);
             Dealer dealer = match.getGame().getDealer();
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user1);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
             helper3.startGame();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
@@ -585,112 +501,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
+
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -719,12 +535,16 @@ class DroppingInAndOutOfGame {
             helper3.addDealerToMatch(user7);
             helper3.addUserToMatch(user1, 2);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(match.getGame().getPlayers().get(0));
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
 
 
@@ -732,7 +552,7 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
@@ -741,113 +561,11 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
-
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
             System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
@@ -879,12 +597,16 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet1);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
 
             helper3.startGame();
@@ -892,115 +614,13 @@ class DroppingInAndOutOfGame {
             Dealer dealer2 = match.getGame().getDealer();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
 
 
-
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -1030,10 +650,14 @@ class DroppingInAndOutOfGame {
             Player player1 = match.getGame().getPlayers().get(0);
             Dealer dealer = match.getGame().getDealer();
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
 
             helper3.startGame();
@@ -1041,115 +665,12 @@ class DroppingInAndOutOfGame {
             Dealer dealer2 = match.getGame().getDealer();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
 
-
-
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -1175,10 +696,14 @@ class DroppingInAndOutOfGame {
             helper3.addDealerToMatch(user7);
             helper3.addUserToMatch(user1, 2);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(match.getGame().getDealer());
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 2);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user2.getEmail()));
 
 
             helper3.startGame();
@@ -1186,115 +711,12 @@ class DroppingInAndOutOfGame {
             Dealer dealer2 = match.getGame().getDealer();
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
 
-
-
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -1330,7 +752,7 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
@@ -1338,108 +760,6 @@ class DroppingInAndOutOfGame {
             helper3.startGame();
 
 
-
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -1476,14 +796,19 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
 //            helper3.playerTurn("PLAYER1");
             helper3.playerTurn();
@@ -1495,113 +820,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -1634,16 +858,20 @@ class DroppingInAndOutOfGame {
             Player player2 = match.getGame().getPlayers().get(1);
             Dealer dealer = match.getGame().getDealer();
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 //            helper3.playerTurn("PLAYER1");
             helper3.playerTurn();
             helper3.playerTurn();
@@ -1654,114 +882,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
-
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
             System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
@@ -1794,15 +920,19 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet2);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 //            helper3.playerTurn("PLAYER1");
             helper3.playerTurn();
             helper3.playerTurn();
@@ -1813,114 +943,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
-
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
             System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
@@ -1953,16 +981,20 @@ class DroppingInAndOutOfGame {
             Dealer dealer = match.getGame().getDealer();
             helper3.playerBet(bet1);
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
 
 //            helper3.playerTurn("PLAYER1");
             helper3.playerTurn();
@@ -1974,114 +1006,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
-
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
             System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
@@ -2115,16 +1045,20 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
 
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
             helper3.playerTurn();
             helper3.playerTurn();
@@ -2135,113 +1069,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -2276,131 +1109,35 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_ILLEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
-            helper3.playerTurn();
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
+
+            helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
             Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -2435,17 +1172,21 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
 
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
             helper3.playerLeaves(player1);
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user1);
+            helper3.assertIfGameResetProperly("PLAYER_LEFT");
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_HAD_BJ_FROM_FIRST_HAND);
             helper3.removeCustomAssertion(CustomAssertions.PLAYER1_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
             user3 = new User("cc", "cc", "cc");
             user3.setMoney(100000);
             helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user3.getEmail()));
 
             helper3.checkIfFinishedProperly();
             helper3.startGame();
@@ -2453,114 +1194,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet2);
             helper3.playerBet(bet3);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
-
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
             System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
@@ -2592,10 +1231,11 @@ class DroppingInAndOutOfGame {
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user2.getEmail()));
 
             helper3.playerBet(bet1);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
 
@@ -2606,113 +1246,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -2746,9 +1285,10 @@ class DroppingInAndOutOfGame {
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user2.getEmail()));
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
 
@@ -2759,113 +1299,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -2898,11 +1337,13 @@ class DroppingInAndOutOfGame {
 
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user2.getEmail()));
+
             helper3.playerTurn();
 
 
@@ -2912,113 +1353,12 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -3051,13 +1391,14 @@ class DroppingInAndOutOfGame {
 
 
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
 
             user2 = new User("bb", "bb", "bb");
             user2.setMoney(100000);
             helper3.addUserToMatch(user2, 3);
+            helper3.assertIfPlayerArrivedProperly("WHEN_GAME_IS_ALREADY_ON", match.getGame().getPlayerByEmail(user2.getEmail()));
 
             helper3.checkIfFinishedProperly();
             helper3.startGame();
@@ -3065,113 +1406,71 @@ class DroppingInAndOutOfGame {
             helper3.playerBet(bet1);
             helper3.playerBet(bet2);
             assertTrue(match.getGame().hasEveryoneBet());
-            match.getGame().startRound();
+            match.getGame().startRound(match);
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.playerTurn();
             helper3.checkIfFinishedProperly();
             helper3.startGame();
-//            // if the playerWhoJustGotDealtBJ is not null, then our player had blackjack
-//            // we then change the turn and turn playerWhoJustGotDealtBJ to null again.
-//            // at this point the game can have taken lot's of different directions.
-//            // the sendChangeTurn will keep running until the next player doesn't have BJ
-//            // that means that 3-4 players can all have BJ, and the next turn goes to the 5 player
-//            // we amend for that by having and if statement and checking the status of each player
-//            // from now on. If they all had black jack, the round should be through and the players
-//            // in a betting round
-//            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                wentThroughEveryScenario.put("Player1 had BJ from first hand", true);
-//                assertEquals(player1, match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                sendChangedTurn(match);
-//                assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            }
-//
-//            // if the bet has reset, that means the game is over (all had BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("All had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//            if (player1.getStatus() != PlayerStatus.BLACKJACK) { // the player didn't have BJ
-//                wentThroughEveryScenario.put("Player1 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player1.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player1.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Player3 got BJ from first hand", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == player3);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                }
-//            }
-//
-//            // if the bet has reset, that means the game is over (player3 and dealer BJ)
-//            if (player1.getBet() == 0) {
-//                wentThroughEveryScenario.put("Player3 and dealer had BJ, game was reset", true);
-//                assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                for (Player player : match.getGame().getPlayers()) {
-//                    assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                }
-//                continue;
-//            }
-//
-//
-//            if (player3.getStatus() != PlayerStatus.BLACKJACK) { // the player3 didn't have BJ
-//                wentThroughEveryScenario.put("Player3 played, didn't have BJ from first hand", true);
-//                assertEquals(PlayerStatus.PLAYING, player3.getStatus());
-//                match.getGame().sticks();
-//                assertEquals(PlayerStatus.STICK, player3.getStatus());
-//                if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
-//                    wentThroughEveryScenario.put("Dealer got BJ from first hand,  game was reset", true);
-//                    assertTrue(match.getGame().getPlayerWhoJustGotDealtBlackJack() == dealer);
-//                    sendChangedTurn(match);
-//                    assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//                    assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//                    for (Player player : match.getGame().getPlayers()) {
-//                        assertEquals(PlayerStatus.BETTING, player.getStatus());
-//                    }
-//                    continue;
-//                }
-//            }
-//
-//
-//
-//
-//
-//            // the next player, dealer in that case, should only be in a playing status, since if they had
-//            // bj, the game would been through.
-//            // they decide to stick. then, verdict should also be out, since
-//            // the last player who his turn finished was the dealer. The dealer doesn't get
-//            // neither LOST or WON status from the verdict, since he might won in one turn and lost in another
-//            // so, the dealer has the same status as his last choice: STICK in that case.
-//            // The player on the other hand, either have a won or a lost status.
-//            assertTrue(dealer.getStatus() == PlayerStatus.PLAYING);
-//            match.getGame().sticks();
-//            assertTrue(match.getGame().isVerdictOut());
-//            assertTrue(dealer.getStatus() == PlayerStatus.STICK);
-//            assertTrue(player1.getStatus() == PlayerStatus.WON ||
-//                    player1.getStatus() == PlayerStatus.LOST);
-//            assertTrue(player3.getStatus() == PlayerStatus.WON ||
-//                    player3.getStatus() == PlayerStatus.LOST);
-//            if (dealer.getStatus() == PlayerStatus.BLACKJACK) {
-//                fail("WE SHOULD NOT BE HERE SINCE IF THE DEALER HAD ALSO BJ THE GAME SHOULD BE THROUGH ALREADY" +
-//                        "BUT THIS MIGHT BE RELEVANT TO OTHER TESTS SO I LEAVE IT IN");
-//                assertEquals(PlayerStatus.LOST, match.getGame().getPlayers().get(0).getStatus());
-//            }
-//            assertNull(match.getGame().getPlayerWhoJustGotDealtBlackJack());
-//            wentThroughEveryScenario.put("All players stick, verdict is out", true);
-//            sendChangedRound(match);
-//            assertEquals(PlayerStatus.WAITING_TURN, dealer.getStatus());
-//            for (Player player : match.getGame().getPlayers()) {
-//                assertEquals(PlayerStatus.BETTING, player.getStatus());
-//            }
-//            continue;
-//        }
-//
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutAfterBettingAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+            helper3.playerBet(bet1);
+            helper3.playerBet(bet2);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+            helper3.startGame();
+
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
 
         }
         helper3.customAssertions.forEach((scenario, isTrue) -> {
@@ -3180,4 +1479,309 @@ class DroppingInAndOutOfGame {
         });
 
     }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutBeforeBettingAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+            helper3.startGame();
+
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
+
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutJUSTBeforeBettingAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+            helper3.playerBet(bet1);
+            helper3.playerBet(bet2);
+            assertTrue(match.getGame().hasEveryoneBet());
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+
+            helper3.startGame();
+
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutAfterPlayer1PlaysAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+            helper3.playerBet(bet1);
+            helper3.playerBet(bet2);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+
+            helper3.startGame();
+
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
+
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutAfterPlayer2PlaysAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+            helper3.playerBet(bet1);
+            helper3.playerBet(bet2);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("DEALER_LEFT_ILLEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+
+            helper3.startGame();
+
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
+
+
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+    @Test
+    void threePlayersOneDealer_DealerDropsOutAfterPlaysAnotherPlayerGetsInAndPlays() {
+        Helper3 helper3 = new Helper3();
+
+        for (int i = 0; i < 100000; i++) {
+//            System.out.println( i );
+            user1 = new User("aa", "aa", "aa");
+            user1.setMoney(100000);
+            user2 = new User("bb", "bb", "bb");
+            user2.setMoney(100000);
+            user7 = new User("ww", "ww", "ww");
+            user7.setMoney(100000);
+            match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
+            helper3.setMatch(match);
+            helper3.addDealerToMatch(user7);
+            helper3.addUserToMatch(user1, 2);
+            helper3.addUserToMatch(user2, 3);
+
+            helper3.startGame();
+            Player player1 = match.getGame().getPlayers().get(0);
+            Player player2 = match.getGame().getPlayers().get(1);
+            Dealer dealer = match.getGame().getDealer();
+            helper3.playerBet(bet1);
+            helper3.playerBet(bet2);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+
+
+
+            helper3.setPlayerMoneyAndBetBeforeSomeoneLeave();
+            helper3.playerLeaves(dealer);
+            helper3.assertIfDebts("PLAYER_LEFT_LEGAL", user7);
+            helper3.assertIfGameResetProperly("DEALER_LEFT_OR_PLAYER_LEFT_ALONE");
+            user3 = new User("cc", "cc", "cc");
+            user3.setMoney(100000);
+            helper3.addUserToMatch(user3, 3);
+            helper3.assertIfPlayerArrivedProperly("AFTER_DEALER_LEFT_OR_PLAYER_LEFT_ALONE", match.getGame().getPlayerByEmail(user3.getEmail()));
+
+
+            helper3.startGame();
+            Dealer dealer2 = match.getGame().getDealer();
+            Player newPlayer1 = match.getGame().getPlayers().get(0);
+            Player player3 = match.getGame().getPlayerByEmail(user3.getEmail());
+            helper3.playerBet(bet2);
+            helper3.playerBet(bet3);
+            assertTrue(match.getGame().hasEveryoneBet());
+            match.getGame().startRound(match);
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.playerTurn();
+            helper3.checkIfFinishedProperly();
+            helper3.startGame();
+
+        }
+        helper3.customAssertions.forEach((scenario, isTrue) -> {
+            System.out.println(scenario + (isTrue ? ": TRUE" : ": FALSE"));
+            assertTrue(isTrue);
+        });
+
+    }
+
+
 }

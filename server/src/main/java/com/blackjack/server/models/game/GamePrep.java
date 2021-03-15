@@ -1,6 +1,7 @@
 package com.blackjack.server.models.game;
 
 import com.blackjack.server.models.User;
+import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
 
 import java.util.LinkedList;
@@ -33,13 +34,30 @@ public class GamePrep {
     }
 
     private static void setUpGame(Match match) {
+        if (match.getGameType() == GameType.HUMANS) {
+            setUpHumansGame(match);
+        } else {
+            setUpComputerGame(match);
+        }
+    }
+
+    private static void setUpHumansGame(Match match) {
         Deck deck = new Deck();
-
         Dealer dealer = new Dealer(match.getUsers().get(0));
-        dealer.setIsDealer(true);
-
         GameRound game = new GameRound(dealer, deck);
         match.setGame(game);
+        dealer.setIsDealer(true);
+    }
+
+    private static void setUpComputerGame(Match match) {
+        Deck deck = new Deck();
+        Dealer dealer = new Dealer(new Player());
+        dealer.setName("Dealer");
+        dealer.setIsDealer(true);
+        dealer.setMoney(100000);
+        GameRound game = new GameRound(dealer, deck);
+        match.setGame(game);
+        match.getGame().addPlayer(new Player(match.getUsers().get(0)));
     }
 
     private static void addNewlyArrivedUsersAsPlayers(Match match, boolean hasTheGameStarted) {
@@ -68,7 +86,7 @@ public class GamePrep {
     }
 
     public static void startGame(Match match) {
-        match.getGame().nextRound();
+        match.getGame().nextRound(match.getGameType());
     }
 
     public static void clearLeaverDebts(Player leaver, Match match) {
@@ -139,9 +157,10 @@ public class GamePrep {
 
     private static void dealerLeftOtherStayed(Match match) {
         Dealer newDealer = new Dealer(match.getGame().getPlayers().remove(0));
+        match.getGame().setPlayerWhoJustGotDealtBlackJack(null);
         match.getGame().setDealer(newDealer);
-        match.getGame().prepareDealerForNextRound(true);
-        match.getGame().getPlayers().forEach(player -> match.getGame().preparePlayerForNextRound(player, true));
+        match.getGame().prepareDealerForNextRound(false);
+        match.getGame().getPlayers().forEach(player -> match.getGame().preparePlayerForNextRound(player, false));
     }
 
 
@@ -151,8 +170,14 @@ public class GamePrep {
             match.getGame().setDealer(newDealer);
         }
         match.getGame().setPlayerWhoJustGotDealtBlackJack(null);
-        match.getGame().prepareDealerForNextRound(true);
+        match.getGame().prepareDealerForNextRound(false);
     }
 
 
+    public static void playerSticks(Match match) {
+        match.getGame().sticks();
+        if (match.getGameType() == GameType.COMPUTER && match.getGame().getDealer().getStatus() == PlayerStatus.PLAYING) {
+            match.setHasSimulationStared(true);
+        }
+    }
 }

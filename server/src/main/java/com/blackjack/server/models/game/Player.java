@@ -31,6 +31,14 @@ public class Player extends User  {
         this.revealedCards = player.revealedCards;
     }
 
+    public Player() {
+        super();
+        status = PlayerStatus.WAITING_GAME;
+        isDealer = false;
+        cards = new ArrayList<>();
+        revealedCards = new ArrayList<>();
+    }
+
     public void resetCards() {
         this.cards.clear();
         this.revealedCards.clear();

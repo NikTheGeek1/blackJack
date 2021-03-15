@@ -2,6 +2,7 @@ package com.blackjack.server.models.match;
 
 import com.blackjack.server.models.User;
 import com.blackjack.server.models.game.GameRound;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -16,6 +17,9 @@ public class Match {
     private final GamePrivacy privacy;
     private GameRound game;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private boolean hasSimulationStared;
+
     public Match(String matchName, int maxNumberOfPlayers, GameType gameType, GamePrivacy privacy) {
         this.matchName = matchName;
         this.duration = 0;
@@ -24,6 +28,7 @@ public class Match {
         this.users = new LinkedList<User>();
         this.privacy = privacy;
         this.onset = new Date();
+        this.hasSimulationStared = false;
     }
 
     public GameRound getGame() {
@@ -105,5 +110,13 @@ public class Match {
 
     public boolean isEmpty() {
         return users.size() == 0;
+    }
+
+    public void setHasSimulationStared(boolean hasSimulationStared) {
+        this.hasSimulationStared = hasSimulationStared;
+    }
+
+    public boolean getHasSimulationStared() {
+        return hasSimulationStared;
     }
 }

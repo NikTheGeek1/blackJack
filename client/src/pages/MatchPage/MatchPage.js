@@ -77,12 +77,14 @@ const MatchPage = () => {
     console.log(match, 'MatchPage.js', 'line: ', '86');
     const playersJSX = match.game?.allPlayersDealerFirst.map(player => {
         let turnControlsJSX;
+        // TODO: extract all these if statements into functions
         if (thisPlayer.status === PlayerStatus.WAITING_GAME) {
-            turnControlsJSX = <h3>Please wait for the dealer to start the game</h3>;
+            turnControlsJSX = <h3>Please wait for the creator to start the game</h3>;
         }
-        if (thisPlayer.status === PlayerStatus.WAITING_GAME && thisPlayer.isDealer) {
+        if (thisPlayer.status === PlayerStatus.WAITING_GAME && 
+            (thisPlayer.isDealer || match.gameType === "COMPUTER")) { // TODO: make a GameType enum
             turnControlsJSX = <h3>Please wait for at least one more player</h3>;
-            if (match.game.players) {
+            if (match.game.players.length) { // TODO: only the creator should be seeing the start game button
                 console.log(match.game.players, 'I AM HERE BECAUSE THE START GAME BUTTON APPEARS EVEN WITH ONLY 1 PLAYER IN THE GAME', 'line: ', '86');
                 turnControlsJSX = (
                     <button onClick={startHumansGameHandler}>Start game</button>

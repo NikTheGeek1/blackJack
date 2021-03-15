@@ -1,7 +1,6 @@
 package com.blackjack.server.websockets.controllers.game;
 
 import com.blackjack.server.controllers.ErrorMessage;
-import com.blackjack.server.controllers.SuccessMessage;
 import com.blackjack.server.models.User;
 import com.blackjack.server.models.match.Match;
 import com.blackjack.server.repositories.UserRepository;
