@@ -26,6 +26,19 @@ class URLs {
         return `/app/websockets/game/draw/${gameName}`;
     }
 
+    // WEBSOCKETS CHAT
+    static WEBSOCKETS_CHAT = this.DEV_SERVER + "/websockets/chat";
+    static SEND_MESSAGE (gameName) {
+        return `/app/websockets/chat/send-message/${gameName}`
+    }
+    static UPDATE_CHAT_HISTORY (gameName) {
+        return `/topic/update-chat-history/${gameName}`;
+    }
+
+    static LEAVE_CHAT (gameName) {
+        return `/app/leave-chat/${gameName}`;
+    }
+
     // WEBSOCKETS MATCHES REST
     static ADD_USER_TO_MATCH (matchName, userEmail) {
         return this.DEV_SERVER + `/websockets/REST/matches/add-user-to-match?matchName=${matchName}&userEmail=${userEmail}`;

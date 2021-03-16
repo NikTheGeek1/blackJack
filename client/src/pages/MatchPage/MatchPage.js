@@ -10,6 +10,7 @@ import Match from '../../models/matches/Match';
 import PlayerStatus from '../../constants/PlayerStatus';
 import { FormButton, FormInput } from '../../components/Form/components';
 import Bet from '../../models/Bet';
+import Chat from '../../components/Chat/Chat';
 
 let gameSocket;
 const MatchPage = () => {
@@ -30,7 +31,6 @@ const MatchPage = () => {
 
         gameSocket.connect({}, frame => {
             updateGameSubscription = gameSocket.subscribe(URLs.UPDATE_GAME(match.matchName), (msg) => {
-                // triggered when someone's entering the match
                 const matchParsed = JSON.parse(msg.body);
                 const fetchedMatch = new Match(matchParsed);
                 console.log(fetchedMatch, 'MatchPage.js', 'line: ', '31');
@@ -128,6 +128,7 @@ const MatchPage = () => {
     return (
         <div>
             {playersJSX}
+            <Chat />
         </div>
     );
 };

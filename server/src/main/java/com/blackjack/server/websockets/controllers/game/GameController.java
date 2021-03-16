@@ -31,7 +31,6 @@ public class GameController {
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), match);
     }
 
-    // TODO: change to START_GAME in general
     @MessageMapping(URLs.START_GAME)
     public void startGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
@@ -43,7 +42,7 @@ public class GameController {
     public void leaveGame(@DestinationVariable String gameName, @Payload String userEmail) {
         System.out.println("removing user from match");
         Match match = activeMatchesManager.getMatch(gameName);
-        if (match.getUsers().size() == 1) {// the leaver is the last player
+        if (match.getUsers() != null && match.getUsers().size() == 1) {// the leaver is the last player
             activeMatchesManager.remove(gameName);
         } else {
             GamePrep.dropOutManager(match, userEmail);

@@ -56,6 +56,7 @@ public class GamePrep {
         dealer.setEmail("Dealer");
         dealer.setIsDealer(true);
         dealer.setMoney(100000);
+        match.addUser(dealer);
         GameRound game = new GameRound(dealer, deck);
         match.setGame(game);
         match.getGame().addPlayer(new Player(match.getUsers().get(0)));

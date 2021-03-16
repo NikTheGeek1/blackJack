@@ -129,7 +129,7 @@ public class GameRound extends Game {
         }
     }
 
-    public void draws(Match match) { // TODO: check if we need this argument after all
+    public void draws(Match match) {
         //// ORDER MATTERS HERE ////
         Player playingPlayer = grabPlayingPlayer();
 

@@ -109,6 +109,9 @@ public class Match {
     }
 
     public boolean isEmpty() {
+        if (gameType == GameType.COMPUTER) {
+            return users.size() == 1;
+        }
         return users.size() == 0;
     }
 

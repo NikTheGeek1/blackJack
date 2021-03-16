@@ -2,9 +2,18 @@ package com.blackjack.server.urls;
 
 public class URLs {
 
+    // CHAT WEBSOCKETS
+    public static final String WEBSOCKETS_CHAT = "/websockets/chat";
+    public static String UPDATE_CHAT_HISTORY(String gameName) {
+        return "/topic/update-chat-history/" + gameName;
+    }
+    public static final String SEND_MESSAGE = "/websockets/chat/send-message/{gameName}";
+    public static final String LEAVE_CHAT = "/websockets/chat/leave-chat/{gameName}";
+
     // WEBSOCKETS GAME
     public static final String WEBSOCKETS_GAME = "/websockets/game";
     public final static String ENTER_GAME = "/websockets/game/enter-game/{gameName}";
+
     public static String UPDATE_GAME (String gameName) {
         return "/topic/update-game/" + gameName;
     }
@@ -36,5 +45,6 @@ public class URLs {
 
     // DEV CLIENT
     public final static String DEV_CLIENT = "http://localhost:3000";
+
 
 }
