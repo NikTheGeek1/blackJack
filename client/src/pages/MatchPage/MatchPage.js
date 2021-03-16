@@ -56,7 +56,7 @@ const MatchPage = () => {
     };
 
     const startHumansGameHandler = () => {
-        gameSocket.send(URLs.START_HUMANS_GAME(match.matchName), {}, "starting game");
+        gameSocket.send(URLs.START_GAME(match.matchName), {}, "starting game");
     };
 
     const betHandler = e => {

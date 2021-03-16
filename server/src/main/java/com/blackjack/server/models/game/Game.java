@@ -224,4 +224,15 @@ public abstract class Game {
         return haveAllBusted;
     }
 
+    public boolean haveAllPlayersBJ() {
+        boolean haveAllBJ = true;
+        for (Player player : players) {
+            if (player.getStatus() != PlayerStatus.BLACKJACK) {
+                haveAllBJ = false;
+                break;
+            }
+        }
+        return haveAllBJ;
+    }
+
 }

@@ -32,7 +32,7 @@ public class GameController {
     }
 
     // TODO: change to START_GAME in general
-    @MessageMapping(URLs.START_HUMANS_GAME)
+    @MessageMapping(URLs.START_GAME)
     public void startGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
         GamePrep.startGame(match);

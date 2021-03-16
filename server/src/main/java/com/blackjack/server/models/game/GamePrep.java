@@ -53,6 +53,7 @@ public class GamePrep {
         Deck deck = new Deck();
         Dealer dealer = new Dealer(new Player());
         dealer.setName("Dealer");
+        dealer.setEmail("Dealer");
         dealer.setIsDealer(true);
         dealer.setMoney(100000);
         GameRound game = new GameRound(dealer, deck);
@@ -90,25 +91,25 @@ public class GamePrep {
     }
 
     public static void clearLeaverDebts(Player leaver, Match match) {
+        User leaverUser = match.getUserByEmail(leaver.getEmail());
         if (leaver.getIsDealer()) {
             match.getGame().getPlayers().forEach(player -> {
                 double playersBet = player.getBet();
-                User leaverUser = match.getUserByEmail(leaver.getEmail());
-                leaverUser.decreaseMoney(playersBet);
+                leaver.decreaseMoney(playersBet);
                 player.increaseMoney(playersBet);
             });
         } else {
             double leaversBet = leaver.getBet();
-            User leaverUser = match.getUserByEmail(leaver.getEmail());
-            leaverUser.decreaseMoney(leaversBet);
+            leaver.decreaseMoney(leaversBet);
             match.getGame().getDealer().increaseMoney(leaversBet);
         }
+        leaverUser.setMoney(leaver.getMoney());
     }
 
     public static void dropOutManager(Match match, String leaverEmail) {
         // TODO: refactor dropOutManager, decideIfOnlyOneOrManyPlayersLeftInGame, manyPlayersLeftInGame.
         // if the leaver is the playing player, we need to pass the PLAYING status to
-        // the next player, but the current implementation if awful. There are 2 pair of 2 functions (4 in total)
+        // the next player, but the current implementation is awful. There are 2 pairs of 2 functions (4 in total)
         // which essentially doing the same thing. They are overloaded.
         Player leaver = match.getGame().getPlayerByEmail(leaverEmail);
         clearLeaverDebts(leaver, match);

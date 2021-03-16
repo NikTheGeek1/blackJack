@@ -269,8 +269,13 @@ public class GameRound extends Game {
 
 
     public void nextSimulatedTurn(Match thisMatch) {
-        //TODO: If all of the .getPlayers() have BJ then dealer do not stop drawing
-        // until he either busts or BJs
+        if (haveAllPlayersBJ() && getDealer().cardTotal() < 21) {
+            getDealer().drawCard(getDeck().dealCard(CardVisibility.REVEALED));
+            if (getDealer().getStatus() != PlayerStatus.PLAYING) { // playing player either busted or blackjacked
+                verdict(thisMatch);
+                return;
+            }
+        }
         if (getDealer().getStatus() ==  PlayerStatus.BLACKJACK) {
             verdict(thisMatch);
         } else if (getDealer().getStatus() == PlayerStatus.PLAYING) {
@@ -287,7 +292,7 @@ public class GameRound extends Game {
             }
         } else {
             // TODO: DELETE THIS. IT'S ONLY FOR TESTING
-            System.out.println("ERROR: at this point, dealer can only be BJ or Playing, everything else is wrong");
+            System.out.println("ERROR: at this point, dealer can only be BJ or Playing, everything else is wrong. But dealer is " + getDealer().getStatus());
         }
 
     }

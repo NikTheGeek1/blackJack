@@ -13,7 +13,7 @@ class URLs {
     static UPDATE_GAME (gameName) {
         return `/topic/update-game/${gameName}`;
     }
-    static START_HUMANS_GAME (gameName) {
+    static START_GAME (gameName) {
         return `/app/websockets/game/start-humans-game/${gameName}`;
     }
     static PLACE_BET (gameName) {

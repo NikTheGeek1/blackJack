@@ -196,8 +196,6 @@ class Helper3 {
         return total;
     }
     public void assertIfDebts (String type, User leaver) {
-        //TODO: assert if debts transactions go through when a player/dealer leaves.
-        // Add this assertion to all tests where a player/dealer leaves.
         switch (type) {
             case "DEALER_LEFT_ILLEGAL":{
                 match.getGame().getPlayers().forEach(player -> {

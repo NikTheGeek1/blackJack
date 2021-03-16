@@ -9,7 +9,7 @@ public class URLs {
         return "/topic/update-game/" + gameName;
     }
     public final static String LEAVE_GAME = "/websockets/game/leave-game/{gameName}";
-    public final static String START_HUMANS_GAME = "/websockets/game/start-humans-game/{gameName}";
+    public final static String START_GAME = "/websockets/game/start-humans-game/{gameName}";
     public final static String PLACE_BET = "/websockets/game/place-bet/{gameName}";
     public final static String STICK = "/websockets/game/stick/{gameName}";
     public final static String DRAW = "/websockets/game/draw/{gameName}";
