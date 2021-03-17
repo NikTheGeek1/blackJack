@@ -7,8 +7,10 @@ public class URLs {
     public static String UPDATE_CHAT_HISTORY(String gameName) {
         return "/topic/update-chat-history/" + gameName;
     }
+
     public static final String SEND_MESSAGE = "/websockets/chat/send-message/{gameName}";
     public static final String LEAVE_CHAT = "/websockets/chat/leave-chat/{gameName}";
+    public static final String GET_CHAT_HISTORY = "/websockets/chat/get-chat-history/{gameName}";
 
     // WEBSOCKETS GAME
     public static final String WEBSOCKETS_GAME = "/websockets/game";

@@ -9,8 +9,6 @@ let chatSocket;
 const Chat = () => {
     const globalState = useStore(false)[0];
     const matchName = globalState.matchState.matchObj.matchName;
-    const senderName = globalState.playerState.playerObj.name;
-    const senderEmail = globalState.playerState.playerObj.email;
     const [chatHistory, setChatHistory] = useState([]);
 
     useEffect(() => {
@@ -26,9 +24,10 @@ const Chat = () => {
         chatSocket.connect({}, frame => {
             updateChatSubscription = chatSocket.subscribe(URLs.UPDATE_CHAT_HISTORY(matchName), (msgHistory) => {
                 const chatHistoryParsed = JSON.parse(msgHistory.body);
-                console.log(chatHistoryParsed, 'Chat.js', 'line: ', '30');
                 setChatHistory(chatHistoryParsed);
             });
+            chatSocket.send(URLs.GET_CHAT_HISTORY(matchName), {}, 'give me chat history');
+            
         });
 
         return () => {

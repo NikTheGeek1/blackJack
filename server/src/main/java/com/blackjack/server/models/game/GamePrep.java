@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class GamePrep {
 
     public static void setUpGameOrAddPlayer (Match match) {
+        if (match == null) return;
         // playerWaitGameToStart as opposed to wait for their turn
         if (match.getGame() != null) {
             // game is already initialised

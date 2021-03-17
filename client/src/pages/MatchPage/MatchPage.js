@@ -11,6 +11,7 @@ import PlayerStatus from '../../constants/PlayerStatus';
 import { FormButton, FormInput } from '../../components/Form/components';
 import Bet from '../../models/Bet';
 import Chat from '../../components/Chat/Chat';
+import GameInterface from '../../components/GameInterface/GameInterface';
 
 let gameSocket;
 const MatchPage = () => {
@@ -127,7 +128,8 @@ const MatchPage = () => {
 
     return (
         <div>
-            {playersJSX}
+            {/* {playersJSX} */}
+            <GameInterface />
             <Chat />
         </div>
     );

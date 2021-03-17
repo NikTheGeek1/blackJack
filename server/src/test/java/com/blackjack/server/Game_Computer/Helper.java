@@ -255,7 +255,6 @@ public class Helper {
     public void assertIfGameIsInTheProperStateAfterSomeoneLeaveBeforeStart() {
         for (Player player : match.getGame().getPlayers()) {
             assertNotEquals(PlayerStatus.WAITING_GAME, player.getStatus());
-            System.out.println(player.getEmail());
             assertEquals(2, player.getCards().size());
         }
         assertNotEquals(PlayerStatus.WAITING_GAME, match.getGame().getDealer().getStatus());

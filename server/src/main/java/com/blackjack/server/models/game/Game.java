@@ -23,6 +23,7 @@ public abstract class Game {
         this.dealer = dealer;
         this.deck = deck;
         this.isVerdictOut = false;
+        this.allPlayersDealerFirst = new LinkedList<>();
         setAllPlayersDealerFirst();
     }
 

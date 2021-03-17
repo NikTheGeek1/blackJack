@@ -34,9 +34,11 @@ class URLs {
     static UPDATE_CHAT_HISTORY (gameName) {
         return `/topic/update-chat-history/${gameName}`;
     }
-
     static LEAVE_CHAT (gameName) {
-        return `/app/leave-chat/${gameName}`;
+        return `/app/websockets/chat/leave-chat/${gameName}`;
+    }
+    static GET_CHAT_HISTORY (gameName) {
+        return `/app/websockets/chat/get-chat-history/${gameName}`;
     }
 
     // WEBSOCKETS MATCHES REST

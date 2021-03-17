@@ -27,6 +27,16 @@ public class ChatController {
     @Autowired
     ActiveMatchesManager activeMatchesManager;
 
+    @MessageMapping(URLs.GET_CHAT_HISTORY)
+    public void getChatHistory(@DestinationVariable String gameName) {
+        try {
+            ChatHistory chatHistory = chatMessagesManager.getMatchHistory(gameName);
+            webSocket.convertAndSend(URLs.UPDATE_CHAT_HISTORY(gameName), chatHistory.getMessages());
+        } catch (NullPointerException e) {
+            System.out.println("Chat history not created yet.");
+        }
+    }
+
     @MessageMapping(URLs.SEND_MESSAGE)
     public void sendMessage(@DestinationVariable String gameName, @Payload ChatMessage chatMessage) {
         chatMessagesManager.addMessageToMatchHistory(gameName, chatMessage);
@@ -38,7 +48,7 @@ public class ChatController {
     public void leaveChat(@DestinationVariable String gameName) {
         chatMessagesManager.removeMatchHistory(gameName);
         Match match = activeMatchesManager.getMatch(gameName);
-        if (match.getUsers() != null && match.getUsers().size() == 1) {// the leaver is the last player
+        if (match != null && match.getUsers() != null && match.getUsers().size() == 1) {// the leaver is the last player
             chatMessagesManager.removeMatchHistory(gameName);
         }
     }
