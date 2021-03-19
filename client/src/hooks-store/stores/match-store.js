@@ -13,7 +13,7 @@ const configureStore = () => {
             return { matchState: { inMatch: false, matchObj: null }};
         }
     }
-    initStore(actions, { matchState: { inMatch: false, matchObj: null }});
+    initStore(actions, { matchState: { inMatch: false, matchObj: {matchName: ''} }}); // TODO: set matchObj to null
 }
 
 

@@ -1,3 +1,6 @@
 .bj-interface-canvas {
-    min-width: 630px;
+    min-width: 63rem;
+    max-width: 110rem;
+    min-height: 54rem;
+    /* max-height: 70rem; */
 }

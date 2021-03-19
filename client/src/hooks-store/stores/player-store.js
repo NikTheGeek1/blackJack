@@ -13,8 +13,8 @@ const configureStore = () => {
             return { playerState: { playerObj: null }};
         }
     }
-    initStore(actions, { playerState: { playerObj: null }});
-}
+    initStore(actions, { playerState: { playerObj: {name: '', email: ''} }}); // TODO: set playerObj to null
+};
 
 
 export default configureStore;

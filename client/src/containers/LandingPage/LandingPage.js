@@ -6,6 +6,7 @@ import { fetchUserByEmailAndPassword } from '../../services/user/fetch-user';
 import signUpORUserInterfaceDecider from '../../utils/signUpOrUserInterface';
 import { LOG_USER_IN } from '../../hooks-store/stores/user-credential-store';
 import matchPageDecider from '../../utils/matchPageDecider';
+import MatchPage from '../../pages/MatchPage/MatchPage';
 
 const LandingPage = () => {
     const [globalState, dispatch] = useStore();
@@ -24,12 +25,13 @@ const LandingPage = () => {
 
     const slashRouteJSX = signUpORUserInterfaceDecider(globalState.userState.isLoggedIn);
     const slashMatchRouteJSX = matchPageDecider(globalState.userState.isLoggedIn, globalState.matchState.inMatch);
-
+// TODO: REMOVE /match Route and uncomment slachMatchRouteJSX. Also remove import for MatchPage
     return (
         <Router>
             <Switch>
                 <Route exact path="/">{slashRouteJSX}</Route>
-                {slashMatchRouteJSX}
+                <Route path="/match"><MatchPage /></Route>; 
+                {/* {slashMatchRouteJSX} */}
             </Switch>
         </Router>
     );

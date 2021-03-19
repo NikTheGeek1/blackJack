@@ -5,8 +5,9 @@ import URLs from '../../services/DEV-URLs';
 import './Chat.css';
 import Sender from './Sender/Sender';
 
+
 let chatSocket;
-const Chat = () => {
+const Chat = ({ screenDimensions }) => {
     const globalState = useStore(false)[0];
     const matchName = globalState.matchState.matchObj.matchName;
     const [chatHistory, setChatHistory] = useState([]);
@@ -27,7 +28,7 @@ const Chat = () => {
                 setChatHistory(chatHistoryParsed);
             });
             chatSocket.send(URLs.GET_CHAT_HISTORY(matchName), {}, 'give me chat history');
-            
+
         });
 
         return () => {
@@ -35,7 +36,7 @@ const Chat = () => {
         };
     }, []);
 
-    
+
 
     const leavingPageHandler = (subscriptions) => {
         for (const sub of subscriptions) {
@@ -51,12 +52,12 @@ const Chat = () => {
         );
     });
 
-    return (
+    return (    
         <div className="chat-outter-container">
             <div className="chat-inner-container">
                 <div className="chat-title-container">BJ Chat</div>
                 <div className="chat-body-container">{messagesJSX}</div>
-                <Sender chatSocket={chatSocket}/>
+                <Sender chatSocket={chatSocket} />
             </div>
         </div>
     );

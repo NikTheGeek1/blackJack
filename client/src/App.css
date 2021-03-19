@@ -1,3 +1,23 @@
+:root {
+  --primary-font-size: 1.6rem;
+}
+
+
+*, 
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
 html {
   background-color: rgb(173, 173, 173);
+  font-size: 62.5%;
 }
+
+body {
+  box-sizing: border-box;
+  font-size: var(--primary-font-size);
+}
+
