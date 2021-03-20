@@ -12,7 +12,6 @@ class RevealedCardUtils {
                 return;
             
                 case "ACE11":
-                    console.log("ACE11", 'RevealedCardUtils.js', 'line: ', '14');
                 if (card.suit === "SPADES" ) return CanvasImgNames.CARD_ACE_SPADES; 
                 if (card.suit === "CLUBS")  return CanvasImgNames.CARD_ACE_CLUBS; 
                 if (card.suit === "DIAMONDS")  return CanvasImgNames.CARD_ACE_DIAMONDS; 

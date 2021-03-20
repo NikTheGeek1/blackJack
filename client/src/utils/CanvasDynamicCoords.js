@@ -1,7 +1,6 @@
 import SizeUtils from './CanvasSizeUtils';
 import CanvasConstants from '../constants/CanvasConstants';
 import CanvasDynamicSizes from './CanvasDynamicSizes';
-import CanvasSizeUtils from './CanvasSizeUtils';
 import CanvasImgOriginalSizes from '../constants/CanvasImgsOriginalSizes';
 
 class CanvasDynamicCoords extends CanvasDynamicSizes {
@@ -66,12 +65,16 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         return { x: this.TABLE_CENTER_COORDS.x - SizeUtils.halfObject(objectSize).width, y: this.TABLE_CENTER_COORDS.y - SizeUtils.halfObject(objectSize).height };
     }
 
+    getCoordsForDealingCard(playerIdx, cardIdx) {
+        const cardAngle = CanvasConstants.CARD_NUM_OFFSETS[cardIdx].angle;
+        const finalFrameCardCoords = this.CARD_COORDS(playerIdx, cardIdx);
+        const initialsCoords = CanvasConstants.DEALING_CARD_INITIAL_COORDS;
+        const slope = (finalFrameCardCoords.y - initialsCoords.y) / (finalFrameCardCoords.x - initialsCoords.x);
 
-
-
-
-
-
+        const x = (finalFrameCardCoords.x - initialsCoords.x)*.03 //finalFrameCardCoords.x > initialsCoords.x ? 10 : -10;
+        const y = slope * x;
+        return { x: x, y: y, finalY: finalFrameCardCoords.y, angle: cardAngle};
+    }
 
 }
 

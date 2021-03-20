@@ -5,6 +5,7 @@ import { initSocket } from '../../websockets/web-sockets-game-rep';
 import URLs from '../../services/DEV-URLs';
 import { SET_MATCH } from '../../hooks-store/stores/match-store';
 import { SET_PLAYER } from '../../hooks-store/stores/player-store';
+import { SET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
 import PlayerUtils from '../../utils/game-utils/players-utils';
 import Match from '../../models/matches/Match';
 import PlayerStatus from '../../constants/PlayerStatus';
@@ -35,24 +36,30 @@ const MatchPage = () => {
 
     useEffect(() => {
         let updateGameSubscription;
+        let playerChoiceSubscription;
         window.onbeforeunload = () => {
-            leavingPageHandler([updateGameSubscription]);
+            leavingPageHandler([updateGameSubscription, playerChoiceSubscription]);
         };
 
         gameSocket.connect({}, frame => {
             updateGameSubscription = gameSocket.subscribe(URLs.UPDATE_GAME(match.matchName), (msg) => {
                 const matchParsed = JSON.parse(msg.body);
-                const fetchedMatch = new Match(matchParsed);
-                console.log(fetchedMatch, 'MatchPage.js', 'line: ', '31');
-                dispatch(SET_MATCH, fetchedMatch);
-                const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, fetchedMatch.game.allPlayersDealerFirst);
+                console.log(matchParsed, 'MatchPage.js', 'line: ', '31');
+                dispatch(SET_MATCH, matchParsed);
+                const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, matchParsed.game.allPlayersDealerFirst);
                 dispatch(SET_PLAYER, thisPlayerUpdated);
             });
+
+            playerChoiceSubscription = gameSocket.subscribe(URLs.PLAYER_CHOICE(match.matchName), (msg) => {
+                const choiceParsed = JSON.parse(msg.body);
+                dispatch(SET_PLAYER_CHOICE, choiceParsed);
+            });
+            
             gameSocket.send(URLs.ENTER_GAME(match.matchName), {}, "entered game");
         });
 
         return () => {
-            leavingPageHandler([updateGameSubscription]);
+            leavingPageHandler([updateGameSubscription, playerChoiceSubscription]);
         };
 
     }, []);

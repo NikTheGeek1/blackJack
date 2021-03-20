@@ -1,6 +1,8 @@
 import CanvasImgNames from '../../constants/CanvasImgNames';
 import CanvasDynamicSizesManager from '../../utils/CanvasDynamicManager';
 import RevealedCardUtils from '../../utils/RevealedCardUtils';
+import PlayerChoiceType from '../../models/matches/PlayerChoiceType';
+import CanvasDealingCardAnimationUtils from '../../utils/CanvasDealingCardAnimationUtils';
 
 class CanvasManager {
     constructor(canvas, screenDims, imgsArray) {
@@ -55,19 +57,23 @@ class CanvasManager {
         }
     }
 
-
-    _drawCard(playerIdx, cardIdx, card) {
+    _drawCard(x, y, angle, card, shouldScale) {
         let cardImgObj = this._findImageToDraw(CanvasImgNames.CARD_BACK_BLUE);
         if (card) {
             const imgName = RevealedCardUtils.getCardImgName(card);
             cardImgObj = this._findImageToDraw(imgName);
         }
-        const cardCoords = this.dynamicSizesManager.CARD_COORDS(playerIdx, cardIdx);
         const cardSize = CanvasDynamicSizesManager.originalSizes.CARD;
         // rotate the canvas to the specified degrees
         this.canvasContext.save();
-        this.canvasContext.translate(cardCoords.x, cardCoords.y);
-        this.canvasContext.rotate(CanvasDynamicSizesManager.constants.CARD_NUM_OFFSETS[cardIdx].angle * Math.PI / 180);
+        if (shouldScale) {
+            this.canvasContext.scale(
+                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+            );
+        }
+        this.canvasContext.translate(x, y);
+        this.canvasContext.rotate(angle * Math.PI / 180);
 
         this.canvasContext.drawImage(cardImgObj.img,
             0,
@@ -76,9 +82,6 @@ class CanvasManager {
             cardSize.height
         );
 
-        // we’re done with the rotating so restore the unrotated context
-        // this.canvasContext.translate(-cardCoords.x, -cardCoords.y);
-        // this.canvasContext.rotate(-(cardIdx + 4) * Math.PI / 180);
         this.canvasContext.restore();
 
     }
@@ -87,12 +90,13 @@ class CanvasManager {
         for (let playerIdx = 0; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
             const player = this.game.allPlayersDealerFirst[playerIdx];
             for (let cardIdx = 0; cardIdx < player.displayedCards.length; cardIdx++) {
-
+                const cardCoords = this.dynamicSizesManager.CARD_COORDS(playerIdx, cardIdx);
+                const cardAngle = CanvasDynamicSizesManager.constants.CARD_NUM_OFFSETS[cardIdx].angle;
                 const card = player.displayedCards[cardIdx];
                 if (card.visibility === "HIDDEN") { // TODO: transform this to enum
-                    this._drawCard(playerIdx, cardIdx);
+                    this._drawCard(cardCoords.x, cardCoords.y, cardAngle);
                 } else {
-                    this._drawCard(playerIdx, cardIdx, card);
+                    this._drawCard(cardCoords.x, cardCoords.y, cardAngle, card);
                 }
             }
         }
@@ -119,37 +123,6 @@ class CanvasManager {
         this.canvasContext.restore();
     }
 
-    _cardAnimation() {
-        let x = 500;
-        let y = 0;
-        const cardInterval = setInterval(() => {
-            this.drawAll();
-            this.canvasContext.save();
-            this.canvasContext.scale(
-                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
-                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
-            );
-            let cardImgObj = this._findImageToDraw(CanvasImgNames.CARD_BACK_BLUE);
-            const cardSize = CanvasDynamicSizesManager.originalSizes.CARD;
-
-            this.canvasContext.drawImage(cardImgObj.img,
-                x,
-                y,
-                cardSize.width,
-                cardSize.height
-            );
-            y = y + 10;
-            x = x + 2;
-            this.canvasContext.restore();
-            if (y > 400) clearInterval(cardInterval);
-        }, 10);
-
-
-    }
-
-
-
-
     loadImagesAndStart(screenDims) {
         this.screenDims = screenDims;
         for (const image of this.imgsArray) {
@@ -157,14 +130,56 @@ class CanvasManager {
         }
     }
 
-    updateDrawing(game) {
-        this.game = game;
-        this.drawAll();
-    }
-
     updateMousePos(x, y) {
         this.mousePos.x = x;
         this.mousePos.y = y;
+    }
+
+    updateDrawing(game, playerChoice) {
+        switch (playerChoice.playerChoiceType) {
+            case PlayerChoiceType.GAME_STARTED_DEALING:
+                this._dealingAnimation(game);
+                break;
+            default:
+                break;
+        }
+    }
+
+    _dealingCardRecursive(dealingCardsAnimationUtils) {
+        let x = CanvasDynamicSizesManager.constants.DEALING_CARD_INITIAL_COORDS.x;
+        let y = CanvasDynamicSizesManager.constants.DEALING_CARD_INITIAL_COORDS.y;
+        const playerIdx = dealingCardsAnimationUtils.nextFramePlayerIdx;
+        const cardIdx = dealingCardsAnimationUtils.nextFramePlayerCardIdx;
+        const allCardCoords = this.dynamicSizesManager.getCoordsForDealingCard(playerIdx, cardIdx);
+        const cardAngle = allCardCoords.angle;
+        const cardInterval = setInterval(() => {
+            if (!dealingCardsAnimationUtils.animationFinished) {
+                this._persistFrame(dealingCardsAnimationUtils.currentFrame);
+                this._drawCard(x, y, cardAngle, null, true);
+                y = y + allCardCoords.y;
+                x = x + allCardCoords.x;
+                if (y > allCardCoords.finalY) {
+                    dealingCardsAnimationUtils.nextFrame();
+                    clearInterval(cardInterval);
+                    this._dealingCardRecursive(dealingCardsAnimationUtils)
+                }
+            } else {
+                clearInterval(cardInterval);
+                this.drawAll();
+            }
+        }, CanvasDynamicSizesManager.constants.CARD_INTERVAL);
+    }
+
+    _dealingAnimation(game) {
+        const dealingCardsAnimationUtils = new CanvasDealingCardAnimationUtils(game);
+
+        this._dealingCardRecursive(dealingCardsAnimationUtils);
+    }
+
+
+    _persistFrame(game) {
+        this.game = game;
+        this.drawAll();
     }
 }
 

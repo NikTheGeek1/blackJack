@@ -25,6 +25,9 @@ class URLs {
     static DRAW (gameName) {
         return `/app/websockets/game/draw/${gameName}`;
     }
+    static PLAYER_CHOICE(gameName) {
+        return `/app/websockets/game/player-choice/${gameName}`;
+    }
 
     // WEBSOCKETS CHAT
     static WEBSOCKETS_CHAT = this.DEV_SERVER + "/websockets/chat";

@@ -14,7 +14,10 @@ public class URLs {
 
     // WEBSOCKETS GAME
     public static final String WEBSOCKETS_GAME = "/websockets/game";
-    public final static String ENTER_GAME = "/websockets/game/enter-game/{gameName}";
+    public static final String ENTER_GAME = "/websockets/game/enter-game/{gameName}";
+    public static String PLAYER_CHOICE(String gameName) {
+        return "/topic/player-choice/{gameName}";
+    }
 
     public static String UPDATE_GAME (String gameName) {
         return "/topic/update-game/" + gameName;

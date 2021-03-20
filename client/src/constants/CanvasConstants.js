@@ -21,13 +21,14 @@ class CanvasConstants {
     ];
 
     static CARD_NUM_OFFSETS = [
-        { x: 0, y: 0, angle: 0},
-        { x: 30, y: 0, angle: 20},
-        { x: 60, y: 10, angle: 30},
-        { x: 85, y: 25, angle: 40},
+        { x: 0, y: 0, angle: 0 },
+        { x: 30, y: 0, angle: 20 },
+        { x: 60, y: 10, angle: 30 },
+        { x: 85, y: 25, angle: 40 },
     ];
 
-
+    static DEALING_CARD_INITIAL_COORDS = { x: 500, y: 20 };
+    static CARD_INTERVAL = 10;
 
 }
 
