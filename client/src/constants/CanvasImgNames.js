@@ -73,6 +73,10 @@ class CanvasImgNames {
     static CARD_KING_DIAMONDS = "CARD_KING_DIAMONDS";
     static CARD_KING_HEARTS = "CARD_KING_HEARTS";
 
+    static TOKEN1 = "TOKEN1";
+    static TOKEN10 = "TOKEN10";
+    static TOKEN200 = "TOKEN200";
+    static TOKEN500 = "TOKEN500";
 }
 
 

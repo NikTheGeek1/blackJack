@@ -13,7 +13,7 @@ const configureStore = () => {
             return { playerChoiceState: { playerChoiceObj: null }};
         }
     }
-    initStore(actions, { playerChoiceState: { playerChoiceObj: null }}); 
+    initStore(actions, { playerChoiceState: { playerChoiceObj: { playerEmail: null, playerChoiceType: "GAME_STARTED_DEALING" } }}); 
 }
 
 

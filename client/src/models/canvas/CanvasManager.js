@@ -3,16 +3,20 @@ import CanvasDynamicSizesManager from '../../utils/CanvasDynamicManager';
 import RevealedCardUtils from '../../utils/RevealedCardUtils';
 import PlayerChoiceType from '../../models/matches/PlayerChoiceType';
 import CanvasDealingCardAnimationUtils from '../../utils/CanvasDealingCardAnimationUtils';
+import TokenUtils from '../../utils/canvas/TokenUtils';
+import PlaceTokensAnimationUtils from '../../utils/canvas/PlaceTokensAnimationUtils';
 
 class CanvasManager {
     constructor(canvas, screenDims, imgsArray) {
         this.screenDims = screenDims;
         this.dynamicSizesManager = new CanvasDynamicSizesManager(screenDims);
         this.canvas = canvas;
+        this.thisPlayer = null; // TODO: test that when a change is made on this object within the CanvasManager class, the change is reflected on the original object (store)
         this.mousePos = { x: 0, y: 0 };
         this.canvasContext = canvas.getContext('2d');
         this.imgsArray = imgsArray.map(img => ({ img: new Image(), src: img.src, name: img.name }));
         this.imgsToLoadCount = imgsArray.length;
+        this.onFinishAnimationCb = null;
         this.game = null;
     }
 
@@ -35,6 +39,11 @@ class CanvasManager {
 
     _imgLoadingDoneStart() {
         this.drawAll();
+    }
+
+    _drawBackground() {
+        this.canvasContext.fillStyle = "gray";
+        this.canvasContext.fillRect(0, 0, 1000, 1000);
     }
 
     _drawTable() {
@@ -102,6 +111,18 @@ class CanvasManager {
         }
     }
 
+    _drawTokens() {
+        if (!this.thisPlayer.money) return;
+        const tokens = TokenUtils.moneyToTokens(this.thisPlayer.money);
+        for (let tokenColumnIdx = 0; tokenColumnIdx < Object.keys(tokens).length; tokenColumnIdx++) {
+            for (let tokenIdx = 0; tokenIdx <= tokens[Object.keys(tokens)[tokenColumnIdx]] -1; tokenIdx++) {
+                const tokenCoords = this.dynamicSizesManager.TOKEN_COORDS(tokenIdx, tokenColumnIdx);
+                this._drawToken(tokenCoords.x, tokenCoords.y, tokenColumnIdx, false);
+            }
+        }
+
+    }
+
     drawAll(screenDimensions) {
         if (screenDimensions) {
             this.screenDims = screenDimensions;
@@ -112,14 +133,17 @@ class CanvasManager {
             this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
             this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
         );
-
+        this._drawBackground();
         this._drawTable();
-        if (!this.game) {
-            this.canvasContext.restore();
-            return;
+        // if (!this.game) {
+        //     this.canvasContext.restore();
+        //     return;
+        // }
+        // this._drawPositions();
+        // this._drawCards();
+        if (this.thisPlayer) {
+            this._drawTokens();
         }
-        this._drawPositions();
-        this._drawCards();
         this.canvasContext.restore();
     }
 
@@ -135,10 +159,12 @@ class CanvasManager {
         this.mousePos.y = y;
     }
 
-    updateDrawing(game, playerChoice) {
+    updateDrawing(game, playerChoice, thisPlayer, onFinishCb) {
         switch (playerChoice.playerChoiceType) {
             case PlayerChoiceType.GAME_STARTED_DEALING:
-                this._dealingAnimation(game);
+                this.onFinishAnimationCb = onFinishCb;
+                // this._dealingAnimation(game);
+                this._placeTokensAnimation(thisPlayer);
                 break;
             default:
                 break;
@@ -154,31 +180,94 @@ class CanvasManager {
         const cardAngle = allCardCoords.angle;
         const cardInterval = setInterval(() => {
             if (!dealingCardsAnimationUtils.animationFinished) {
-                this._persistFrame(dealingCardsAnimationUtils.currentFrame);
+                this._persistFrameGame(dealingCardsAnimationUtils.currentFrame);
                 this._drawCard(x, y, cardAngle, null, true);
                 y = y + allCardCoords.y;
                 x = x + allCardCoords.x;
                 if (y > allCardCoords.finalY) {
                     dealingCardsAnimationUtils.nextFrame();
                     clearInterval(cardInterval);
-                    this._dealingCardRecursive(dealingCardsAnimationUtils)
+                    this._dealingCardRecursive(dealingCardsAnimationUtils);
                 }
             } else {
                 clearInterval(cardInterval);
                 this.drawAll();
+                this._placeTokensAnimation();
             }
         }, CanvasDynamicSizesManager.constants.CARD_INTERVAL);
     }
 
+    _drawTokensRecursively(placeTokensUtils) {
+        const tokensInitialCoords = CanvasDynamicSizesManager.constants.TOKENS_ANIMATION_INITIAL_COORDS;
+        let x = tokensInitialCoords.x;
+        let y = tokensInitialCoords.y;
+        const tokenIdx = placeTokensUtils.nextFrameTokenIdx;
+        const tokenColumnIdx = placeTokensUtils.nextFrameTokenColumnIdx;
+        const allTokenCoords = this.dynamicSizesManager.getCoordsForPlacingToken(tokenIdx, tokenColumnIdx);
+        const tokenInterval = setInterval(() => {
+            if (!placeTokensUtils.animationFinished) {
+                this._persistFrameThisPlayer(placeTokensUtils.currentFrame);
+                this._drawToken(x, y, tokenColumnIdx, true);
+                y = y + allTokenCoords.y;
+                x = x + allTokenCoords.x;
+                if (y > allTokenCoords.finalY) {
+                    placeTokensUtils.nextFrame();
+                    clearInterval(tokenInterval);
+                    this._drawTokensRecursively(placeTokensUtils);
+                }
+            } else {
+                clearInterval(tokenInterval);
+                this.drawAll();
+                this.onFinishAnimationCb();
+            }
+        }, 10);
+    }
+
+    _drawToken(x, y, currentTokenColumnIdx, shouldScale) {
+        const imgName = TokenUtils.getCurrentTokenColumnImgName(currentTokenColumnIdx);
+        const tokenImgObj = this._findImageToDraw(imgName);
+        const tokenSize = CanvasDynamicSizesManager.originalSizes.TOKEN;
+        // rotate the canvas to the specified degrees
+        this.canvasContext.save();
+        if (shouldScale) {
+            this.canvasContext.scale(
+                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+                this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+            );
+        }
+
+        this.canvasContext.drawImage(tokenImgObj.img,
+            x,
+            y,
+            tokenSize.width,
+            tokenSize.height
+        );
+
+        this.canvasContext.restore();
+
+    }
+
+    _placeTokensAnimation(thisPlayer) {
+        const placeTokensUtils = new PlaceTokensAnimationUtils(thisPlayer);
+        this._drawTokensRecursively(placeTokensUtils);
+
+        // {
+        //     this.onFinishAnimationCb(); // when the animation finishes unset the player choice so we can begin playing
+        //     this.onFinishAnimationCb = null;
+        // }
+    }
+
     _dealingAnimation(game) {
         const dealingCardsAnimationUtils = new CanvasDealingCardAnimationUtils(game);
-
         this._dealingCardRecursive(dealingCardsAnimationUtils);
     }
 
-
-    _persistFrame(game) {
+    _persistFrameGame(game) {
         this.game = game;
+        this.drawAll();
+    }
+    _persistFrameThisPlayer(thisPlayer) {
+        this.thisPlayer = thisPlayer;
         this.drawAll();
     }
 }

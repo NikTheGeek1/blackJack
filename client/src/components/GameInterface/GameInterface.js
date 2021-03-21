@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './GameInterface.css';
 import cardImgs from '../../utils/importingCardImgs';
+import tokenImgs from '../../utils/canvas/importingTokenImgs';
 import tableImg from '../../assets/bj-table-computer.png';
 import positionImg from '../../assets/bj-player-position.png';
 import cardBackBlueImg from '../../assets/cards/card-back-blue.svg';
@@ -17,11 +18,13 @@ const GameInterface = ({ screenDimensions }) => {
     const [mousePosOrigin, setMousePosOrigin] = useState({ x: 0, y: 0 });
     const [globalState, dispatch] = useStore();
     const match = globalState.matchState.matchObj;
+    const thisPlayer = globalState.playerState.playerObj;
     const playerChoice = globalState.playerChoiceState.playerChoiceObj;
 
     useEffect(() => {
         const canvasRefCurrent = canvasRef.current;
-        const imgsArray = [...cardImgs,
+        const imgsArray = [...cardImgs, ...tokenImgs,
+            // TODO: export the importing of these images in a different file, as you've done with the cardImgs and tokenImgs
         { src: tableImg, name: CanvasImgNames.TABLE },
         { src: positionImg, name: CanvasImgNames.POSITION },
         { src: cardBackBlueImg, name: CanvasImgNames.CARD_BACK_BLUE }
@@ -62,7 +65,6 @@ const GameInterface = ({ screenDimensions }) => {
     }, [clickHandler, updateMousePos]);
 
     useEffect(() => {
-        const playerChoice = { playerEmail: null, playerChoiceType: "GAME_STARTED_DEALING" }
         const matchGame = {
             players: [],
             dealer: { id: 1, name: "aa", email: "aa", money: 1000, displayedCards: [{ suit: null, rank: null, visibility: "HIDDEN" }, { suit: "CLUBS", rank: "ACE11", visibility: "REVEALED" },], bet: 0, isDealer: true, status: "WAITING_GAME" },
@@ -77,12 +79,14 @@ const GameInterface = ({ screenDimensions }) => {
             ]
         };
 
-        if (!playerChoice) return;
-        canvasManager.updateDrawing(
-            matchGame, playerChoice
-        );
+        if (playerChoice) {
+            // enable no clicking
+            canvasManager.updateDrawing(
+                matchGame, playerChoice, thisPlayer, () => dispatch(UNSET_PLAYER_CHOICE));
+        } else {
+            // enable clicking
+        }
 
-        dispatch(UNSET_PLAYER_CHOICE);
     }, [match, playerChoice]);
 
 
