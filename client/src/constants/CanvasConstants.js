@@ -27,35 +27,26 @@ class CanvasConstants {
         { x: 85, y: 25, angle: 40 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
     ];
 
-    static TOKENS_NUM_OFFSETS = [
-        {x: -3, y: 0},
-        {x: 3, y: -10},
-        {x: -3, y: -20},
-        {x: 3, y: -30},
-        {x: -3, y: -40},
-        {x: 3, y: -50},
-        {x: -3, y: -60},
-        {x: 3, y: -70},
-        {x: -3, y: -80},
-        {x: 3, y: -90},
-        {x: -3, y: -100},
-    ];
+    static TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => ({x: (multiplier % 3), y: multiplier * -10 }));
 
     static DEALING_CARD_INITIAL_COORDS = { x: 500, y: 20 };
     static CARD_INTERVAL = 10;
     static TOKENS_ANIMATION_INITIAL_COORDS = {x: 200, y: 0};
 
-    static TOKEN_COLUMN1_OFFSET_X = 200;
+    static TOKEN_COLUMN1_OFFSET_X = -300;
     static TOKEN_COLUMN1_OFFSET_Y = 400; 
 
-    static TOKEN_COLUMN2_OFFSET_X = 240;
+    static TOKEN_COLUMN2_OFFSET_X = -240;
     static TOKEN_COLUMN2_OFFSET_Y = 400; 
 
-    static TOKEN_COLUMN3_OFFSET_X = 280;
+    static TOKEN_COLUMN3_OFFSET_X = -280;
     static TOKEN_COLUMN3_OFFSET_Y = 400; 
 
-    static TOKEN_COLUMN4_OFFSET_X = 320;
+    static TOKEN_COLUMN4_OFFSET_X = -320;
     static TOKEN_COLUMN4_OFFSET_Y = 400; 
+
+    static TOKEN_COLUMN5_OFFSET_X = -360;
+    static TOKEN_COLUMN5_OFFSET_Y = 400; 
 
 
 

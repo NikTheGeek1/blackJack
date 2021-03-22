@@ -3,7 +3,7 @@ import CanvasImgNames from '../../constants/CanvasImgNames';
 class TokenUtils {
 
     static moneyToTokens(money) {
-        const results = {'500': 0,'200': 0,'10': 0,'1': 0};
+        const results = {'500': 0,'200': 0,'100': 0,'10': 0,'1': 0};
         let restMoney = money;
         for (let k = Object.keys(results).length - 1; k >= 0; k--) {
             const key = Object.keys(results)[k];
@@ -26,6 +26,7 @@ class TokenUtils {
         const tokenNames = [
             CanvasImgNames.TOKEN1,
             CanvasImgNames.TOKEN10,
+            CanvasImgNames.TOKEN100,
             CanvasImgNames.TOKEN200,
             CanvasImgNames.TOKEN500
         ];

@@ -67,6 +67,10 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
             {
                 x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN4_OFFSET_X,
                 y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN4_OFFSET_Y
+            },
+            {
+                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN5_OFFSET_X,
+                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN5_OFFSET_Y
             }
         ];
     }
@@ -78,11 +82,27 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         };
     }
 
-    TOKEN_COORDS(tokenIdx, tokenColumnIdx) {
-        return {
-            x: this.TOKEN_COLUMNS_COORDS[tokenColumnIdx].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[tokenColumnIdx].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        };
+    TOKEN_COORDS(tokenIdx) {
+        return [{
+            x: this.TOKEN_COLUMNS_COORDS[0].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+            y: this.TOKEN_COLUMNS_COORDS[0].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+        },
+        {
+            x: this.TOKEN_COLUMNS_COORDS[1].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+            y: this.TOKEN_COLUMNS_COORDS[1].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+        },
+        {
+            x: this.TOKEN_COLUMNS_COORDS[2].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+            y: this.TOKEN_COLUMNS_COORDS[2].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+        },
+        {
+            x: this.TOKEN_COLUMNS_COORDS[3].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+            y: this.TOKEN_COLUMNS_COORDS[3].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+        }, 
+        {
+            x: this.TOKEN_COLUMNS_COORDS[4].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+            y: this.TOKEN_COLUMNS_COORDS[4].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+        }];
     }
 
 
@@ -104,13 +124,31 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         return { x: x, y: y, finalY: finalFrameCoords.y, angle: cardAngle };
     }
 
-    getCoordsForPlacingToken(tokenIdx, tokenColumnIdx) {
-        const finalFrameCoords = this.TOKEN_COORDS(tokenIdx, tokenColumnIdx);
+    getCoordsForPlacingToken(tokenIdx) {
+        const finalFrameCoords = this.TOKEN_COORDS(tokenIdx);
         const initialFrameCoords = CanvasConstants.TOKENS_ANIMATION_INITIAL_COORDS;
-        const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
-        const x = (finalFrameCoords.x - initialFrameCoords.x) * .03; // TODO: make this constant
-        const y = slope * x;
-        return { x: x, y: y, finalY: finalFrameCoords.y };
+        const slope1 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[0].y, initialFrameCoords.x, finalFrameCoords[0].x);
+        const slope2 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[1].y, initialFrameCoords.x, finalFrameCoords[1].x);
+        const slope3 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[2].y, initialFrameCoords.x, finalFrameCoords[2].x);
+        const slope4 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[3].y, initialFrameCoords.x, finalFrameCoords[3].x);
+        const slope5 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[4].y, initialFrameCoords.x, finalFrameCoords[4].x);
+        const x1 = (finalFrameCoords[0].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const x2 = (finalFrameCoords[1].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const x3 = (finalFrameCoords[2].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const x4 = (finalFrameCoords[3].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const x5 = (finalFrameCoords[4].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const y1 = slope1 * x1;
+        const y2 = slope2 * x2;
+        const y3 = slope3 * x3;
+        const y4 = slope4 * x4;
+        const y5 = slope5 * x5;
+        return [
+            { x: x1, y: y1, finalY: finalFrameCoords[0].y },
+            { x: x2, y: y2, finalY: finalFrameCoords[1].y },
+            { x: x3, y: y3, finalY: finalFrameCoords[2].y },
+            { x: x4, y: y4, finalY: finalFrameCoords[3].y },
+            { x: x5, y: y5, finalY: finalFrameCoords[4].y },
+        ];
     }
 
 }

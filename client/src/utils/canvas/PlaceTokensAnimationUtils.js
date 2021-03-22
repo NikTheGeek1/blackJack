@@ -9,8 +9,7 @@ class PlaceTokensAnimationUtils {
         this.currentFrame = currentFrame;
         this.animationFinished = false;
         this.nextFrameTokenIdx = 0;
-        this.nextFrameTokenColumnIdx = 0;
-        
+        this.shouldDrawToken = [];
         this.tokensFinal = TokenUtils.moneyToTokens(this.finalFrame.money);
         this.tokensCurrent = TokenUtils.moneyToTokens(this.currentFrame.money);
     }
@@ -23,14 +22,14 @@ class PlaceTokensAnimationUtils {
 
 
     _addToken() {
+        this.shouldDrawToken = [false, false, false, false];
         for (let k = 0; k < Object.keys(this.tokensFinal).length ; k++) {
             const tokenCategory = Object.keys(this.tokensFinal)[k];
             if (this.tokensCurrent[tokenCategory] < this.tokensFinal[tokenCategory]) {
                 this.tokensCurrent[tokenCategory] += 1;
                 this.nextFrameTokenIdx = this.tokensCurrent[tokenCategory];
-                this.nextFrameTokenColumnIdx = k;
                 this.currentFrame.money += +tokenCategory;
-                break;
+                this.shouldDrawToken[k] = true;
             }
         }
         return Object.keys(this.tokensCurrent).every(tokenCategory => this.tokensCurrent[tokenCategory] === this.tokensFinal[tokenCategory]);
