@@ -1,5 +1,4 @@
-import SizeUtils from './CanvasSizeUtils';
-import OriginalSizes from '../../../../constants/CanvasImgsOriginalSizes';
+import SizeUtils from './SizeUtils';
 
 class CanvasDynamicSizes  {
     constructor(screenDims) {

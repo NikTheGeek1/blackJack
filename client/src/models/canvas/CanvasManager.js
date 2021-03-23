@@ -1,8 +1,8 @@
-import CanvasImgNames from '../../constants/CanvasImgNames';
-import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/CanvasDynamicManager';
+import CanvasImgNames from '../../constants/canvas/ImgNames';
+import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/DynamicManager';
 import RevealedCardUtils from '../../utils/canvas/RevealedCardUtils';
 import PlayerChoiceType from '../../models/matches/PlayerChoiceType';
-import CanvasDealingCardAnimationUtils from '../../utils/canvas/animations/CanvasDealingCardAnimationUtils';
+import CanvasDealingCardAnimationUtils from '../../utils/canvas/animations/DealingCardAnimationUtils';
 import TokenUtils from '../../utils/canvas/TokenUtils';
 import PlaceTokensAnimationUtils from '../../utils/canvas/animations/PlaceTokensAnimationUtils';
 

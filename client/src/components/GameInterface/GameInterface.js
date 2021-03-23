@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import './GameInterface.css';
-import cardImgs from '../../utils/canvas/imports/importingCardImgs';
-import tokenImgs from '../../utils/canvas/imports/importingTokenImgs';
+import cardImgs from '../../utils/canvas/imports/cardImgs';
+import tokenImgs from '../../utils/canvas/imports/tokenImgs';
 import tableImg from '../../assets/bj-table-computer.png';
 import positionImg from '../../assets/bj-player-position.png';
 import cardBackBlueImg from '../../assets/cards/card-back-blue.svg';
 import CanvasManager from '../../models/canvas/CanvasManager';
-import CanvasImgNames from '../../constants/CanvasImgNames';
+import CanvasImgNames from '../../constants/canvas/ImgNames';
 import { useStore } from '../../hooks-store/store';
 import { UNSET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store'
-import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/CanvasDynamicManager';
+import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/DynamicManager';
 
 let canvasManager;
 const GameInterface = ({ screenDimensions }) => {

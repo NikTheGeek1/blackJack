@@ -1,7 +1,7 @@
-import CanvasDynamicCoords from '../coordinates_sizes/coords/CanvasDynamicCoords';
-import CanvasSizeUtils from './sizes/CanvasSizeUtils';
-import CanvasImgOriginalSizes from '../../../constants/CanvasImgsOriginalSizes';
-import CanvasConstants from '../../../constants/CanvasConstants';
+import CanvasDynamicCoords from '../coordinates_sizes/coords/DynamicCoords';
+import CanvasSizeUtils from './sizes/SizeUtils';
+import CanvasImgOriginalSizes from '../../../constants/canvas/ImgsOriginalSizes';
+import CanvasConstants from '../../../constants/canvas/Constants';
 
 class CanvasDynamicManager extends CanvasDynamicCoords {
 

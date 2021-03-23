@@ -63,7 +63,7 @@ import kingClubs from '../../../assets/cards/king-clubs.svg';
 import kingHearts from '../../../assets/cards/king-hearts.svg';
 import kingDiamonds from '../../../assets/cards/king-diamonds.svg';
 
-import CanvasImgNames from '../../../constants/CanvasImgNames';
+import CanvasImgNames from '../../../constants/canvas/ImgNames';
 const cardsIgms = [
     { src: aceSpades, name: CanvasImgNames.CARD_ACE_SPADES },
     { src: aceClubs, name: CanvasImgNames.CARD_ACE_CLUBS },

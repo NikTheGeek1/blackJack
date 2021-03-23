@@ -4,7 +4,7 @@ import token100 from '../../../assets/tokens/100.svg';
 import token200 from '../../../assets/tokens/200.svg';
 import token500 from '../../../assets/tokens/500.svg';
 
-import CanvasImgNames from '../../../constants/CanvasImgNames';
+import CanvasImgNames from '../../../constants/canvas/ImgNames';
 
 const tokenImgs = [
     { src: token1, name: CanvasImgNames.TOKEN1 },
