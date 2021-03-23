@@ -1,69 +1,69 @@
-import aceSpades from '../assets/cards/1-spades.svg';
-import aceClubs from '../assets/cards/1-clubs.svg';
-import aceHearts from '../assets/cards/1-hearts.svg';
-import aceDiamonds from '../assets/cards/1-diamonds.svg';
+import aceSpades from '../../../assets/cards/1-spades.svg';
+import aceClubs from '../../../assets/cards/1-clubs.svg';
+import aceHearts from '../../../assets/cards/1-hearts.svg';
+import aceDiamonds from '../../../assets/cards/1-diamonds.svg';
 
-import twoSpades from '../assets/cards/2-spades.svg';
-import twoClubs from '../assets/cards/2-clubs.svg';
-import twoHearts from '../assets/cards/2-hearts.svg';
-import twoDiamonds from '../assets/cards/2-diamonds.svg';
+import twoSpades from '../../../assets/cards/2-spades.svg';
+import twoClubs from '../../../assets/cards/2-clubs.svg';
+import twoHearts from '../../../assets/cards/2-hearts.svg';
+import twoDiamonds from '../../../assets/cards/2-diamonds.svg';
 
-import threeSpades from '../assets/cards/3-spades.svg';
-import threeClubs from '../assets/cards/3-clubs.svg';
-import threeHearts from '../assets/cards/3-hearts.svg';
-import threeDiamonds from '../assets/cards/3-diamonds.svg';
+import threeSpades from '../../../assets/cards/3-spades.svg';
+import threeClubs from '../../../assets/cards/3-clubs.svg';
+import threeHearts from '../../../assets/cards/3-hearts.svg';
+import threeDiamonds from '../../../assets/cards/3-diamonds.svg';
 
-import fourSpades from '../assets/cards/4-spades.svg';
-import fourClubs from '../assets/cards/4-clubs.svg';
-import fourHearts from '../assets/cards/4-hearts.svg';
-import fourDiamonds from '../assets/cards/4-diamonds.svg';
+import fourSpades from '../../../assets/cards/4-spades.svg';
+import fourClubs from '../../../assets/cards/4-clubs.svg';
+import fourHearts from '../../../assets/cards/4-hearts.svg';
+import fourDiamonds from '../../../assets/cards/4-diamonds.svg';
 
-import fiveSpades from '../assets/cards/5-spades.svg';
-import fiveClubs from '../assets/cards/5-clubs.svg';
-import fiveHearts from '../assets/cards/5-hearts.svg';
-import fiveDiamonds from '../assets/cards/5-diamonds.svg';
+import fiveSpades from '../../../assets/cards/5-spades.svg';
+import fiveClubs from '../../../assets/cards/5-clubs.svg';
+import fiveHearts from '../../../assets/cards/5-hearts.svg';
+import fiveDiamonds from '../../../assets/cards/5-diamonds.svg';
 
-import sixSpades from '../assets/cards/6-spades.svg';
-import sixClubs from '../assets/cards/6-clubs.svg';
-import sixHearts from '../assets/cards/6-hearts.svg';
-import sixDiamonds from '../assets/cards/6-diamonds.svg';
+import sixSpades from '../../../assets/cards/6-spades.svg';
+import sixClubs from '../../../assets/cards/6-clubs.svg';
+import sixHearts from '../../../assets/cards/6-hearts.svg';
+import sixDiamonds from '../../../assets/cards/6-diamonds.svg';
 
-import sevenSpades from '../assets/cards/7-spades.svg';
-import sevenClubs from '../assets/cards/7-clubs.svg';
-import sevenHearts from '../assets/cards/7-hearts.svg';
-import sevenDiamonds from '../assets/cards/7-diamonds.svg';
+import sevenSpades from '../../../assets/cards/7-spades.svg';
+import sevenClubs from '../../../assets/cards/7-clubs.svg';
+import sevenHearts from '../../../assets/cards/7-hearts.svg';
+import sevenDiamonds from '../../../assets/cards/7-diamonds.svg';
 
-import eightSpades from '../assets/cards/8-spades.svg';
-import eightClubs from '../assets/cards/8-clubs.svg';
-import eightHearts from '../assets/cards/8-hearts.svg';
-import eightDiamonds from '../assets/cards/8-diamonds.svg';
+import eightSpades from '../../../assets/cards/8-spades.svg';
+import eightClubs from '../../../assets/cards/8-clubs.svg';
+import eightHearts from '../../../assets/cards/8-hearts.svg';
+import eightDiamonds from '../../../assets/cards/8-diamonds.svg';
 
-import nineSpades from '../assets/cards/9-spades.svg';
-import nineClubs from '../assets/cards/9-clubs.svg';
-import nineHearts from '../assets/cards/9-hearts.svg';
-import nineDiamonds from '../assets/cards/9-diamonds.svg';
+import nineSpades from '../../../assets/cards/9-spades.svg';
+import nineClubs from '../../../assets/cards/9-clubs.svg';
+import nineHearts from '../../../assets/cards/9-hearts.svg';
+import nineDiamonds from '../../../assets/cards/9-diamonds.svg';
 
-import tenSpades from '../assets/cards/10-spades.svg';
-import tenClubs from '../assets/cards/10-clubs.svg';
-import tenHearts from '../assets/cards/10-hearts.svg';
-import tenDiamonds from '../assets/cards/10-diamonds.svg';
+import tenSpades from '../../../assets/cards/10-spades.svg';
+import tenClubs from '../../../assets/cards/10-clubs.svg';
+import tenHearts from '../../../assets/cards/10-hearts.svg';
+import tenDiamonds from '../../../assets/cards/10-diamonds.svg';
 
-import jackSpades from '../assets/cards/jack-spades.svg';
-import jackClubs from '../assets/cards/jack-clubs.svg';
-import jackHearts from '../assets/cards/jack-hearts.svg';
-import jackDiamonds from '../assets/cards/jack-diamonds.svg';
+import jackSpades from '../../../assets/cards/jack-spades.svg';
+import jackClubs from '../../../assets/cards/jack-clubs.svg';
+import jackHearts from '../../../assets/cards/jack-hearts.svg';
+import jackDiamonds from '../../../assets/cards/jack-diamonds.svg';
 
-import queenSpades from '../assets/cards/queen-spades.svg';
-import queenClubs from '../assets/cards/queen-clubs.svg';
-import queenHearts from '../assets/cards/queen-hearts.svg';
-import queenDiamonds from '../assets/cards/queen-diamonds.svg';
+import queenSpades from '../../../assets/cards/queen-spades.svg';
+import queenClubs from '../../../assets/cards/queen-clubs.svg';
+import queenHearts from '../../../assets/cards/queen-hearts.svg';
+import queenDiamonds from '../../../assets/cards/queen-diamonds.svg';
 
-import kingSpades from '../assets/cards/king-spades.svg';
-import kingClubs from '../assets/cards/king-clubs.svg';
-import kingHearts from '../assets/cards/king-hearts.svg';
-import kingDiamonds from '../assets/cards/king-diamonds.svg';
+import kingSpades from '../../../assets/cards/king-spades.svg';
+import kingClubs from '../../../assets/cards/king-clubs.svg';
+import kingHearts from '../../../assets/cards/king-hearts.svg';
+import kingDiamonds from '../../../assets/cards/king-diamonds.svg';
 
-import CanvasImgNames from '../constants/CanvasImgNames';
+import CanvasImgNames from '../../../constants/CanvasImgNames';
 const cardsIgms = [
     { src: aceSpades, name: CanvasImgNames.CARD_ACE_SPADES },
     { src: aceClubs, name: CanvasImgNames.CARD_ACE_CLUBS },

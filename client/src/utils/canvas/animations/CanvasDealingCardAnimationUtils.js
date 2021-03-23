@@ -1,4 +1,4 @@
-import Game from '../models/matches/Game';
+import Game from '../../../models/matches/Game';
 
 class CanvasDealingCardAnimationUtils {
     constructor(finalFrame) {

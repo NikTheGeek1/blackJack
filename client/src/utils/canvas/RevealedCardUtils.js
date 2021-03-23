@@ -1,4 +1,4 @@
-import CanvasImgNames from '../constants/CanvasImgNames';
+import CanvasImgNames from '../../constants/CanvasImgNames';
 
 class RevealedCardUtils {
     static getCardImgName(card) {

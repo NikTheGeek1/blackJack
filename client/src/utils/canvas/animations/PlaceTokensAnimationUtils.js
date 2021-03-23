@@ -1,5 +1,5 @@
-import TokenUtils from './TokenUtils';
-import Player from '../../models/matches/Player';
+import TokenUtils from '../TokenUtils';
+import Player from '../../../models/matches/Player';
 
 class PlaceTokensAnimationUtils {
     constructor(finalFrame) {

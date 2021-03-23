@@ -1,6 +1,5 @@
 import SizeUtils from './CanvasSizeUtils';
-import { remToPx } from '../utils/remToPx';
-import OriginalSizes from '../constants/CanvasImgsOriginalSizes';
+import OriginalSizes from '../../../../constants/CanvasImgsOriginalSizes';
 
 class CanvasDynamicSizes  {
     constructor(screenDims) {

@@ -1,10 +1,10 @@
 import CanvasImgNames from '../../constants/CanvasImgNames';
-import CanvasDynamicSizesManager from '../../utils/CanvasDynamicManager';
-import RevealedCardUtils from '../../utils/RevealedCardUtils';
+import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/CanvasDynamicManager';
+import RevealedCardUtils from '../../utils/canvas/RevealedCardUtils';
 import PlayerChoiceType from '../../models/matches/PlayerChoiceType';
-import CanvasDealingCardAnimationUtils from '../../utils/CanvasDealingCardAnimationUtils';
+import CanvasDealingCardAnimationUtils from '../../utils/canvas/animations/CanvasDealingCardAnimationUtils';
 import TokenUtils from '../../utils/canvas/TokenUtils';
-import PlaceTokensAnimationUtils from '../../utils/canvas/PlaceTokensAnimationUtils';
+import PlaceTokensAnimationUtils from '../../utils/canvas/animations/PlaceTokensAnimationUtils';
 
 class CanvasManager {
     constructor(canvas, screenDims, imgsArray) {
@@ -294,6 +294,7 @@ class CanvasManager {
                 x4 += allTokenCoords[3].x;
                 y5 += allTokenCoords[4].y;
                 x5 += allTokenCoords[4].x;
+
                 if (shouldDrawToken.every(_ => !_)) {
                     placeTokensUtils.nextFrame();
                     this._persistFrameTokens(placeTokensUtils.currentFrame);

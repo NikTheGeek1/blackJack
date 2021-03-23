@@ -10,7 +10,7 @@ import PlayerUtils from '../../utils/game-utils/players-utils';
 import Match from '../../models/matches/Match';
 import PlayerStatus from '../../constants/PlayerStatus';
 import { FormButton, FormInput } from '../../components/Form/components';
-import Bet from '../../models/Bet';
+import Bet from '../../models/matches/Bet';
 import Chat from '../../components/Chat/Chat';
 import GameInterface from '../../components/GameInterface/GameInterface';
 
