@@ -124,6 +124,7 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         return { x: x, y: y, finalY: finalFrameCoords.y, angle: cardAngle };
     }
 
+    // TODO: REFACTOR THIS TO WORK WITH ARRAYS AND LOOPS
     getCoordsForPlacingToken(tokenIdx) {
         const finalFrameCoords = this.TOKEN_COORDS(tokenIdx);
         const initialFrameCoords = CanvasConstants.TOKENS_ANIMATION_INITIAL_COORDS;
@@ -132,11 +133,11 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         const slope3 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[2].y, initialFrameCoords.x, finalFrameCoords[2].x);
         const slope4 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[3].y, initialFrameCoords.x, finalFrameCoords[3].x);
         const slope5 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[4].y, initialFrameCoords.x, finalFrameCoords[4].x);
-        const x1 = (finalFrameCoords[0].x - initialFrameCoords.x) * .07; // TODO: make this constant
-        const x2 = (finalFrameCoords[1].x - initialFrameCoords.x) * .07; // TODO: make this constant
-        const x3 = (finalFrameCoords[2].x - initialFrameCoords.x) * .07; // TODO: make this constant
-        const x4 = (finalFrameCoords[3].x - initialFrameCoords.x) * .07; // TODO: make this constant
-        const x5 = (finalFrameCoords[4].x - initialFrameCoords.x) * .07; // TODO: make this constant
+        const x1 = (finalFrameCoords[0].x - initialFrameCoords.x) * .2; // TODO: make this constant
+        const x2 = (finalFrameCoords[1].x - initialFrameCoords.x) * .2; // TODO: make this constant
+        const x3 = (finalFrameCoords[2].x - initialFrameCoords.x) * .2; // TODO: make this constant
+        const x4 = (finalFrameCoords[3].x - initialFrameCoords.x) * .2; // TODO: make this constant
+        const x5 = (finalFrameCoords[4].x - initialFrameCoords.x) * .2; // TODO: make this constant
         const y1 = slope1 * x1;
         const y2 = slope2 * x2;
         const y3 = slope3 * x3;

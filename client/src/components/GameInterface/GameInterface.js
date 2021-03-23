@@ -8,7 +8,7 @@ import cardBackBlueImg from '../../assets/cards/card-back-blue.svg';
 import CanvasManager from '../../models/canvas/CanvasManager';
 import CanvasImgNames from '../../constants/canvas/ImgNames';
 import { useStore } from '../../hooks-store/store';
-import { UNSET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store'
+import animationChoser from '../../utils/canvas/animations/animationChoser';
 import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/DynamicManager';
 
 let canvasManager;
@@ -24,18 +24,19 @@ const GameInterface = ({ screenDimensions }) => {
     useEffect(() => {
         const canvasRefCurrent = canvasRef.current;
         const imgsArray = [...cardImgs, ...tokenImgs,
-            // TODO: export the importing of these images in a different file, as you've done with the cardImgs and tokenImgs
+        // TODO: export the importing of these images in a different file, as you've done with the cardImgs and tokenImgs
         { src: tableImg, name: CanvasImgNames.TABLE },
         { src: positionImg, name: CanvasImgNames.POSITION },
         { src: cardBackBlueImg, name: CanvasImgNames.CARD_BACK_BLUE }
         ];
-        // TODO: canvas renders anew a couple of times, put a debugger somewhere and check render cycles 
-        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray);
+        // TODO: canvas renders anew couple of times, put a debugger somewhere and check render cycles 
+        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match);
         canvasManager.loadImagesAndStart(screenDimensions);
     }, []);
 
     useEffect(() => {
-        canvasManager.drawAll(screenDimensions);
+        canvasManager.setScreenDimensions(screenDimensions);
+        canvasManager.drawAll(false, false); // TODO: Change this to true true when finish with the animations
     }, [screenDimensions]);
 
     const clickHandler = e => {
@@ -80,9 +81,10 @@ const GameInterface = ({ screenDimensions }) => {
         };
 
         if (playerChoice) {
-            // enable no clicking
-            canvasManager.updateDrawing(
-                matchGame, playerChoice, thisPlayer, () => dispatch(UNSET_PLAYER_CHOICE));
+            // TODO: enable no clicking
+            canvasManager.updateGame(matchGame);
+            canvasManager.updateThisPlayer(thisPlayer);
+            animationChoser(playerChoice, canvasManager);
         } else {
             // enable clicking
         }
