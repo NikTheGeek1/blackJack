@@ -75,6 +75,7 @@ class CanvasImgNames {
 
     static TOKEN1 = "TOKEN1";
     static TOKEN10 = "TOKEN10";
+    static TOKEN50 = "TOKEN50";
     static TOKEN100 = "TOKEN100";
     static TOKEN200 = "TOKEN200";
     static TOKEN500 = "TOKEN500";

@@ -6,41 +6,28 @@ class PlacingTokens {
         this.onFinishCb = onFinishCb;
         this.animationUtils = new AnimationUtils(canvasManager.thisPlayer);
         this.canvasManager = canvasManager;
-    }
-
-    _configureTokenSpeedAndDistanceBasedOnNumberOfTokens() {
-        // TODO: Change the speed and distance of the simulation
-        // speed: time delay in the timeInterval function. 
-        // the more the number of tokens, the less the speed ( make it constant first)
-        // distance: distance of tokens between frames
-        // the more the tokens the more the distance  ( in dynamicCoord class )
+        this.backupCanvas = null;
     }
 
     start() {
+        this.drawCanvasStateToBackupCanvas();
         this._drawTokensRecursively();
     }
 
     _initialValues() {
-        let x1, x2, x3, x4, x5, y1, y2, y3, y4, y5;
         const tokensInitialCoords = CanvasDynamicSizesManager.constants.TOKENS_ANIMATION_INITIAL_COORDS;
-        x1 = x2 = x3 = x4 = x5 = tokensInitialCoords.x;
-        y1 = y2 = y3 = y4 = y5 = tokensInitialCoords.y;
-        // TODO: MAKE THESE CONSTANTS
-        y1 -= 140;
-        y2 -= 260;
-        y3 -= 380;
-        y4 -= 500;
 
         const tokenIdx = this.animationUtils.nextFrameTokenIdx;
         const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForPlacingToken(tokenIdx);
         const tokensFinalCoords = this.canvasManager.dynamicSizesManager.TOKEN_COORDS(tokenIdx);
         const tokensCurrentCoords = [
-            { x: x1, y: y1 },
-            { x: x2, y: y2 },
-            { x: x3, y: y3 },
-            { x: x4, y: y4 },
-            { x: x5, y: y5 }
-        ]
+            { ...tokensInitialCoords[0]},
+            { ...tokensInitialCoords[1]},
+            { ...tokensInitialCoords[2]},
+            { ...tokensInitialCoords[3]},
+            { ...tokensInitialCoords[4]},
+            { ...tokensInitialCoords[5]},
+        ];
         return { tokensCurrentCoords, allTokenCoords, tokensFinalCoords };
     }
 
@@ -74,13 +61,14 @@ class PlacingTokens {
         let { tokensCurrentCoords, allTokenCoords, tokensFinalCoords } = this._initialValues();
         const tokenInterval = setInterval(() => {
             if (!this.animationUtils.animationFinished) {
-                this.canvasManager.drawAll(true, true);
+                this.drawBackupCanvasStateToCanvas(false);
                 const shouldDrawToken = this._shouldDrawTokensArray(tokensCurrentCoords, allTokenCoords);
                 this._drawMovementOrPlaceTokenAtFinalPosition(shouldDrawToken, tokensCurrentCoords, tokensFinalCoords, allTokenCoords);
                 this._incrementCoords(tokensCurrentCoords, allTokenCoords);
                 if (this._shouldDrawNextBatchOfTokens(shouldDrawToken)) {
                     this.animationUtils.nextFrame();
                     this._persistFrame();
+                    this.drawCanvasStateToBackupCanvas();
                     this._drawTokensRecursively();
                     clearInterval(tokenInterval);
                 }
@@ -88,12 +76,30 @@ class PlacingTokens {
                 clearInterval(tokenInterval);
                 this.onFinishCb();
             }
-        }, 80);
+        }, 10); // TODO: Make this constant 
     }
 
     _persistFrame() {
         this.canvasManager.updateThisPlayer(this.animationUtils.currentFrame);
         this.canvasManager.drawAll(true, true);
+    }
+
+    drawCanvasStateToBackupCanvas() {
+        this.backupCanvas = document.createElement('canvas');
+        this.backupCanvas.width = CanvasDynamicSizesManager.sizeUtils.canvasStyle(this.canvasManager.screenDims).width;
+        this.backupCanvas.height = this.canvasManager.screenDims.height
+        const destCtx = this.backupCanvas.getContext('2d');
+        destCtx.drawImage(this.canvasManager.canvas, 0, 0);
+        this.isBackupCanvasDrawn = true;
+    }
+
+    drawBackupCanvasStateToCanvas(shouldClearBackupCanvas) {
+        const destCtx = this.canvasManager.canvasContext;
+        destCtx.drawImage(this.backupCanvas, 0, 0);
+        if (shouldClearBackupCanvas) {
+            this.backupCanvas.getContext('2d').clearRect(0, 0, this.backupCanvas.width, this.backupCanvas.height);
+            this.isBackupCanvasDrawn = false;
+        }        
     }
 
 

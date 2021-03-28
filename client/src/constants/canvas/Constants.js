@@ -27,28 +27,54 @@ class CanvasConstants {
         { x: 85, y: 25, angle: 40 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
     ];
 
-    static TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => ({x: (multiplier % 3), y: multiplier * -10 }));
+    static TOKENS_IN_EACH_WRAP = 5;
+    static TOKEN_WRAP_MULTIPLIER = 80;
+    static TOKEN_NUM_Y_OFFSET = -10;
+    static TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => {
+        return { 
+            x: (multiplier % 3), 
+            y: Math.floor(multiplier / this.TOKENS_IN_EACH_WRAP) * this.TOKEN_WRAP_MULTIPLIER + (multiplier * this.TOKEN_NUM_Y_OFFSET)
+        };
+    });
+
+    static BET_TOKEN_NUM_Y_OFFSET = -5;
+    static BET_TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => {
+        return {
+            x: (multiplier % 3), 
+            y: multiplier * this.BET_TOKEN_NUM_Y_OFFSET
+        };
+    });
 
     static DEALING_CARD_INITIAL_COORDS = { x: 500, y: 20 };
     static CARD_INTERVAL = 10;
-    static TOKENS_ANIMATION_INITIAL_COORDS = {x: 200, y: 0};
 
-    static TOKEN_COLUMN1_OFFSET_X = -300;
-    static TOKEN_COLUMN1_OFFSET_Y = 400; 
+    static TOKENS_ANIMATION_INITIAL_COORDS = [
+        { x: 200, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 0 }
+    ];
 
-    static TOKEN_COLUMN2_OFFSET_X = -240;
-    static TOKEN_COLUMN2_OFFSET_Y = 400; 
+    // final coordinates of tokens. reference point: center of table;
+    static TOKEN_COLUMNS_OFFSETS = [
+        { x: -100, y: 400 },
+        { x: -170, y: 400 },
+        { x: -240, y: 400 },
+        { x: -310, y: 400 },
+        { x: -380, y: 400 },
+        { x: -450, y: 400 },
+    ];
 
-    static TOKEN_COLUMN3_OFFSET_X = -280;
-    static TOKEN_COLUMN3_OFFSET_Y = 400; 
-
-    static TOKEN_COLUMN4_OFFSET_X = -320;
-    static TOKEN_COLUMN4_OFFSET_Y = 400; 
-
-    static TOKEN_COLUMN5_OFFSET_X = -360;
-    static TOKEN_COLUMN5_OFFSET_Y = 400; 
-
-
+    static BET_COLUMNS_OFFSETS = [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 40, y: 0 },
+        { x: 60, y: 0 },
+        { x: 80, y: 0 },
+        { x: 100, y: 0 },
+    ];
 
 }
 

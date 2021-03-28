@@ -51,28 +51,12 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
             }
         ];
 
-        this.TOKEN_COLUMNS_COORDS = [
-            {
-                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN1_OFFSET_X,
-                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN1_OFFSET_Y
-            },
-            {
-                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN2_OFFSET_X,
-                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN2_OFFSET_Y
-            },
-            {
-                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN3_OFFSET_X,
-                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN3_OFFSET_Y
-            },
-            {
-                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN4_OFFSET_X,
-                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN4_OFFSET_Y
-            },
-            {
-                x: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).x + CanvasConstants.TOKEN_COLUMN5_OFFSET_X,
-                y: this.centerOfTable_centered(CanvasImgOriginalSizes.POSITION).y + CanvasConstants.TOKEN_COLUMN5_OFFSET_Y
-            }
-        ];
+        this.TOKEN_COLUMNS_COORDS = CanvasConstants.TOKEN_COLUMNS_OFFSETS.map(tco => {
+            return {
+                x: this.centerOfTable_centered(CanvasImgOriginalSizes.TOKEN).x + tco.x,
+                y: this.centerOfTable_centered(CanvasImgOriginalSizes.TOKEN).y + tco.y
+            };
+        });
     }
 
     CARD_COORDS(playerIdx, cardIdx) {
@@ -83,28 +67,24 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
     }
 
     TOKEN_COORDS(tokenIdx) {
-        return [{
-            x: this.TOKEN_COLUMNS_COORDS[0].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[0].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        },
-        {
-            x: this.TOKEN_COLUMNS_COORDS[1].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[1].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        },
-        {
-            x: this.TOKEN_COLUMNS_COORDS[2].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[2].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        },
-        {
-            x: this.TOKEN_COLUMNS_COORDS[3].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[3].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        }, 
-        {
-            x: this.TOKEN_COLUMNS_COORDS[4].x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
-            y: this.TOKEN_COLUMNS_COORDS[4].y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
-        }];
+        return this.TOKEN_COLUMNS_COORDS.map(cc => {
+            return {
+                x: cc.x + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].x,
+                y: cc.y + CanvasConstants.TOKENS_NUM_OFFSETS[tokenIdx].y
+            };
+        });
     }
 
+    BET_TOKEN_COORS(playerIdx, tokenIdx) {
+        const baselineY = this.CARD_COORDS(playerIdx, 0).y - 30; // TODO: MAKE THESE CONSTANTS
+        const baselineX = this.CARD_COORDS(playerIdx, 0).x - 10; // TODO: MAKE THESE CONSTANTS
+        return CanvasConstants.BET_COLUMNS_OFFSETS.map(cc => {
+            return {
+                x: baselineX + CanvasConstants.BET_TOKENS_NUM_OFFSETS[tokenIdx].x + cc.x,
+                y: baselineY + CanvasConstants.BET_TOKENS_NUM_OFFSETS[tokenIdx].y + cc.y
+            };
+        });
+    }
 
     centerOfTable_centered(objectSize) {
         return { x: this.TABLE_CENTER_COORDS.x - SizeUtils.halfObject(objectSize).width, y: this.TABLE_CENTER_COORDS.y - SizeUtils.halfObject(objectSize).height };
@@ -124,32 +104,34 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         return { x: x, y: y, finalY: finalFrameCoords.y, angle: cardAngle };
     }
 
-    // TODO: REFACTOR THIS TO WORK WITH ARRAYS AND LOOPS
     getCoordsForPlacingToken(tokenIdx) {
         const finalFrameCoords = this.TOKEN_COORDS(tokenIdx);
         const initialFrameCoords = CanvasConstants.TOKENS_ANIMATION_INITIAL_COORDS;
-        const slope1 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[0].y, initialFrameCoords.x, finalFrameCoords[0].x);
-        const slope2 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[1].y, initialFrameCoords.x, finalFrameCoords[1].x);
-        const slope3 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[2].y, initialFrameCoords.x, finalFrameCoords[2].x);
-        const slope4 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[3].y, initialFrameCoords.x, finalFrameCoords[3].x);
-        const slope5 = this._calculateSlope(initialFrameCoords.y, finalFrameCoords[4].y, initialFrameCoords.x, finalFrameCoords[4].x);
-        const x1 = (finalFrameCoords[0].x - initialFrameCoords.x) * .2; // TODO: make this constant
-        const x2 = (finalFrameCoords[1].x - initialFrameCoords.x) * .2; // TODO: make this constant
-        const x3 = (finalFrameCoords[2].x - initialFrameCoords.x) * .2; // TODO: make this constant
-        const x4 = (finalFrameCoords[3].x - initialFrameCoords.x) * .2; // TODO: make this constant
-        const x5 = (finalFrameCoords[4].x - initialFrameCoords.x) * .2; // TODO: make this constant
-        const y1 = slope1 * x1;
-        const y2 = slope2 * x2;
-        const y3 = slope3 * x3;
-        const y4 = slope4 * x4;
-        const y5 = slope5 * x5;
-        return [
-            { x: x1, y: y1, finalY: finalFrameCoords[0].y },
-            { x: x2, y: y2, finalY: finalFrameCoords[1].y },
-            { x: x3, y: y3, finalY: finalFrameCoords[2].y },
-            { x: x4, y: y4, finalY: finalFrameCoords[3].y },
-            { x: x5, y: y5, finalY: finalFrameCoords[4].y },
-        ];
+        
+        const slopes = initialFrameCoords.map((_, i) => {
+            return this._calculateSlope(initialFrameCoords[i].y, finalFrameCoords[i].y, initialFrameCoords[i].x, finalFrameCoords[i].x);
+        });
+        
+        const X = initialFrameCoords.map((_, i) => {
+            return (finalFrameCoords[i].x - initialFrameCoords[i].x) * .03; // TODO: Make this constant
+        });
+        
+        const Y = slopes.map((_, i) => slopes[i] * X[i]);
+        
+        return slopes.map((_, i) => ({ x: X[i], y: Y[i], finalY: finalFrameCoords[i].y }));
+    }
+
+    getCoordsForPlacingBetToken(tokenColumnIdx, tokenIdx, playerIdx) {
+        const finalFrameCoords = this.BET_TOKEN_COORS(playerIdx, tokenIdx)[tokenColumnIdx];
+        const initialFrameCoords = this.TOKEN_COORDS(tokenIdx)[tokenColumnIdx];
+        
+        const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
+        
+        const x = (finalFrameCoords.x - initialFrameCoords.x) * .03; // TODO: Make this constant
+        
+        const y = slope * x;
+        
+        return {x, y, finalY: finalFrameCoords.y};
     }
 
 }

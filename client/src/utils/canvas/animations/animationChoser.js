@@ -9,6 +9,8 @@ const animationChoser = (playerChoice, canvasManager) => {
             const onDealingAnimationFinish = () => placingTokensAnimation.start();
             const dealingCardsAnimation = new DealingCardsAnimation(canvasManager, onDealingAnimationFinish);
             dealingCardsAnimation.start();
+            // const placingTokensAnimation = new PlacingTokensAnimation(canvasManager, () => {});
+            // placingTokensAnimation.start();
             break;
         default:
             break;

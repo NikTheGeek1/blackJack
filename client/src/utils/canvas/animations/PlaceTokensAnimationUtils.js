@@ -9,9 +9,9 @@ class PlaceTokensAnimationUtils {
         this.currentFrame = currentFrame;
         this.animationFinished = false;
         this.nextFrameTokenIdx = 0;
-        this.shouldDrawToken = [];
         this.tokensFinal = TokenUtils.moneyToTokens(this.finalFrame.money);
         this.tokensCurrent = TokenUtils.moneyToTokens(this.currentFrame.money);
+        this.shouldDrawToken = Object.keys(this.tokensCurrent).map(tokenCategory => this.tokensCurrent[tokenCategory] !== this.tokensFinal[tokenCategory]);
     }
 
 
