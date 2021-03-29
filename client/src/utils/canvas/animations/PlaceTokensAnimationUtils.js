@@ -1,16 +1,16 @@
-import TokenUtils from '../TokenUtils';
 import Player from '../../../models/matches/Player';
+import TokenUtils from '../TokenUtils';
 
 class PlaceTokensAnimationUtils {
     constructor(finalFrame) {
         this.finalFrame = finalFrame;
         const currentFrame = new Player(finalFrame);
-        currentFrame.money = 0;
+        currentFrame.tokens = TokenUtils.moneyToTokens(0);
         this.currentFrame = currentFrame;
         this.animationFinished = false;
         this.nextFrameTokenIdx = 0;
-        this.tokensFinal = TokenUtils.moneyToTokens(this.finalFrame.money);
-        this.tokensCurrent = TokenUtils.moneyToTokens(this.currentFrame.money);
+        this.tokensFinal = this.finalFrame.tokens;
+        this.tokensCurrent = this.currentFrame.tokens;
         this.shouldDrawToken = Object.keys(this.tokensCurrent).map(tokenCategory => this.tokensCurrent[tokenCategory] !== this.tokensFinal[tokenCategory]);
     }
 
@@ -28,7 +28,6 @@ class PlaceTokensAnimationUtils {
             if (this.tokensCurrent[tokenCategory] < this.tokensFinal[tokenCategory]) {
                 this.tokensCurrent[tokenCategory] += 1;
                 this.nextFrameTokenIdx = this.tokensCurrent[tokenCategory];
-                this.currentFrame.money += +tokenCategory;
                 this.shouldDrawToken[k] = true;
             }
         }

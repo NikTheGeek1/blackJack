@@ -105,7 +105,6 @@ class CanvasManager {
         );
 
         this.canvasContext.restore();
-
     }
 
     _drawCards() {
@@ -125,12 +124,11 @@ class CanvasManager {
     }
 
     _drawTokens() {
-        const tokens = TokenUtils.moneyToTokens(this.thisPlayer.money);
-        const tokensColumnMax = Math.max(...Object.values(tokens));
+        const tokensColumnMax = Math.max(...Object.values(this.thisPlayer.tokens));
         for (let tokenIdx = 0; tokenIdx < tokensColumnMax; tokenIdx++) {
             const tokensCoords = this.dynamicSizesManager.TOKEN_COORDS(tokenIdx);
             for (let tc = 0; tc < tokensCoords.length; tc++) {
-                if (tokens[Object.keys(tokens)[tc]] > tokenIdx) {
+                if (this.thisPlayer.tokens[Object.keys(this.thisPlayer.tokens)[tc]] > tokenIdx) {
                     this._drawToken(tokensCoords[tc].x, tokensCoords[tc].y, tc, false);
                 }
             }
@@ -224,7 +222,6 @@ class CanvasManager {
             const cardAngle = CanvasDynamicSizesManager.constants.CARD_NUM_OFFSETS[cardIdx].angle;
             const card = player.displayedCards[cardIdx];
             if (card.visibility === "HIDDEN") { // TODO: transform this to enum
-                console.log(cardCoords.x, cardCoords.y, 'CanvasManager.js', 'line: ', '206');
                 this._drawCard(cardCoords.x, cardCoords.y, cardAngle, undefined, true, true);
             } else {
                 this._drawCard(cardCoords.x, cardCoords.y, cardAngle, card, true, true);
@@ -235,12 +232,11 @@ class CanvasManager {
     _drawAllPlayerBetTokens() {
         for (let playerIdx = 0; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
             const player = this.game.allPlayersDealerFirst[playerIdx];
-            const tokens = TokenUtils.moneyToTokens(player.bet);
-            const tokensColumnMax = Math.max(...Object.values(tokens));
+            const tokensColumnMax = Math.max(...Object.values(player.betTokens));
             for (let tokenIdx = 0; tokenIdx < tokensColumnMax; tokenIdx++) {
-                const tokensCoords = this.dynamicSizesManager.BET_TOKEN_COORS(playerIdx, tokenIdx);
+                const tokensCoords = this.dynamicSizesManager.BET_TOKEN_COORDS(playerIdx, tokenIdx);
                 for (let tc = 0; tc < tokensCoords.length; tc++) {
-                    if (tokens[Object.keys(tokens)[tc]] > tokenIdx) {
+                    if (player.betTokens[Object.keys(player.betTokens)[tc]] > tokenIdx) {
                         this._drawToken(tokensCoords[tc].x, tokensCoords[tc].y, tc, false, true, 20);
                     }
                 }

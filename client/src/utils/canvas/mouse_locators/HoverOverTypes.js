@@ -3,6 +3,7 @@ class HoverOverTypes {
     static PLAYER_CARDS = ["DEALER", "FIRST", "SECOND", "THIRD", "FOURTH", "FIFTH", "SIXTH", "SEVENTH"];
     static TOKENS = "TOKENS";
     static TOKEN_COLUMNS = ["1", "10", "50", "100", "200", "500"];
+    static BET_TOKEN_COLUMNS = ["b1", "b10", "b50", "b100", "b200", "b500"];
 }
 
 export default HoverOverTypes;

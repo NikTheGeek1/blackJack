@@ -1,13 +1,14 @@
 import Dealer from './Dealer';
+import Player from './Player';
 
 class Game {
     constructor(fetchedGame, deepCopyAllPlayers) {
         if (deepCopyAllPlayers) {
             this.allPlayersDealerFirst = this._deepCopyAllPlayers(fetchedGame.allPlayersDealerFirst);
         } else {
-            this.allPlayersDealerFirst = fetchedGame.allPlayersDealerFirst;
+            this.allPlayersDealerFirst = fetchedGame.allPlayersDealerFirst.map(player => new Player(player));
         }
-        this.players = fetchedGame.players;
+        this.players = fetchedGame.players.map(player => new Player(player));
         this.dealer = new Dealer(fetchedGame.dealer);
     }
 
@@ -18,7 +19,7 @@ class Game {
             player.displayedCards.forEach(card => copiedCards.push(card));
             copiedAllPlayers.push({ ...player, displayedCards: copiedCards, });
         });
-        return copiedAllPlayers;
+        return copiedAllPlayers.map(player => new Player(player));
     }
 }
 

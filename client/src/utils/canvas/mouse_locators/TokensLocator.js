@@ -1,7 +1,6 @@
 import DynamicCoords from '../coordinates_sizes/coords/DynamicCoords';
 import ImgSizes from '../../../constants/canvas/ImgsOriginalSizes';
 import Constants from '../../../constants/canvas/Constants';
-import TokensUtils from '../TokenUtils';
 import SizeUtils from '../coordinates_sizes/sizes/SizeUtils';
 import HoverOverTypes from './HoverOverTypes';
 
@@ -15,13 +14,12 @@ class TokensLocatorUtils {
     }
 
     mouseOnTokens() {
-        const thisPlayerTokens = TokensUtils.moneyToTokens(this.thisPlayer.money);
         const TOKEN_COLUMNS = ["1", "10", "50", "100", "200", "500"];
         const onTokenArray = TOKEN_COLUMNS.map(_ => false);
         for (let tcIdx = 0; tcIdx < TOKEN_COLUMNS.length; tcIdx++) {
             const tokenColumnName = TOKEN_COLUMNS[tcIdx];
-            if (!thisPlayerTokens[tokenColumnName]) continue;
-            const { y1, y2 } = this._calculateY(thisPlayerTokens[tokenColumnName]);
+            if (!this.thisPlayer.tokens[tokenColumnName]) continue;
+            const { y1, y2 } = this._calculateY(this.thisPlayer.tokens[tokenColumnName]);
             const { x1, x2 } = this._calculateX(tcIdx);
             if (this.mousePos.x > x1 && this.mousePos.x < x2 &&
                 this.mousePos.y > y1 && this.mousePos.y < y2) {

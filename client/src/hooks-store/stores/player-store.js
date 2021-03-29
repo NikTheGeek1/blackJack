@@ -13,7 +13,7 @@ const configureStore = () => {
             return { playerState: { playerObj: null }};
         }
     }
-    initStore(actions, { playerState: { playerObj: {name: '', email: 'ff', money: 199, bet: 10 } }}); // TODO: set playerObj to null
+    initStore(actions, { playerState: { playerObj: new Player({name: '', email: 'ff', money: 199, bet: 0 }) }}); // TODO: set playerObj to null
 };
 
 

@@ -1,4 +1,5 @@
 import TokensLocator from './TokensLocator';
+import BetTokensLocator from './BetTokensLocator';
 import CardLocator from './CardLocator';
 
 class MouseLocator {
@@ -7,22 +8,16 @@ class MouseLocator {
         this.screenDims = screenDims;
         this.mousePos = mousePos;
         this.game = game;
-        this.thisPlayer = null;
-        this._setThisPlayer(thisPlayer.email);
+        this.thisPlayer = thisPlayer;
     }
 
     analyseMouseLocation() {
         const onTokens = new TokensLocator(this.mousePos, this.screenDims, this.thisPlayer).mouseOnTokens();
+        const onBetTokens = new BetTokensLocator(this.mousePos, this.screenDims, this.thisPlayer, this.game.allPlayersDealerFirst).mouseOnBetTokens();
         const onCards = new CardLocator(this.mousePos, this.screenDims, this.game).mouseOnCards();
 
-        return onTokens || onCards;
+        return onTokens || onCards || onBetTokens;
     }
-
-    _setThisPlayer(thisPlayerEmail) {
-        this.thisPlayer = this.game.allPlayersDealerFirst.filter(player => player.email === thisPlayerEmail)[0];
-    }
-
-
 
 
     

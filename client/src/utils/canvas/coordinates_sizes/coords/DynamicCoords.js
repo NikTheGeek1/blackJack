@@ -75,7 +75,7 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         });
     }
 
-    BET_TOKEN_COORS(playerIdx, tokenIdx) {
+    BET_TOKEN_COORDS(playerIdx, tokenIdx) {
         const baselineY = this.CARD_COORDS(playerIdx, 0).y - 30; // TODO: MAKE THESE CONSTANTS
         const baselineX = this.CARD_COORDS(playerIdx, 0).x - 10; // TODO: MAKE THESE CONSTANTS
         return CanvasConstants.BET_COLUMNS_OFFSETS.map(cc => {
@@ -122,12 +122,25 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
     }
 
     getCoordsForPlacingBetToken(tokenColumnIdx, tokenIdx, playerIdx) {
-        const finalFrameCoords = this.BET_TOKEN_COORS(playerIdx, tokenIdx)[tokenColumnIdx];
+        const finalFrameCoords = this.BET_TOKEN_COORDS(playerIdx, tokenIdx)[tokenColumnIdx];
         const initialFrameCoords = this.TOKEN_COORDS(tokenIdx)[tokenColumnIdx];
         
         const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
         
         const x = (finalFrameCoords.x - initialFrameCoords.x) * .03; // TODO: Make this constant
+        
+        const y = slope * x;
+        
+        return {x, y, finalY: finalFrameCoords.y};
+    }
+
+    getCoordsForCancellingBetToken(tokenColumnIdx, tokenIdx, playerIdx) {
+        const initialFrameCoords = this.BET_TOKEN_COORDS(playerIdx, tokenIdx)[tokenColumnIdx];
+        const finalFrameCoords = this.TOKEN_COORDS(tokenIdx)[tokenColumnIdx];
+        
+        const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
+        
+        const x = (initialFrameCoords.x - finalFrameCoords.x) * .03; // TODO: Make this constant
         
         const y = slope * x;
         

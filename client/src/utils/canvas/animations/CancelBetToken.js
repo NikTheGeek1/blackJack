@@ -1,10 +1,10 @@
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
 
 
-class BetToken {
+class CancelBetToken {
     constructor(canvasManager, betAmount) {
         this.canvasManager = canvasManager;
-        this.betAmount = betAmount;
+        this.betAmount = betAmount.slice(1);
         this.thisPlayerIdx = null;
         this.tokenColumnIdx = null;
         this._setPlayerIdx();
@@ -23,22 +23,22 @@ class BetToken {
     }
 
     playAnimation() {
-        this._subtractBetTokensFromMoneyTokens();
+        this._subtractBetTokensFromBetTokens();
         this.canvasManager.drawAll(true, true);
         this.drawCanvasStateToBackupCanvas();
         this._drawTokenRecursively();
     }
 
-    _subtractBetTokensFromMoneyTokens() {
-        this.canvasManager.thisPlayer.tokens[this.betAmount] -= 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].tokens[this.betAmount] -= 1;
-        this.canvasManager.game.players[this.thisPlayerIdx].tokens[this.betAmount] -= 1;
+    _subtractBetTokensFromBetTokens() {
+        this.canvasManager.thisPlayer.betTokens[this.betAmount] -= 1;
+        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].betTokens[this.betAmount] -= 1;
+        this.canvasManager.game.players[this.thisPlayerIdx].betTokens[this.betAmount] -= 1;
     }
 
-    _increaseBetTokens() {
-        this.canvasManager.thisPlayer.betTokens[this.betAmount] += 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].betTokens[[this.betAmount]] += 1;
-        this.canvasManager.game.players[this.thisPlayerIdx].betTokens[[this.betAmount]] += 1;
+    _increaseMoneyTokens() {
+        this.canvasManager.thisPlayer.tokens[this.betAmount] += 1;
+        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].tokens[[this.betAmount]] += 1;
+        this.canvasManager.game.players[this.thisPlayerIdx].tokens[[this.betAmount]] += 1;
     }
 
     _drawTokenRecursively() {
@@ -46,7 +46,8 @@ class BetToken {
         let shrinkIncrement = 0;
         const tokenInterval = setInterval(() => {
             this.drawBackupCanvasStateToCanvas(false);
-            const shrinkedSize = CanvasDynamicSizesManager.originalSizes.TOKEN.width - shrinkIncrement;
+            console.log(CanvasDynamicSizesManager.originalSizes.TOKEN.width , 'CancelBetToken.js', 'line: ', '50');
+            const shrinkedSize = CanvasDynamicSizesManager.originalSizes.TOKEN.width - (34 - shrinkIncrement); // TODO: make this constant
             this.canvasManager._drawToken(tokenCurrentCoords.x, tokenCurrentCoords.y, this.tokenColumnIdx, true, true, shrinkedSize);
             this._incrementCoords(tokenCurrentCoords, allTokenCoords);
             if (this._shouldStopDrawingToken(tokenCurrentCoords, allTokenCoords)) {
@@ -59,27 +60,26 @@ class BetToken {
     }
 
     _incrementCoords(currentCoords, allTokenCoords) {
-            currentCoords.x += allTokenCoords.x;
-            currentCoords.y += allTokenCoords.y;
+            currentCoords.x -= allTokenCoords.x;
+            currentCoords.y -= allTokenCoords.y;
     }
 
     _shouldStopDrawingToken(currentCoords, allTokenCoords) {
-        return currentCoords.y < allTokenCoords.finalY;
+        return currentCoords.y > allTokenCoords.finalY;
     }
 
     _initialValues() {
-        const tokens = this.canvasManager.thisPlayer.tokens;
+        const tokens = this.canvasManager.thisPlayer.betTokens;
         const tokenIdx = tokens[this.betAmount];
-        const tokenInitialCoords = this.canvasManager.dynamicSizesManager.TOKEN_COORDS(tokenIdx)[this.tokenColumnIdx];
-
-        const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForPlacingBetToken(this.tokenColumnIdx, tokenIdx, this.thisPlayerIdx);
-        const tokenFinalCoords = this.canvasManager.dynamicSizesManager.BET_TOKEN_COORDS(this.thisPlayerIdx, tokenIdx);
+        const tokenInitialCoords = this.canvasManager.dynamicSizesManager.BET_TOKEN_COORDS(this.thisPlayerIdx, tokenIdx)[this.tokenColumnIdx];
+        const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForCancellingBetToken(this.tokenColumnIdx, tokenIdx, this.thisPlayerIdx);
+        const tokenFinalCoords = this.canvasManager.dynamicSizesManager.TOKEN_COORDS(tokenIdx)[this.tokenColumnIdx];
         const tokenCurrentCoords = { ...tokenInitialCoords };
         return { tokenCurrentCoords, allTokenCoords, tokenFinalCoords };
     }
 
     _persistFrame() {
-        this._increaseBetTokens();
+        this._increaseMoneyTokens();
         this.canvasManager.drawAll(true, true);
     }
 
@@ -104,4 +104,4 @@ class BetToken {
 }
 
 
-export default BetToken;
+export default CancelBetToken;

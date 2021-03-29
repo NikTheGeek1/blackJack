@@ -9,7 +9,7 @@ class Match {
         this.duration = fetchedMatch.duration;
         this.onset = fetchedMatch.onset;
         this.users = fetchedMatch.users;
-        this.game = fetchedMatch.game && new Game(fetchedMatch.game) ;
+        this.game = fetchedMatch.game && new Game(fetchedMatch.game);
     }
 }
 

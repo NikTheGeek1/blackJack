@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import './GameInterface.css';
+import { useEffect, useRef, useState } from 'react';
 import cardImgs from '../../utils/canvas/imports/cardImgs';
 import tokenImgs from '../../utils/canvas/imports/tokenImgs';
 import tableImg from '../../assets/bj-table-computer.png';
@@ -13,6 +13,7 @@ import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/Dyna
 import MouseLocator from '../../utils/canvas/mouse_locators/MouseLocator';
 import HoverOvertTypes from '../../utils/canvas/mouse_locators/HoverOverTypes';
 import BetTokenAnimation from '../../utils/canvas/animations/BetToken';
+import CancelBetTokenAnimation from '../../utils/canvas/animations/CancelBetToken';
 
 let canvasManager;
 const GameInterface = ({ screenDimensions }) => {
@@ -50,11 +51,14 @@ const GameInterface = ({ screenDimensions }) => {
         // } else {
         //     setMousePosOrigin({ x: mousePos.x, y: mousePos.y });
         // }
-        const mouseLocator = new MouseLocator(screenDimensions, mousePos, thisPlayer, match.game);
+        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, match.game);
         const clickedObject = mouseLocator.analyseMouseLocation();
-        if (HoverOvertTypes.TOKEN_COLUMNS.includes(clickedObject)) { // and in BETTING state
+        if (HoverOvertTypes.TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.tokens[clickedObject]) { // and in BETTING state
             new BetTokenAnimation(canvasManager, clickedObject).playAnimation();
-        }
+        } 
+        if (HoverOvertTypes.BET_TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.betTokens[clickedObject.slice(1)]) { // and in BETTING state
+            new CancelBetTokenAnimation(canvasManager, clickedObject).playAnimation();
+        } 
     };
 
     const updateMousePos = e => {
@@ -64,7 +68,7 @@ const GameInterface = ({ screenDimensions }) => {
         const y = Math.round((e.clientY - rect.top - mousePosOrigin.y) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / screenDimensions.width));// - root.scrollTop;
         setMousePos({ x, y });
 
-        const mouseLocator = new MouseLocator(screenDimensions, mousePos, thisPlayer, match.game);
+        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);
         const mouseOnWhat = mouseLocator.analyseMouseLocation();
 
         if (mouseOnWhat && !canvasManager.isBackupCanvasDrawn) {
@@ -76,7 +80,6 @@ const GameInterface = ({ screenDimensions }) => {
         } else if (!mouseOnWhat && canvasManager.isBackupCanvasDrawn) {
             document.getElementsByTagName("body")[0].style.cursor = "initial";
             canvasManager.drawBackupCanvasStateToCanvas(true);
-            console.log("on nothing", 'GameInterface.js', 'line: ', '81');
         } else if (!mouseOnWhat && !canvasManager.isBackupCanvasDrawn) {
             document.getElementsByTagName("body")[0].style.cursor = "initial";
         }
@@ -108,7 +111,6 @@ const GameInterface = ({ screenDimensions }) => {
     return (
         <>
             <div style={{ position: "absolute", top: 0, left: 0, zIndex: 1, color: (mousePosOrigin.x !== 0 && mousePosOrigin.y !== 0) ? "red" : "white", fontSize: 40 }}>X: {mousePos.x}, Y: {mousePos.y}</div>
-            {/* style={GameInterfaceCss.canvasStyle(screenDimensions)} */}
             <canvas ref={canvasRef} className="bj-interface-canvas" height={screenDimensions.height} width={CanvasDynamicSizesManager.sizeUtils.canvasStyle(screenDimensions).width} />
         </>
     );
