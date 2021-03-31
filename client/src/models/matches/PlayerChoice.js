@@ -1,7 +1,7 @@
 class PlayerChoice {
-    constructor(playerEmail, playerChoiceType) {
-        this.playerEmail = playerEmail;
-        this.playerChoiceType = playerChoiceType;
+    constructor(playerChoiceObj) {
+        this.playerEmail = playerChoiceObj.playerEmail;
+        this.playerChoiceType = playerChoiceObj.playerChoiceType;
     } 
 }
 

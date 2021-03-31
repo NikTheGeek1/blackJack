@@ -1,6 +1,6 @@
 class PlayerChoiceType {
     static NULL = "NULL";
-    static GAME_STARTED_DEALING = "GAME_STARTED_DEALING";
+    static STARTED_GAME = "STARTED_GAME";
 }
 
 export default PlayerChoiceType;

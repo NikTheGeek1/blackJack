@@ -99,7 +99,7 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         const initialFrameCoords = CanvasConstants.DEALING_CARD_INITIAL_COORDS;
         const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
 
-        const x = (finalFrameCoords.x - initialFrameCoords.x) * .03; // TODO: make this constant
+        const x = (finalFrameCoords.x - initialFrameCoords.x) * .07; // TODO: make this constant
         const y = slope * x;
         return { x: x, y: y, finalY: finalFrameCoords.y, angle: cardAngle };
     }
@@ -113,7 +113,7 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         });
         
         const X = initialFrameCoords.map((_, i) => {
-            return (finalFrameCoords[i].x - initialFrameCoords[i].x) * .03; // TODO: Make this constant
+            return (finalFrameCoords[i].x - initialFrameCoords[i].x) * .07; // TODO: Make this constant
         });
         
         const Y = slopes.map((_, i) => slopes[i] * X[i]);

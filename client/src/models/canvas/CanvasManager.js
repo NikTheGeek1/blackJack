@@ -3,6 +3,7 @@ import CanvasDynamicSizesManager from '../../utils/canvas/coordinates_sizes/Dyna
 import RevealedCardUtils from '../../utils/canvas/RevealedCardUtils';
 import TokenUtils from '../../utils/canvas/TokenUtils';
 import HoverOverType from '../../utils/canvas/mouse_locators/HoverOverTypes';
+import MessagesManagers from '../../utils/canvas/draw_messages/MessagesManager';
 
 class CanvasManager {
     constructor(canvas, screenDims, imgsArray, thisPlayer, game) {
@@ -143,17 +144,23 @@ class CanvasManager {
         );
         this._drawBackground();
         this._drawTable();
+        this._drawPositions();
         if (!drawCards) {
+            this._drawMessages();
             this.canvasContext.restore();
             return;
         }
-        this._drawPositions();
         this._drawCards();
         if (drawTokens) {
             this._drawTokens();
         }
         this._drawAllPlayerBetTokens();
+        this._drawMessages();
         this.canvasContext.restore();
+    }
+
+    _drawMessages() {
+        new MessagesManagers(this).drawMessagesDecider();
     }
 
     loadImagesAndStart(screenDims, setAllImgsLoaded) {
@@ -259,7 +266,7 @@ class CanvasManager {
         if (shouldClearBackupCanvas) {
             this.backupCanvas.getContext('2d').clearRect(0, 0, this.backupCanvas.width, this.backupCanvas.height);
             this.isBackupCanvasDrawn = false;
-        }        
+        }
     }
 
 

@@ -19,6 +19,14 @@ class TokenUtils {
         return results;
     }
 
+    static tokensToMoney(tokens) {
+        let totalMoney = 0;
+        for(let tokenColumn in tokens) {
+            totalMoney += tokens[tokenColumn] * +tokenColumn;
+        }
+        return totalMoney;
+    }
+
     static getCurrentTokenColumnImgName(currentTokenColumnIdx) {
         const tokenNames = [
             CanvasImgNames.TOKEN1,

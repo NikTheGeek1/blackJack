@@ -5,7 +5,6 @@ import com.blackjack.server.models.game.*;
 import com.blackjack.server.models.match.GamePrivacy;
 import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -13,17 +13,17 @@ class URLs {
     static UPDATE_GAME (gameName) {
         return `/topic/update-game/${gameName}`;
     }
-    static START_GAME (gameName) {
-        return `/app/websockets/game/start-humans-game/${gameName}`;
+    static START_GAME (gameName, playerEmail) {
+        return `/app/websockets/game/start-humans-game/${gameName}/${playerEmail}`;
     }
     static PLACE_BET (gameName) {
         return `/app/websockets/game/place-bet/${gameName}`;
     }
-    static STICK (gameName) {
-        return `/app/websockets/game/stick/${gameName}`;
+    static STICK (gameName, playerEmail) {
+        return `/app/websockets/game/stick/${gameName}/${playerEmail}`;
     }
-    static DRAW (gameName) {
-        return `/app/websockets/game/draw/${gameName}`;
+    static DRAW (gameName, playerEmail) {
+        return `/app/websockets/game/draw/${gameName}/${playerEmail}`;
     }
     static PLAYER_CHOICE(gameName) {
         return `/app/websockets/game/player-choice/${gameName}`;

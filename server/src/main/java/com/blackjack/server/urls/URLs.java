@@ -15,18 +15,15 @@ public class URLs {
     // WEBSOCKETS GAME
     public static final String WEBSOCKETS_GAME = "/websockets/game";
     public static final String ENTER_GAME = "/websockets/game/enter-game/{gameName}";
-    public static String PLAYER_CHOICE(String gameName) {
-        return "/topic/player-choice/{gameName}";
-    }
 
     public static String UPDATE_GAME (String gameName) {
         return "/topic/update-game/" + gameName;
     }
     public final static String LEAVE_GAME = "/websockets/game/leave-game/{gameName}";
-    public final static String START_GAME = "/websockets/game/start-humans-game/{gameName}";
+    public final static String START_GAME = "/websockets/game/start-humans-game/{gameName}/{playerEmail}";
     public final static String PLACE_BET = "/websockets/game/place-bet/{gameName}";
-    public final static String STICK = "/websockets/game/stick/{gameName}";
-    public final static String DRAW = "/websockets/game/draw/{gameName}";
+    public final static String STICK = "/websockets/game/stick/{gameName}/{playerEmail}";
+    public final static String DRAW = "/websockets/game/draw/{gameName}/{playerEmail}";
 
 
     // WEBSOCKETS GAME REST

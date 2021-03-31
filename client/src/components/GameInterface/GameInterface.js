@@ -14,13 +14,15 @@ import MouseLocator from '../../utils/canvas/mouse_locators/MouseLocator';
 import HoverOvertTypes from '../../utils/canvas/mouse_locators/HoverOverTypes';
 import BetTokenAnimation from '../../utils/canvas/animations/BetToken';
 import CancelBetTokenAnimation from '../../utils/canvas/animations/CancelBetToken';
+import TokenUtils from '../../utils/canvas/TokenUtils';
 
 let canvasManager;
-const GameInterface = ({ screenDimensions }) => {
+const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const canvasRef = useRef(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [mousePosOrigin, setMousePosOrigin] = useState({ x: 0, y: 0 });
     const [allImgsLoaded, setAllImgsLoaded] = useState(false);
+    const [isInitialAnimationOver, setIsInitialAnimationOver] = useState(false);
     const [globalState, dispatch] = useStore();
     const match = globalState.matchState.matchObj;
     const thisPlayer = globalState.playerState.playerObj;
@@ -35,14 +37,21 @@ const GameInterface = ({ screenDimensions }) => {
         { src: cardBackBlueImg, name: CanvasImgNames.CARD_BACK_BLUE }
         ];
         // TODO: canvas renders anew couple of times, put a debugger somewhere and check render cycles 
-        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match);
+        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match.game);
         canvasManager.loadImagesAndStart(screenDimensions, setAllImgsLoaded);
     }, []);
 
     useEffect(() => {
         if (!allImgsLoaded) return;
+        canvasManager.updateGame(match.game);
+        canvasManager.updateThisPlayer(thisPlayer);
+        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
+    }, [match, thisPlayer]);
+
+    useEffect(() => {
+        if (!allImgsLoaded) return;
         canvasManager.setScreenDimensions(screenDimensions);
-        canvasManager.drawAll(false, false); // TODO: Change this to true true when finish with the animations
+        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
     }, [screenDimensions]);
 
     const clickHandler = e => {
@@ -55,10 +64,16 @@ const GameInterface = ({ screenDimensions }) => {
         const clickedObject = mouseLocator.analyseMouseLocation();
         if (HoverOvertTypes.TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.tokens[clickedObject]) { // and in BETTING state
             new BetTokenAnimation(canvasManager, clickedObject).playAnimation();
-        } 
+        }
         if (HoverOvertTypes.BET_TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.betTokens[clickedObject.slice(1)]) { // and in BETTING state
             new CancelBetTokenAnimation(canvasManager, clickedObject).playAnimation();
-        } 
+        }
+        if (clickedObject === HoverOvertTypes.START_GAME_BUTTON) {
+            gameSocketManager.sendStartGame();
+        }
+        if (clickedObject === HoverOvertTypes.BET_BUTTON) {
+            gameSocketManager.sendBet(TokenUtils.tokensToMoney(canvasManager.thisPlayer.betTokens));
+        }
     };
 
     const updateMousePos = e => {
@@ -96,11 +111,11 @@ const GameInterface = ({ screenDimensions }) => {
 
     useEffect(() => {
         if (!allImgsLoaded) return;
-        if (playerChoice) {
+        if (playerChoice?.playerChoiceType) {
             // TODO: enable no clicking
             canvasManager.updateGame(match.game);
             canvasManager.updateThisPlayer(thisPlayer);
-            animationChoser(playerChoice, canvasManager);
+            animationChoser(playerChoice, canvasManager, dispatch, setIsInitialAnimationOver);
         } else {
             // enable clicking
         }

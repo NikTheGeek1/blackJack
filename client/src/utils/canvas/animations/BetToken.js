@@ -5,12 +5,14 @@ class BetToken {
     constructor(canvasManager, betAmount) {
         this.canvasManager = canvasManager;
         this.betAmount = betAmount;
-        this.thisPlayerIdx = null;
+        this.thisPlayerIdxJustPlayers = null;
+        this.thisPlayerIdxAllPlayers = null;
         this.tokenColumnIdx = null;
         this._setPlayerIdx();
         this._setTokenColumnIdx();
         this.onFinishCb = () => { };
         this.backupCanvas = null;
+        this.data = this._initialValues();
     }
 
     _setTokenColumnIdx() {
@@ -19,7 +21,8 @@ class BetToken {
     }
 
     _setPlayerIdx() {
-        this.thisPlayerIdx = this.canvasManager.game.allPlayersDealerFirst.findIndex(player => player.email === this.canvasManager.thisPlayer.email);
+        this.thisPlayerIdxAllPlayers = this.canvasManager.game.allPlayersDealerFirst.findIndex(player => player.email === this.canvasManager.thisPlayer.email);
+        this.thisPlayerIdxJustPlayers = this.canvasManager.game.players.findIndex(player => player.email === this.canvasManager.thisPlayer.email);
     }
 
     playAnimation() {
@@ -31,36 +34,33 @@ class BetToken {
 
     _subtractBetTokensFromMoneyTokens() {
         this.canvasManager.thisPlayer.tokens[this.betAmount] -= 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].tokens[this.betAmount] -= 1;
-        this.canvasManager.game.players[this.thisPlayerIdx].tokens[this.betAmount] -= 1;
+        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].tokens[this.betAmount] -= 1;
+        this.canvasManager.game.players[this.thisPlayerIdxJustPlayers].tokens[this.betAmount] -= 1;
     }
 
     _increaseBetTokens() {
         this.canvasManager.thisPlayer.betTokens[this.betAmount] += 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdx].betTokens[[this.betAmount]] += 1;
-        this.canvasManager.game.players[this.thisPlayerIdx].betTokens[[this.betAmount]] += 1;
+        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].betTokens[[this.betAmount]] += 1;
+        this.canvasManager.game.players[this.thisPlayerIdxJustPlayers].betTokens[[this.betAmount]] += 1;
     }
 
     _drawTokenRecursively() {
-        let { tokenCurrentCoords, allTokenCoords } = this._initialValues();
-        let shrinkIncrement = 0;
-        const tokenInterval = setInterval(() => {
-            this.drawBackupCanvasStateToCanvas(false);
-            const shrinkedSize = CanvasDynamicSizesManager.originalSizes.TOKEN.width - shrinkIncrement;
-            this.canvasManager._drawToken(tokenCurrentCoords.x, tokenCurrentCoords.y, this.tokenColumnIdx, true, true, shrinkedSize);
-            this._incrementCoords(tokenCurrentCoords, allTokenCoords);
-            if (this._shouldStopDrawingToken(tokenCurrentCoords, allTokenCoords)) {
-                this._persistFrame();
-                clearInterval(tokenInterval);
-                this.onFinishCb();
-            }
-            shrinkIncrement += 1; // TODO: make this constant
-        }, 5); // TODO: Make this constant 
+        this.drawBackupCanvasStateToCanvas(false);
+        const shrinkedSize = CanvasDynamicSizesManager.originalSizes.TOKEN.width - this.data.shrinkIncrement;
+        this.canvasManager._drawToken(this.data.tokenCurrentCoords.x, this.data.tokenCurrentCoords.y, this.tokenColumnIdx, true, true, shrinkedSize);
+        this._incrementCoords(this.data.tokenCurrentCoords, this.data.allTokenCoords);
+        this.data.shrinkIncrement += 1; // TODO: make this constant
+        if (this._shouldStopDrawingToken(this.data.tokenCurrentCoords, this.data.allTokenCoords)) {
+            this._persistFrame();
+            this.onFinishCb();
+        } else {
+            requestAnimationFrame(this._drawTokenRecursively.bind(this));
+        }
     }
 
     _incrementCoords(currentCoords, allTokenCoords) {
-            currentCoords.x += allTokenCoords.x;
-            currentCoords.y += allTokenCoords.y;
+        currentCoords.x += allTokenCoords.x;
+        currentCoords.y += allTokenCoords.y;
     }
 
     _shouldStopDrawingToken(currentCoords, allTokenCoords) {
@@ -71,11 +71,11 @@ class BetToken {
         const tokens = this.canvasManager.thisPlayer.tokens;
         const tokenIdx = tokens[this.betAmount];
         const tokenInitialCoords = this.canvasManager.dynamicSizesManager.TOKEN_COORDS(tokenIdx)[this.tokenColumnIdx];
-
-        const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForPlacingBetToken(this.tokenColumnIdx, tokenIdx, this.thisPlayerIdx);
-        const tokenFinalCoords = this.canvasManager.dynamicSizesManager.BET_TOKEN_COORDS(this.thisPlayerIdx, tokenIdx);
+        const shrinkIncrement = 0;
+        const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForPlacingBetToken(this.tokenColumnIdx, tokenIdx, this.thisPlayerIdxAllPlayers);
+        const tokenFinalCoords = this.canvasManager.dynamicSizesManager.BET_TOKEN_COORDS(this.thisPlayerIdxAllPlayers, tokenIdx);
         const tokenCurrentCoords = { ...tokenInitialCoords };
-        return { tokenCurrentCoords, allTokenCoords, tokenFinalCoords };
+        return { tokenCurrentCoords, allTokenCoords, tokenFinalCoords, shrinkIncrement };
     }
 
     _persistFrame() {
@@ -99,7 +99,7 @@ class BetToken {
         if (shouldClearBackupCanvas) {
             this.backupCanvas.getContext('2d').clearRect(0, 0, this.backupCanvas.width, this.backupCanvas.height);
             this.isBackupCanvasDrawn = false;
-        }        
+        }
     }
 }
 

@@ -31,8 +31,8 @@ class CanvasConstants {
     static TOKEN_WRAP_MULTIPLIER = 80;
     static TOKEN_NUM_Y_OFFSET = -10;
     static TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => {
-        return { 
-            x: (multiplier % 3), 
+        return {
+            x: (multiplier % 3),
             y: Math.floor(multiplier / this.TOKENS_IN_EACH_WRAP) * this.TOKEN_WRAP_MULTIPLIER + (multiplier * this.TOKEN_NUM_Y_OFFSET)
         };
     });
@@ -40,13 +40,13 @@ class CanvasConstants {
     static BET_TOKEN_NUM_Y_OFFSET = -5;
     static BET_TOKENS_NUM_OFFSETS = [...Array(200).keys()].map(multiplier => {
         return {
-            x: (multiplier % 3), 
+            x: (multiplier % 3),
             y: multiplier * this.BET_TOKEN_NUM_Y_OFFSET
         };
     });
 
     static DEALING_CARD_INITIAL_COORDS = { x: 500, y: 20 };
-    static CARD_INTERVAL = 10;
+    static CARD_INTERVAL = 16;
 
     static TOKENS_ANIMATION_INITIAL_COORDS = [
         { x: 200, y: 0 },
@@ -75,6 +75,11 @@ class CanvasConstants {
         { x: 80, y: 0 },
         { x: 100, y: 0 },
     ];
+
+    static START_BUTTON_SIZE = { width: 300, height: 50 };
+    static START_BUTTON_COORDS = { x: 400, y: 400 };
+    static BET_BUTTON_SIZE = { width: 300, height: 50 };
+    static BET_BUTTON_COORDS = { x: 400, y: 400 };
 
 }
 

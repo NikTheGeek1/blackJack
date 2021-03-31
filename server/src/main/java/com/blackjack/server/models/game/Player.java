@@ -5,12 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Player extends User  {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Card> cards;
-    private List<Card> revealedCards;
+    private List<Card> displayedCards;
     private double bet;
     private boolean isDealer;
     private PlayerStatus status;
@@ -20,7 +21,7 @@ public class Player extends User  {
         status = PlayerStatus.WAITING_GAME;
         isDealer = false;
         cards = new ArrayList<>();
-        revealedCards = new ArrayList<>();
+        displayedCards = new ArrayList<>();
     }
 
     public Player (Player player) {
@@ -28,7 +29,7 @@ public class Player extends User  {
         this.status = player.getStatus();
         this.isDealer = player.getIsDealer();
         this.cards = player.getCards();
-        this.revealedCards = player.revealedCards;
+        this.displayedCards = player.displayedCards;
     }
 
     public Player() {
@@ -36,24 +37,37 @@ public class Player extends User  {
         status = PlayerStatus.WAITING_GAME;
         isDealer = false;
         cards = new ArrayList<>();
-        revealedCards = new ArrayList<>();
+        displayedCards = new ArrayList<>();
     }
 
     public void resetCards() {
         this.cards.clear();
-        this.revealedCards.clear();
+        this.displayedCards.clear();
+    }
+
+    public List<Card> getDisplayedCards() {
+        return displayedCards;
+    }
+
+    public void setDisplayedCards() {
+        List<Card> dispCards = new ArrayList<>();
+        for (Card card : cards) {
+            if (card.getVisibility() == CardVisibility.REVEALED) {
+                dispCards.add(card);
+            }
+            else {
+                Card hiddenCardCopy = new Card(card.getSuit(), card.getRank());
+                dispCards.add(hiddenCardCopy);
+            }
+        }
+        this.displayedCards = dispCards;
     }
 
     public List<Card> getRevealedCards() {
-        return revealedCards;
-    }
-
-    public void setRevealedCards() {
-        List<Card> revCards = new ArrayList<>();
-        for (Card card : cards) {
-            if (card.getVisibility() == CardVisibility.REVEALED) revCards.add(card);
-        }
-        this.revealedCards = revCards;
+        List<Card> revCards = this.displayedCards.stream()
+                .filter(card -> card.getVisibility() == CardVisibility.REVEALED)
+                .collect(Collectors.toList());
+        return revCards;
     }
 
 
@@ -73,7 +87,7 @@ public class Player extends User  {
         this.status = status;
         if (status == PlayerStatus.PLAYING) {
             this.hiddenCard().setVisibility(CardVisibility.REVEALED);
-            this.setRevealedCards();
+            this.setDisplayedCards();
             statusAfterPlaying();
         }
     }
@@ -111,7 +125,7 @@ public class Player extends User  {
     public void addCard(Card card) {
         cards.add(card);
         handleAces();
-        setRevealedCards();
+        setDisplayedCards();
     }
 
     public void statusAfterPlaying () {

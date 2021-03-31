@@ -9,9 +9,12 @@ class Player extends User {
         this.betTokens = TokenUtils.moneyToTokens(this.bet);
         this.money = fecthedPlayer.money;
         this.tokens = TokenUtils.moneyToTokens(this.money);
-        this.revealedCards = fecthedPlayer.revealedCards;
         this.isDealer = fecthedPlayer.isDealer;
         this.status = fecthedPlayer.status;
+    }
+
+    getRevealedCards () {
+        return this.displayedCards.filter(card => card.visibility === "REVEALED"); // TODO: CHANGE THIS TO ENUM
     }
 }
 

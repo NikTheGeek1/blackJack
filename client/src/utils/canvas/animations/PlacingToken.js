@@ -7,6 +7,7 @@ class PlacingTokens {
         this.animationUtils = new AnimationUtils(canvasManager.thisPlayer);
         this.canvasManager = canvasManager;
         this.backupCanvas = null;
+        this.data = this._initialValues();
     }
 
     start() {
@@ -21,12 +22,12 @@ class PlacingTokens {
         const allTokenCoords = this.canvasManager.dynamicSizesManager.getCoordsForPlacingToken(tokenIdx);
         const tokensFinalCoords = this.canvasManager.dynamicSizesManager.TOKEN_COORDS(tokenIdx);
         const tokensCurrentCoords = [
-            { ...tokensInitialCoords[0]},
-            { ...tokensInitialCoords[1]},
-            { ...tokensInitialCoords[2]},
-            { ...tokensInitialCoords[3]},
-            { ...tokensInitialCoords[4]},
-            { ...tokensInitialCoords[5]},
+            { ...tokensInitialCoords[0] },
+            { ...tokensInitialCoords[1] },
+            { ...tokensInitialCoords[2] },
+            { ...tokensInitialCoords[3] },
+            { ...tokensInitialCoords[4] },
+            { ...tokensInitialCoords[5] },
         ];
         return { tokensCurrentCoords, allTokenCoords, tokensFinalCoords };
     }
@@ -58,25 +59,22 @@ class PlacingTokens {
     }
 
     _drawTokensRecursively() {
-        let { tokensCurrentCoords, allTokenCoords, tokensFinalCoords } = this._initialValues();
-        const tokenInterval = setInterval(() => {
-            if (!this.animationUtils.animationFinished) {
-                this.drawBackupCanvasStateToCanvas(false);
-                const shouldDrawToken = this._shouldDrawTokensArray(tokensCurrentCoords, allTokenCoords);
-                this._drawMovementOrPlaceTokenAtFinalPosition(shouldDrawToken, tokensCurrentCoords, tokensFinalCoords, allTokenCoords);
-                this._incrementCoords(tokensCurrentCoords, allTokenCoords);
-                if (this._shouldDrawNextBatchOfTokens(shouldDrawToken)) {
-                    this.animationUtils.nextFrame();
-                    this._persistFrame();
-                    this.drawCanvasStateToBackupCanvas();
-                    this._drawTokensRecursively();
-                    clearInterval(tokenInterval);
-                }
-            } else {
-                clearInterval(tokenInterval);
-                this.onFinishCb();
+        if (!this.animationUtils.animationFinished) {
+            this.drawBackupCanvasStateToCanvas(false);
+            const shouldDrawToken = this._shouldDrawTokensArray(this.data.tokensCurrentCoords, this.data.allTokenCoords);
+            this._drawMovementOrPlaceTokenAtFinalPosition(shouldDrawToken, this.data.tokensCurrentCoords, this.data.tokensFinalCoords, this.data.allTokenCoords);
+            this._incrementCoords(this.data.tokensCurrentCoords, this.data.allTokenCoords);
+            if (this._shouldDrawNextBatchOfTokens(shouldDrawToken)) {
+                this.animationUtils.nextFrame();
+                this._persistFrame();
+                this.drawCanvasStateToBackupCanvas();
+                this.data = this._initialValues();
             }
-        }, 10); // TODO: Make this constant 
+            requestAnimationFrame(this._drawTokensRecursively.bind(this));
+        } else {
+            this.canvasManager.drawAll(true, true);
+            this.onFinishCb();
+        }
     }
 
     _persistFrame() {
@@ -99,7 +97,7 @@ class PlacingTokens {
         if (shouldClearBackupCanvas) {
             this.backupCanvas.getContext('2d').clearRect(0, 0, this.backupCanvas.width, this.backupCanvas.height);
             this.isBackupCanvasDrawn = false;
-        }        
+        }
     }
 
 

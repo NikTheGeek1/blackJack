@@ -1,100 +1,55 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../../hooks-store/store';
 import './MatchPage.css';
-import { initSocket } from '../../websockets/web-sockets-game-rep';
 import URLs from '../../services/DEV-URLs';
 import { SET_MATCH } from '../../hooks-store/stores/match-store';
 import { SET_PLAYER } from '../../hooks-store/stores/player-store';
 import { SET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
-import PlayerUtils from '../../utils/game-utils/players-utils';
 import Match from '../../models/matches/Match';
 import PlayerStatus from '../../constants/PlayerStatus';
 import { FormButton, FormInput } from '../../components/Form/components';
-import Bet from '../../models/matches/Bet';
 import Chat from '../../components/Chat/Chat';
 import GameInterface from '../../components/GameInterface/GameInterface';
+import GameSocketsManager from '../../websockets/GameSocketsManager';
 
-let gameSocket;
+let gameSocketManager;
 const MatchPage = () => {
     const [globalState, dispatch] = useStore();
     const [betValue, setBetValue] = useState(0);
     const [screenDimensions, setScreenDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
     const match = globalState.matchState.matchObj;
     const thisPlayer = globalState.playerState.playerObj;
-
     useEffect(() => {
         window.addEventListener("resize", screenDimensionsHandler);
-
+        if (match && thisPlayer) {
+            gameSocketManager = new GameSocketsManager(
+                matchParsed => dispatch(SET_MATCH, matchParsed),
+                player => dispatch(SET_PLAYER, player),
+                choice => dispatch(SET_PLAYER_CHOICE, choice),
+                match.matchName,
+                thisPlayer.email
+            );
+            gameSocketManager.connect();
+        }
         return () => {
             window.removeEventListener("resize", screenDimensions);
         };
     }, []);
 
     useEffect(() => {
-        gameSocket = initSocket();
-    }, []);
-
-    useEffect(() => {
-        let updateGameSubscription;
-        let playerChoiceSubscription;
         window.onbeforeunload = () => {
-            leavingPageHandler([updateGameSubscription, playerChoiceSubscription]);
+            gameSocketManager.cleanUp();
         };
-
-        gameSocket.connect({}, frame => {
-            updateGameSubscription = gameSocket.subscribe(URLs.UPDATE_GAME(match.matchName), (msg) => {
-                const matchParsed = JSON.parse(msg.body);
-                console.log(matchParsed, 'MatchPage.js', 'line: ', '31');
-                dispatch(SET_MATCH, matchParsed);
-                const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(thisPlayer.email, matchParsed.game.allPlayersDealerFirst);
-                dispatch(SET_PLAYER, thisPlayerUpdated);
-            });
-
-            playerChoiceSubscription = gameSocket.subscribe(URLs.PLAYER_CHOICE(match.matchName), (msg) => {
-                const choiceParsed = JSON.parse(msg.body);
-                dispatch(SET_PLAYER_CHOICE, choiceParsed);
-            });
-            
-            gameSocket.send(URLs.ENTER_GAME(match.matchName), {}, "entered game");
-        });
-
         return () => {
-            leavingPageHandler([updateGameSubscription, playerChoiceSubscription]);
+            gameSocketManager.cleanUp();
         };
-
     }, []);
 
     const screenDimensionsHandler = () => {
         setScreenDimensions({ width: window.innerWidth, height: window.innerHeight });
     };
 
-    const leavingPageHandler = (subscriptions) => {
-        for (const sub of subscriptions) {
-            sub.unsubscribe();
-        }
-        gameSocket.send(URLs.LEAVE_GAME(match.matchName), {}, thisPlayer.email);
-        gameSocket.disconnect();
-    };
 
-    const startHumansGameHandler = () => {
-        gameSocket.send(URLs.START_GAME(match.matchName), {}, "starting game");
-    };
-
-    const betHandler = e => {
-        e.preventDefault();
-        // TODO: validate bet
-        if (!!!betValue) return;
-        const bet = new Bet(betValue, thisPlayer.email);
-        gameSocket.send(URLs.PLACE_BET(match.matchName), {}, JSON.stringify(bet));
-    };
-
-    const stickHandler = () => {
-        gameSocket.send(URLs.STICK(match.matchName), {}, "sticking");
-    };
-
-    const drawHandler = () => {
-        gameSocket.send(URLs.DRAW(match.matchName), {}, "drawing");
-    };
     // console.log(match, 'MatchPage.js', 'line: ', '86');
     // const playersJSX = match.game?.allPlayersDealerFirst.map(player => {
     //     let turnControlsJSX;
@@ -148,9 +103,8 @@ const MatchPage = () => {
 
     return (
         <div className="match-page-container">
-            {/* {playersJSX} */}
-            <GameInterface screenDimensions={screenDimensions}/>
-            <Chat screenDimensions={screenDimensions}/>
+            {(gameSocketManager && match.game) && <GameInterface screenDimensions={screenDimensions} gameSocketManager={gameSocketManager}/>}
+            <Chat screenDimensions={screenDimensions} />
         </div>
     );
 };

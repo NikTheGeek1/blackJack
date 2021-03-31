@@ -17,7 +17,9 @@ class CanvasDealingCardAnimationUtils {
 
     nextFrame() {
         const allPlayerCardsAdded = this._addAllPlayerCard();
-        if (allPlayerCardsAdded) this.animationFinished = true;
+        if (allPlayerCardsAdded) {
+            this.animationFinished = true;
+        }
     }
 
     _updatePlayersHaveSameNumOfCards(currentPlayer, playersHaveSameNumOfCards) {
