@@ -5,6 +5,7 @@ import com.blackjack.server.models.game.*;
 import com.blackjack.server.models.match.GamePrivacy;
 import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.utils.Player.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +33,8 @@ class Helper3 {
     Dealer dealer;
     Player player1;
     Player player2;
-    HashMap<String, Double> playerMoneyBeforeSomeoneLeave = new HashMap<>();
-    HashMap<String, Double> playerBetBeforeSomeoneLeave = new HashMap<>();
+    HashMap<String, HashMap<String, Integer>> playerMoneyBeforeSomeoneLeave = new HashMap<>();
+    HashMap<String, HashMap<String, Integer>> playerBetBeforeSomeoneLeave = new HashMap<>();
 
 
     public Helper3() {
@@ -89,13 +90,13 @@ class Helper3 {
             assertFalse(player.getIsDealer());
             assertEquals(2, player.getCards().size());
             assertEquals(1, player.getRevealedCards().size());
-            assertEquals(0, player.getBet());
+            assertEquals(0, TokenUtils.tokensToMoney(player.getBetTokens()));
             assertEquals(PlayerStatus.BETTING, player.getStatus());
         }
         assertTrue(match.getGame().getDealer().getIsDealer());
         assertEquals(2, match.getGame().getDealer().getCards().size());
         assertEquals(1, match.getGame().getDealer().getRevealedCards().size());
-        assertEquals(0, match.getGame().getDealer().getBet());
+        assertEquals(0, TokenUtils.tokensToMoney(match.getGame().getDealer().getBetTokens()));
         assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
         assertFalse(match.getGame().isVerdictOut());
         for (int i = 0; i < match.getGame().getPlayers().size(); i++) {
@@ -117,9 +118,9 @@ class Helper3 {
         // first player after dealer bets. their bet value should
         // be equals to what they bet. they should be in a WAITING_TURN status
         Player player = match.getGame().getPlayerByEmail(bet.getPlayerEmail());
-        match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetValue());
+        match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
         assertEquals(PlayerStatus.WAITING_TURN, player.getStatus());
-        assertEquals(bet.getBetValue(), player.getBet());
+        assertEquals(bet.getBetTokens(), player.getBetTokens());
         assertEquals(1, player.getRevealedCards().size());
     }
 
@@ -132,7 +133,7 @@ class Helper3 {
         }
         assertEquals(0, player.getCards().size());
         assertEquals(0, player.getRevealedCards().size());
-        assertEquals(0, player.getBet());
+        assertEquals(0, TokenUtils.tokensToMoney(player.getBetTokens()));
     }
     public void assertIfGameResetProperly (String type) {
         switch (type) {
@@ -173,7 +174,7 @@ class Helper3 {
                 assertFalse(newComer.getIsDealer());
                 assertEquals(0, newComer.getCards().size());
                 assertEquals(0, newComer.getRevealedCards().size());
-                assertEquals(0, newComer.getBet());
+                assertEquals(0, TokenUtils.tokensToMoney(newComer.getBetTokens()));
                 break;
             }
             default:
@@ -182,15 +183,15 @@ class Helper3 {
     }
 
     public void setPlayerMoneyAndBetBeforeSomeoneLeave() {
-        match.getGame().getPlayers().forEach(player -> playerMoneyBeforeSomeoneLeave.put(player.getEmail(), player.getMoney()));
-        playerMoneyBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getMoney());
-        match.getGame().getPlayers().forEach(player -> playerBetBeforeSomeoneLeave.put(player.getEmail(), player.getBet()));
-        playerBetBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getBet());
+        match.getGame().getPlayers().forEach(player -> playerMoneyBeforeSomeoneLeave.put(player.getEmail(), new HashMap<>(player.getTokens())));
+        playerMoneyBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), new HashMap<>(match.getGame().getDealer().getTokens()));
+        match.getGame().getPlayers().forEach(player -> playerBetBeforeSomeoneLeave.put(player.getEmail(), new HashMap<>(player.getBetTokens())));
+        playerBetBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), new HashMap<>(match.getGame().getDealer().getBetTokens()));
     }
     public double getTotalSumOfBets() {
         double total = 0;
         for(String playerEmail : playerBetBeforeSomeoneLeave.keySet()) {
-            total += playerBetBeforeSomeoneLeave.get(playerEmail);
+            total += TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(playerEmail));
         }
         return total;
     }
@@ -199,32 +200,32 @@ class Helper3 {
             case "DEALER_LEFT_ILLEGAL":{
                 match.getGame().getPlayers().forEach(player -> {
                     assertEquals(
-                            playerMoneyBeforeSomeoneLeave.get(player.getEmail()) + playerBetBeforeSomeoneLeave.get(player.getEmail()),
-                            player.getMoney());
+                            TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(player.getEmail())) + (TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(player.getEmail())) * 2),
+                            TokenUtils.tokensToMoney(player.getTokens()));
                 });
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - getTotalSumOfBets(),
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(leaver.getEmail())) - getTotalSumOfBets(),
                         leaver.getMoney());
                 break;
             }
             case "PLAYER_LEFT_ILLEGAL": {
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(dealer.getEmail()) + playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
-                        dealer.getMoney());
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(dealer.getEmail())) + TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(leaver.getEmail())),
+                        TokenUtils.tokensToMoney(dealer.getTokens()));
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(leaver.getEmail())),
                         leaver.getMoney());
                 break;
             }
             case "PLAYER_LEFT_LEGAL": {
                 match.getGame().getPlayers().forEach(player -> {
                     assertEquals(
-                            playerMoneyBeforeSomeoneLeave.get(player.getEmail()),
-                            player.getMoney());
+                            TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(player.getEmail())),
+                            TokenUtils.tokensToMoney(player.getTokens()));
                 });
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(match.getGame().getDealer().getEmail()),
-                        match.getGame().getDealer().getMoney());
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(match.getGame().getDealer().getEmail())),
+                        TokenUtils.tokensToMoney(match.getGame().getDealer().getTokens()));
                 break;
             }
             default:
@@ -330,13 +331,13 @@ class DroppingInAndOutOfGame {
         user6.setMoney(1000);
         user7 = new User("ww", "ww", "ww");
         user7.setMoney(1000);
-        bet1 = new Bet("aa", 1);
-        bet2 = new Bet("bb", 1);
-        bet3 = new Bet("cc", 1);
-        bet4 = new Bet("dd", 1);
-        bet5 = new Bet("ee", 1);
-        bet6 = new Bet("ff", 1);
-        bet7 = new Bet("ww", 1);
+        bet1 = new Bet("aa", TokenUtils.moneyToTokens(1));
+        bet2 = new Bet("bb", TokenUtils.moneyToTokens(1));
+        bet3 = new Bet("cc", TokenUtils.moneyToTokens(1));
+        bet4 = new Bet("dd", TokenUtils.moneyToTokens(1));
+        bet5 = new Bet("ee", TokenUtils.moneyToTokens(1));
+        bet6 = new Bet("ff", TokenUtils.moneyToTokens(1));
+        bet7 = new Bet("ww", TokenUtils.moneyToTokens(1));
 
         match = new Match("aa", 7, GameType.HUMANS, GamePrivacy.PUBLIC);
     }
@@ -396,7 +397,6 @@ class DroppingInAndOutOfGame {
         helper3.removeCustomAssertion(CustomAssertions.PLAYER2_DID_NOT_HAVE_BJ_FROM_FIRST_HAND);
 
         for (int i = 0; i < 100000; i++) {
-//            System.out.println( i );
             user1 = new User("aa", "aa", "aa");
             user1.setMoney(100000);
 
@@ -1149,7 +1149,6 @@ class DroppingInAndOutOfGame {
         Helper3 helper3 = new Helper3();
 
         for (int i = 0; i < 100000; i++) {
-//            System.out.println( i );
             user1 = new User("aa", "aa", "aa");
             user1.setMoney(100000);
             user2 = new User("bb", "bb", "bb");
@@ -1422,7 +1421,6 @@ class DroppingInAndOutOfGame {
         Helper3 helper3 = new Helper3();
 
         for (int i = 0; i < 100000; i++) {
-//            System.out.println( i );
             user1 = new User("aa", "aa", "aa");
             user1.setMoney(100000);
             user2 = new User("bb", "bb", "bb");

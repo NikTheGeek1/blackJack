@@ -3,6 +3,7 @@ package com.blackjack.server.Game_Computer;
 import com.blackjack.server.models.User;
 import com.blackjack.server.models.game.*;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.utils.Player.TokenUtils;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,8 +17,8 @@ public class Helper {
 
     Dealer dealer;
     public LinkedList<Player> players;
-    HashMap<String, Double> playerMoneyBeforeSomeoneLeave = new HashMap<>();
-    HashMap<String, Double> playerBetBeforeSomeoneLeave = new HashMap<>();
+    HashMap<String, HashMap<String, Integer>> playerMoneyBeforeSomeoneLeave = new HashMap<>();
+    HashMap<String, HashMap<String, Integer>> playerBetBeforeSomeoneLeave = new HashMap<>();
 
     public void addCustomAssertion(CustomAssertions assertion) {
         customAssertions.put(assertion, false);
@@ -56,13 +57,13 @@ public class Helper {
             assertFalse(player.getIsDealer());
             assertEquals(2, player.getCards().size());
             assertEquals(1, player.getRevealedCards().size());
-            assertEquals(0, player.getBet());
+            assertEquals(0, TokenUtils.tokensToMoney(player.getBetTokens()));
             assertEquals(PlayerStatus.BETTING, player.getStatus());
         }
         assertTrue(match.getGame().getDealer().getIsDealer());
         assertEquals(2, match.getGame().getDealer().getCards().size());
         assertEquals(1, match.getGame().getDealer().getRevealedCards().size());
-        assertEquals(0, match.getGame().getDealer().getBet());
+        assertEquals(0, TokenUtils.tokensToMoney(match.getGame().getDealer().getBetTokens()));
         assertEquals(PlayerStatus.WAITING_TURN, match.getGame().getDealer().getStatus());
         assertFalse(match.getGame().isVerdictOut());
 //        this.players.addAll(match.getGame().getPlayers());
@@ -74,9 +75,9 @@ public class Helper {
         // be equals to what they bet. they should be in a WAITING_TURN status
         Player player = match.getGame().getPlayerByEmail(bet.getPlayerEmail());
         if (player == null || player.getCards().isEmpty()) return; // perhaps the player just left or just arrived
-        match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetValue());
+        match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
         assertEquals(PlayerStatus.WAITING_TURN, player.getStatus());
-        assertEquals(bet.getBetValue(), player.getBet());
+        assertEquals(bet.getBetTokens(), player.getBetTokens());
         assertEquals(1, player.getRevealedCards().size());
     }
 
@@ -201,15 +202,15 @@ public class Helper {
 
 
     public void setPlayerMoneyAndBetBeforeSomeoneLeave() {
-        match.getGame().getPlayers().forEach(player -> playerMoneyBeforeSomeoneLeave.put(player.getEmail(), player.getMoney()));
-        playerMoneyBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getMoney());
-        match.getGame().getPlayers().forEach(player -> playerBetBeforeSomeoneLeave.put(player.getEmail(), player.getBet()));
-        playerBetBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), match.getGame().getDealer().getBet());
+        match.getGame().getPlayers().forEach(player -> playerMoneyBeforeSomeoneLeave.put(player.getEmail(), new HashMap<>(player.getTokens())));
+        playerMoneyBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), new HashMap<>(match.getGame().getDealer().getTokens()));
+        match.getGame().getPlayers().forEach(player -> playerBetBeforeSomeoneLeave.put(player.getEmail(), new HashMap<>(player.getBetTokens())));
+        playerBetBeforeSomeoneLeave.put(match.getGame().getDealer().getEmail(), new HashMap<>(match.getGame().getDealer().getBetTokens()));
     }
     public double getTotalSumOfBets() {
         double total = 0;
         for(String playerEmail : playerBetBeforeSomeoneLeave.keySet()) {
-            total += playerBetBeforeSomeoneLeave.get(playerEmail);
+            total += TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(playerEmail));
         }
         return total;
     }
@@ -218,20 +219,20 @@ public class Helper {
             case "DEALER_LEFT_ILLEGAL":{
                 match.getGame().getPlayers().forEach(player -> {
                     assertEquals(
-                            playerMoneyBeforeSomeoneLeave.get(player.getEmail()) + playerBetBeforeSomeoneLeave.get(player.getEmail()),
-                            player.getMoney());
+                            TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(player.getEmail()))+ TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(player.getEmail())),
+                            TokenUtils.tokensToMoney(player.getTokens()));
                 });
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - getTotalSumOfBets(),
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(leaver.getEmail())) - getTotalSumOfBets(),
                         leaver.getMoney());
                 break;
             }
             case "PLAYER_LEFT_ILLEGAL": {
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(dealer.getEmail()) + playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
-                        dealer.getMoney());
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(dealer.getEmail())) + TokenUtils.tokensToMoney(playerBetBeforeSomeoneLeave.get(leaver.getEmail())),
+                        TokenUtils.tokensToMoney(dealer.getTokens()));
                 assertEquals(
-                        playerMoneyBeforeSomeoneLeave.get(leaver.getEmail()) - playerBetBeforeSomeoneLeave.get(leaver.getEmail()),
+                        TokenUtils.tokensToMoney(playerMoneyBeforeSomeoneLeave.get(leaver.getEmail())),
                         leaver.getMoney());
                 break;
             }
@@ -267,7 +268,7 @@ public class Helper {
                 assertFalse(newComer.getIsDealer());
                 assertEquals(0, newComer.getCards().size());
                 assertEquals(0, newComer.getRevealedCards().size());
-                assertEquals(0, newComer.getBet());
+                assertEquals(0, TokenUtils.tokensToMoney(newComer.getBetTokens()));
     }
 
 
@@ -280,7 +281,7 @@ public class Helper {
         }
         assertEquals(0, player.getCards().size());
         assertEquals(0, player.getRevealedCards().size());
-        assertEquals(0, player.getBet());
+        assertEquals(0, player.getBetTokens());
     }
 
 

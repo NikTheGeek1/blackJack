@@ -7,6 +7,7 @@ import com.blackjack.server.models.game.Bet;
 import com.blackjack.server.models.match.GamePrivacy;
 import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.utils.Player.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,19 +33,6 @@ public class ComputerGameMultipleRoundsTest {
     @BeforeEach
     void setUp() {
         user1 = new User("aa", "aa", "aa");
-        user1.setMoney(1000);
-        user2 = new User("bb", "bb", "bb");
-        user2.setMoney(1000);
-        user3 = new User("cc", "cc", "cc");
-        user3.setMoney(1000);
-        user4 = new User("dd", "dd", "dd");
-        user4.setMoney(1000);
-        user5 = new User("ee", "ee", "ee");
-        user5.setMoney(1000);
-        user6 = new User("ff", "ff", "ff");
-        user6.setMoney(1000);
-
-        user1 = new User("aa", "aa", "aa");
         user1.setMoney(100000);
         user2 = new User("bb", "bb", "bb");
         user2.setMoney(100000);
@@ -57,12 +45,12 @@ public class ComputerGameMultipleRoundsTest {
         user6 = new User("ff", "ff", "ff");
         user6.setMoney(100000);
 
-        bet1 = new Bet("aa", 1);
-        bet2 = new Bet("bb", 1);
-        bet3 = new Bet("cc", 1);
-        bet4 = new Bet("dd", 1);
-        bet5 = new Bet("ee", 1);
-        bet6 = new Bet("ff", 1);
+        bet1 = new Bet("aa", TokenUtils.moneyToTokens(1));
+        bet2 = new Bet("bb", TokenUtils.moneyToTokens(1));
+        bet3 = new Bet("cc", TokenUtils.moneyToTokens(1));
+        bet4 = new Bet("dd", TokenUtils.moneyToTokens(1));
+        bet5 = new Bet("ee", TokenUtils.moneyToTokens(1));
+        bet6 = new Bet("ff", TokenUtils.moneyToTokens(1));
 
     }
 
@@ -126,7 +114,6 @@ public class ComputerGameMultipleRoundsTest {
         helper.startGame();
 
         for (int i = 0; i<10000; i++) {
-
             helper.playerBet(bet1);
             helper.playerBet(bet2);
             helper.playerBet(bet3);
@@ -255,7 +242,6 @@ public class ComputerGameMultipleRoundsTest {
         helper.startGame();
 
         for (int i = 0; i<10000; i++) {
-
             helper.playerBet(bet1);
             if (i % 10 == 0) {
                 helper.setPlayerMoneyAndBetBeforeSomeoneLeave();

@@ -24,7 +24,7 @@ public class User {
     private String password;
 
     @Column
-    private double money;
+    private int money;
 
     public User() {}
 
@@ -75,19 +75,19 @@ public class User {
         this.password = password;
     }
 
-    public double getMoney() {
+    public int getMoney() {
         return money;
     }
 
-    public void setMoney(double money) {
+    public void setMoney(int money) {
         this.money = money;
     }
 
-    public void increaseMoney(double amount) {
+    public void increaseMoney(int amount) {
         money += amount;
     }
 
-    public void decreaseMoney(double amount) {
+    public void decreaseMoney(int amount) {
         money -= amount;
     }
 }

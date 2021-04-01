@@ -47,10 +47,10 @@ class GameSocketsManager {
         this.socket.send(URLs.START_GAME(this.matchName, this.thisPlayerEmail), {}, "starting game");
     };
 
-    sendBet = (betValue) => {
+    sendBet = (betTokens) => {
         // TODO: validate bet
-        if (!!!betValue) return;
-        const bet = new Bet(betValue, this.thisPlayerEmail);
+        if (!!!betTokens) return;
+        const bet = new Bet(betTokens, this.thisPlayerEmail);
         this.socket.send(URLs.PLACE_BET(this.matchName), {}, JSON.stringify(bet));
     };
 

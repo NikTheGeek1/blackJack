@@ -61,7 +61,7 @@ public class GameController {
     public void placeBet(@DestinationVariable String gameName, @Payload Bet bet) {
         Match match = activeMatchesManager.getMatch(gameName);
         try {
-            match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetValue());
+            match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
             if (match.getGame().hasEveryoneBet()) match.getGame().startRound(match);
             PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), PlayerChoiceType.BET);
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));

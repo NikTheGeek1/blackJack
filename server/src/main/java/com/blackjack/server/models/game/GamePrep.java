@@ -1,9 +1,12 @@
 package com.blackjack.server.models.game;
 
+import antlr.Token;
 import com.blackjack.server.models.User;
 import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.utils.Player.TokenUtils;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +60,7 @@ public class GamePrep {
         dealer.setEmail("Dealer");
         dealer.setIsDealer(true);
         dealer.setMoney(100000);
+        dealer.setTokens(dealer.getMoney());
         match.addUser(dealer);
         GameRound game = new GameRound(dealer, deck);
         match.setGame(game);
@@ -96,16 +100,16 @@ public class GamePrep {
         User leaverUser = match.getUserByEmail(leaver.getEmail());
         if (leaver.getIsDealer()) {
             match.getGame().getPlayers().forEach(player -> {
-                double playersBet = player.getBet();
-                leaver.decreaseMoney(playersBet);
-                player.increaseMoney(playersBet);
+                HashMap<String, Integer> playersBet = player.getBetTokens();
+                leaver.lostBet(playersBet);
+                player.wonBet(playersBet);
             });
         } else {
-            double leaversBet = leaver.getBet();
-            leaver.decreaseMoney(leaversBet);
-            match.getGame().getDealer().increaseMoney(leaversBet);
+            HashMap<String, Integer> leaversBet = leaver.getBetTokens();
+            leaver.lostBet(leaversBet);
+            match.getGame().getDealer().wonBet(leaversBet);
         }
-        leaverUser.setMoney(leaver.getMoney());
+        leaverUser.setMoney(TokenUtils.tokensToMoney(leaver.getTokens()));
     }
 
     public static void dropOutManager(Match match, String leaverEmail) {

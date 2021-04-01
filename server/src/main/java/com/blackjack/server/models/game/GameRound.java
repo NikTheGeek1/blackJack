@@ -2,6 +2,7 @@ package com.blackjack.server.models.game;
 
 import com.blackjack.server.models.match.GameType;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.utils.Player.TokenUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashMap;
@@ -44,11 +45,10 @@ public class GameRound extends Game {
         setVerdictOut(true);
         for (Player player : getPlayers()) {
             if (player.getStatus() == PlayerStatus.WAITING_TURN) continue;
-            double bet = player.getBet();
+            HashMap<String, Integer> betTokens = player.getBetTokens();
             HashMap<String, Player> gameResults = whoWon(getDealer(), player);
-            gameResults.get("Winner").increaseMoney(bet);
-            gameResults.get("Loser").decreaseMoney(bet);
-            player.setBet(0);
+            gameResults.get("Winner").wonBet(betTokens);
+            gameResults.get("Loser").lostBet(betTokens);
         }
     }
 
@@ -94,10 +94,10 @@ public class GameRound extends Game {
     }
 
 
-    public void placeBet(String email, double bet) {
+    public void placeBet(String email, HashMap<String, Integer> bet) {
         Player player = getPlayerByEmail(email);
         try {
-            player.setBet(bet);
+            player.setBetTokens(bet);
             player.setStatus(PlayerStatus.WAITING_TURN);
         } catch (ArithmeticException e) {
             throw new ArithmeticException("Not enough money");
@@ -189,7 +189,7 @@ public class GameRound extends Game {
     public void preparePlayerForNextRound(Player player, boolean hasTheGameStarted) {
         player.setIsDealer(false);
         player.resetCards();
-        player.setBet(0);
+        player.setBetTokens(TokenUtils.moneyToTokens(0));
         if (hasTheGameStarted) {
             player.setStatus(PlayerStatus.WAITING_TURN);
         } else {
@@ -200,7 +200,7 @@ public class GameRound extends Game {
     public void prepareDealerForNextRound(boolean hasTheGameStarted) {
         getDealer().setIsDealer(true);
         getDealer().resetCards();
-        getDealer().setBet(0);
+        getDealer().setBetTokens(TokenUtils.moneyToTokens(0));
         if (hasTheGameStarted) {
             getDealer().setStatus(PlayerStatus.WAITING_TURN);
         } else {

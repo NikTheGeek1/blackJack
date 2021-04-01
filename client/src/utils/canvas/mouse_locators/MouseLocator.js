@@ -25,7 +25,7 @@ class MouseLocator {
         }
 
         if (this._isClickAllowed())  {
-            if (!this.thisPlayer.isDealer) {
+            if (!this.thisPlayer.isDealer && this.thisPlayer.status === PlayerStatus.BETTING) {
                 onTokens = new TokensLocator(this.mousePos, this.screenDims, this.thisPlayer).mouseOnTokens();
             }
             onCards = new CardLocator(this.mousePos, this.screenDims, this.game).mouseOnCards();

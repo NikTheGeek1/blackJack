@@ -34,13 +34,13 @@ class CancelBetToken {
 
     _subtractBetTokensFromBetTokens() {
         this.canvasManager.thisPlayer.betTokens[this.betAmount] -= 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].betTokens[this.betAmount] -= 1;
+        // this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].betTokens[this.betAmount] -= 1;
         this.canvasManager.game.players[this.thisPlayerIdxJustPlayers].betTokens[this.betAmount] -= 1;
     }
 
     _increaseMoneyTokens() {
         this.canvasManager.thisPlayer.tokens[this.betAmount] += 1;
-        this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].tokens[[this.betAmount]] += 1;
+        // this.canvasManager.game.allPlayersDealerFirst[this.thisPlayerIdxAllPlayers].tokens[[this.betAmount]] += 1;
         this.canvasManager.game.players[this.thisPlayerIdxJustPlayers].tokens[[this.betAmount]] += 1;
     }
 

@@ -72,15 +72,15 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             gameSocketManager.sendStartGame();
         }
         if (clickedObject === HoverOvertTypes.BET_BUTTON) {
-            gameSocketManager.sendBet(TokenUtils.tokensToMoney(canvasManager.thisPlayer.betTokens));
+            gameSocketManager.sendBet(canvasManager.thisPlayer.betTokens);
         }
     };
 
     const updateMousePos = e => {
         const rect = canvasManager.canvas.getBoundingClientRect();
         // const root = document.documentElement;
-        const x = Math.round((e.clientX - rect.left - mousePosOrigin.x) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / screenDimensions.width));// - root.scrollLeft;
-        const y = Math.round((e.clientY - rect.top - mousePosOrigin.y) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / screenDimensions.width));// - root.scrollTop;
+        const x = Math.round((e.clientX - rect.left - mousePosOrigin.x) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / (screenDimensions.width < 800 ? 800 : screenDimensions.width)));// - root.scrollLeft;
+        const y = Math.round((e.clientY - rect.top - mousePosOrigin.y) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / (screenDimensions.width < 800 ? 800 : screenDimensions.width)));// - root.scrollTop;
         setMousePos({ x, y });
 
         const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);

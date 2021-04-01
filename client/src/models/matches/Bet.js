@@ -1,6 +1,6 @@
 class Bet {
-    constructor (betValue, playerEmail) {
-        this.betValue = betValue;
+    constructor (betTokens, playerEmail) {
+        this.betTokens = betTokens;
         this.playerEmail = playerEmail;
     }
 }

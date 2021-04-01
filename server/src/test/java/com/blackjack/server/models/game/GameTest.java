@@ -1,6 +1,7 @@
 package com.blackjack.server.models.game;
 
 import com.blackjack.server.models.User;
+import com.blackjack.server.utils.Player.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,7 @@ class GameTest {
         players.add(player2);
         dealer = new Dealer(user);
         dealer.setMoney(100);
+        dealer.setTokens(dealer.getMoney());
         dealer.setIsDealer(true);
         deck = new Deck();
         game = new GameRound(players, dealer, deck);
@@ -223,26 +225,31 @@ class GameTest {
     @Test
     void playerCanBetIfEnoughMoney() throws Exception {
         player1.setMoney(10);
-        player1.setBet(10);
-        assertEquals(10, player1.getBet());
+        player1.setTokens(TokenUtils.moneyToTokens(player1.getMoney()));
+        player1.setBetTokens(player1.getTokens());
+        assertEquals(10, TokenUtils.tokensToMoney(player1.getBetTokens()));
     }
 
     @Test
     void playerCannotBetIfNotEnoughMoney() {
         player1.setMoney(0);
-        Exception exception = assertThrows(Exception.class, () -> player1.setBet(10));
+        Exception exception = assertThrows(Exception.class, () -> player1.setBetTokens(TokenUtils.moneyToTokens(10)));
     }
 
     @Test
-    void playersMoneyIncreaseWhenTheyWin() {
+    void playersTokensIncreaseWhenTheyWin() {
         player1.setMoney(10);
+        player1.setTokens(player1.getMoney());
         player2.setMoney(10);
+        player2.setTokens(player2.getMoney());
+
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBetTokens(TokenUtils.moneyToTokens(10));
+            player1.setBetTokens(TokenUtils.moneyToTokens(10));
         } catch (Exception e) {
             assertTrue(false);
         }
+
         player1.addCard(new Card(Suit.CLUBS, Rank.ACE11));
         player1.addCard(new Card(Suit.CLUBS, Rank.JACK));
         player1.setStatus(PlayerStatus.BLACKJACK);
@@ -253,18 +260,21 @@ class GameTest {
         dealer.addCard(new Card(Suit.CLUBS, Rank.JACK));
         dealer.setStatus(PlayerStatus.STICK);
         game.verdict();
-        assertEquals(20, player1.getMoney());
-        assertEquals(20, player2.getMoney());
+        assertEquals(20, TokenUtils.tokensToMoney(player1.getTokens()));
+        assertEquals(20, TokenUtils.tokensToMoney(player2.getTokens()));
     }
 
     @Test
     void playersMoneyDecreaseWhenTheyLose() {
         player1.setMoney(10);
+        player1.setTokens(player1.getMoney());
         player2.setMoney(10);
+        player2.setTokens(player2.getMoney());
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBetTokens(TokenUtils.moneyToTokens(10));
+            player1.setBetTokens(TokenUtils.moneyToTokens(10));
         } catch (Exception e) {
+            System.out.println(e);
             assertTrue(false);
         }
         player1.addCard(new Card(Suit.CLUBS, Rank.ACE11));
@@ -277,19 +287,22 @@ class GameTest {
         dealer.addCard(new Card(Suit.CLUBS, Rank.JACK));
         dealer.setStatus(PlayerStatus.BLACKJACK);
         game.verdict();
-        assertEquals(0, player1.getMoney());
-        assertEquals(0, player2.getMoney());
+        assertEquals(0, TokenUtils.tokensToMoney(player1.getTokens()));
+        assertEquals(0, TokenUtils.tokensToMoney(player2.getTokens()));
     }
 
 
     @Test
     void dealersMoneyIncreaseWhenTheyWin() {
         player1.setMoney(10);
+        player1.setTokens(player1.getMoney());
         player2.setMoney(10);
+        player2.setTokens(player2.getMoney());
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBetTokens(TokenUtils.moneyToTokens(10));
+            player1.setBetTokens(TokenUtils.moneyToTokens(10));
         } catch (Exception e) {
+            System.out.println(e);
             assertTrue(false);
         }
         player1.addCard(new Card(Suit.CLUBS, Rank.ACE11));
@@ -302,16 +315,18 @@ class GameTest {
         dealer.addCard(new Card(Suit.CLUBS, Rank.JACK));
         dealer.setStatus(PlayerStatus.BLACKJACK);
         game.verdict();
-        assertEquals(120, dealer.getMoney());
+        assertEquals(120, TokenUtils.tokensToMoney(dealer.getTokens()));
     }
 
     @Test
     void dealersMoneyDecreaseWhenTheyLose() {
         player1.setMoney(10);
+        player1.setTokens(player1.getMoney());
         player2.setMoney(10);
+        player2.setTokens(player2.getMoney());
         try {
-            player2.setBet(10);
-            player1.setBet(10);
+            player2.setBetTokens(TokenUtils.moneyToTokens(10));
+            player1.setBetTokens(TokenUtils.moneyToTokens(10));
         } catch (Exception e) {
             assertTrue(false);
         }
@@ -326,7 +341,7 @@ class GameTest {
         dealer.addCard(new Card(Suit.CLUBS, Rank.JACK));
         dealer.setStatus(PlayerStatus.BUSTED);
         game.verdict();
-        assertEquals(80, dealer.getMoney());
+        assertEquals(80, TokenUtils.tokensToMoney(dealer.getTokens()));
     }
 
     public void turnSimulator(Player player) {
@@ -381,13 +396,14 @@ class GameTest {
         game.dealCards();
         for (Player player : game.getPlayers()) {
             player.setMoney(10);
-            player.setBet(10);
+            player.setTokens(player.getMoney());
+            player.setBetTokens(TokenUtils.moneyToTokens(10));
             turnSimulator(player);
         }
         turnSimulator(dealer);
         game.verdict();
-        assertNotEquals(10, player1.getMoney());
-        assertNotEquals(10, player2.getMoney());
-        assertEquals(100 + (10 - player1.getMoney()) + (10 - player2.getMoney()), dealer.getMoney());
+        assertNotEquals(10, TokenUtils.tokensToMoney(player1.getTokens()));
+        assertNotEquals(10, TokenUtils.tokensToMoney(player2.getTokens()));
+        assertEquals(100 + (10 - TokenUtils.tokensToMoney(player1.getTokens())) + (10 - TokenUtils.tokensToMoney(player2.getTokens())), TokenUtils.tokensToMoney(dealer.getTokens()));
     }
 }

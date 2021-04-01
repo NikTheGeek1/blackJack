@@ -181,7 +181,7 @@ class CanvasManager {
                 this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
             );
         }
-
+        
         this.canvasContext.drawImage(tokenImgObj.img,
             Math.round(x),
             Math.round(y),
