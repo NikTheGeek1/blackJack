@@ -47,7 +47,7 @@ public class GameController {
     public void leaveGame(@DestinationVariable String gameName, @Payload String userEmail) {
         System.out.println("removing user from match");
         Match match = activeMatchesManager.getMatch(gameName);
-        if (match == null) return; // todo: possible return a message saying that couldn't find matchd
+        if (match == null) return; // todo: possible return a message saying that couldn't find match
         if (match.getUsers() != null && match.getUsers().size() == 1) {// the leaver is the last player
             activeMatchesManager.remove(gameName);
         } else {

@@ -25,6 +25,8 @@ class CanvasConstants {
         { x: 30, y: 0, angle: 20 },
         { x: 60, y: 10, angle: 30 },
         { x: 85, y: 25, angle: 40 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
+        { x: 110, y: 45, angle: 50 },
+        { x: 140, y: 85, angle: 60 }
     ];
 
     static TOKENS_IN_EACH_WRAP = 5;
@@ -76,10 +78,25 @@ class CanvasConstants {
         { x: 100, y: 0 },
     ];
 
-    static START_BUTTON_SIZE = { width: 300, height: 50 };
     static START_BUTTON_COORDS = { x: 400, y: 400 };
-    static BET_BUTTON_SIZE = { width: 300, height: 50 };
     static BET_BUTTON_COORDS = { x: 400, y: 400 };
+    static DRAW_BUTTON_COORDS = { x: 550, y: 400 };
+    static STICK_BUTTON_COORDS = { x: 250, y: 400 };
+
+    static START_BUTTON_SIZE = { width: 300, height: 50 };
+    static BET_BUTTON_SIZE = { width: 300, height: 50 };
+    static DRAW_BUTTON_SIZE = { width: 250, height: 50 };
+    static STICK_BUTTON_SIZE = { width: 250, height: 50 };
+
+    static NAMES_COORDS = [
+        { x: 560, y: 70, angle: 0 }, // dealer
+        { x: 10, y: 310, angle: 70 },
+        { x: 130, y: 485, angle: 45 },
+        { x: 340, y: 590, angle: 13 },
+        { x: 590, y: 615, angle: -13 },
+        { x: 800, y: 537, angle: -40 },
+        { x: 910, y: 440, angle: -55 },
+    ];
 
 }
 

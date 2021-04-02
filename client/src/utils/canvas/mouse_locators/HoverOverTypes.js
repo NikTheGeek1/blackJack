@@ -6,6 +6,8 @@ class HoverOverTypes {
     static BET_TOKEN_COLUMNS = ["b1", "b10", "b50", "b100", "b200", "b500"];
     static START_GAME_BUTTON = "START_GAME_BUTTON";
     static BET_BUTTON = "BET_BUTTON";
+    static STICK_BUTTON = "STICK_BUTTON";
+    static DRAW_BUTTON = "DRAW_BUTTON";
 }
 
 export default HoverOverTypes;

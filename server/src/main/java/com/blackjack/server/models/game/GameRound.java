@@ -153,8 +153,6 @@ public class GameRound extends Game {
                         match.setHasSimulationStared(true);
                     }
                 }
-
-
             } else {}// playing player keeps playing
         }
     }

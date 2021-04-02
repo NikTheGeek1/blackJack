@@ -4,6 +4,7 @@ import RevealedCardUtils from '../../utils/canvas/RevealedCardUtils';
 import TokenUtils from '../../utils/canvas/TokenUtils';
 import HoverOverType from '../../utils/canvas/mouse_locators/HoverOverTypes';
 import MessagesManagers from '../../utils/canvas/draw_messages/MessagesManager';
+import PlayerStatus from '../../constants/PlayerStatus';
 
 class CanvasManager {
     constructor(canvas, screenDims, imgsArray, thisPlayer, game) {
@@ -66,17 +67,54 @@ class CanvasManager {
         this.canvasContext.drawImage(table, tableCoords.x, tableCoords.y);
     }
 
-    _drawPosition(playerPosition) {
+    _drawPositionOverlay(type, x, y) {
+        this.canvasContext.save();
+        if (type === "CURRENT_PLAYER") { // playing player
+            const colour = "rgba(255, 0, 0, .7)";
+            this.canvasContext.fillStyle = colour;
+            this.canvasContext.strokeStyle = colour;
+
+        } else if (type === "THIS_PLAYER") { // this player
+            const colour = "rgba(255, 200, 100, .7)";
+            this.canvasContext.fillStyle = colour;
+            this.canvasContext.strokeStyle = colour;
+        }
+        this.canvasContext.beginPath();
+        this.canvasContext.arc(x+36.5, y+39, 25, 0, 2 * Math.PI);
+        this.canvasContext.fill();
+        this.canvasContext.stroke();
+        this.canvasContext.restore();
+    }
+
+    _drawPosition(playerPosition, player) {
         const positionImgObj = this._findImageToDraw(CanvasImgNames.POSITION);
         const positionCoords = this.dynamicSizesManager.POSISITIONS_COORDS[playerPosition];
         if (!positionCoords) return;
         this.canvasContext.drawImage(positionImgObj.img, Math.round(positionCoords.x), Math.round(positionCoords.y));
+        if (this.thisPlayer.email === player.email) {
+            this._drawPositionOverlay("THIS_PLAYER", Math.round(positionCoords.x), Math.round(positionCoords.y));
+        }
+        if (player.status === PlayerStatus.PLAYING) {
+            this._drawPositionOverlay("CURRENT_PLAYER", Math.round(positionCoords.x), Math.round(positionCoords.y));
+        }
+    }
+
+
+    _drawPlayerName(playerIdx, player) {
+        this.canvasContext.font = '30px serif';
+        const nameCoords = this.dynamicSizesManager.NAMES_COORDS(playerIdx);
+        this.canvasContext.save();
+        this.canvasContext.fillStyle = "#ffffff";
+        this.canvasContext.translate(nameCoords.x, nameCoords.y);
+        this.canvasContext.rotate(nameCoords.angle * Math.PI / 180);
+        this.canvasContext.fillText(player.name, 0, 0);
+        this.canvasContext.restore();
     }
 
 
     _drawPositions() {
         for (let i = 0; i < this.game.allPlayersDealerFirst.length; i++) {
-            this._drawPosition(i);
+            this._drawPosition(i, this.game.allPlayersDealerFirst[i]);
         }
     }
 
@@ -136,6 +174,12 @@ class CanvasManager {
         }
     }
 
+    _drawPlayerNames() {
+        for (let playerIdx = 0; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
+            this._drawPlayerName(playerIdx, this.game.allPlayersDealerFirst[playerIdx]);
+        }
+    }
+
     drawAll(drawCards, drawTokens) {
         this.canvasContext.save();
         this.canvasContext.scale(
@@ -144,6 +188,7 @@ class CanvasManager {
         );
         this._drawBackground();
         this._drawTable();
+        this._drawPlayerNames();
         this._drawPositions();
         if (!drawCards) {
             this._drawMessages();
@@ -156,6 +201,7 @@ class CanvasManager {
         }
         this._drawAllPlayerBetTokens();
         this._drawMessages();
+        this.drawCanvasStateToBackupCanvas()
         this.canvasContext.restore();
     }
 
@@ -181,7 +227,7 @@ class CanvasManager {
                 this.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
             );
         }
-        
+
         this.canvasContext.drawImage(tokenImgObj.img,
             Math.round(x),
             Math.round(y),

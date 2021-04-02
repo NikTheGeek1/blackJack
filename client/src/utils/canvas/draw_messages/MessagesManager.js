@@ -23,6 +23,15 @@ class MessagesManager {
         if (this._isReadyToBet()) {
             this._drawBetButton();
         }
+
+        if (this._isThisPlayerPlaying()) {
+            this._drawDrawButton();
+            this._drawStickButton();
+        }
+    }
+
+    _isThisPlayerPlaying() {
+        return this.canvasManager.thisPlayer.status === PlayerStatus.PLAYING;
     }
 
     _isReadyToBet() {
@@ -50,6 +59,15 @@ class MessagesManager {
         this.canvasContext.fillText('BET!', Constants.BET_BUTTON_COORDS.x, Constants.BET_BUTTON_COORDS.y);
     }
 
+    _drawDrawButton() {
+        this.canvasContext.font = '48px serif';
+        this.canvasContext.fillText('DRAW!', Constants.DRAW_BUTTON_COORDS.x, Constants.DRAW_BUTTON_COORDS.y);
+    }
+
+    _drawStickButton() {
+        this.canvasContext.font = '48px serif';
+        this.canvasContext.fillText('STICK!', Constants.STICK_BUTTON_COORDS.x, Constants.STICK_BUTTON_COORDS.y);
+    }
 
 }
 

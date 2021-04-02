@@ -59,6 +59,13 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         });
     }
 
+    NAMES_COORDS(playerIdx, playerName) {
+        const constantCoords = CanvasConstants.NAMES_COORDS[playerIdx];
+        return constantCoords;
+    };
+
+    
+
     CARD_COORDS(playerIdx, cardIdx) {
         return {
             x: this.POSISITIONS_COORDS[playerIdx].x + CanvasConstants.Ps_CARD_OFFSETS[playerIdx].x + CanvasConstants.CARD_NUM_OFFSETS[cardIdx].x,

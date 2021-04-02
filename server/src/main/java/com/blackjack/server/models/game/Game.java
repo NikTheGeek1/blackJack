@@ -236,4 +236,18 @@ public abstract class Game {
         return haveAllBJ;
     }
 
+    public boolean atLeastOnePlayerBJRestEitherBJOrBusted() {
+        boolean haveAllEitherBJOrBusted = true;
+        boolean atLeastOneBJ = false;
+        for (Player player : players) {
+            if (player.getIsDealer()) continue;
+            if (player.getStatus() == PlayerStatus.BLACKJACK) {
+                atLeastOneBJ = true;
+            } else if (player.getStatus() != PlayerStatus.BLACKJACK && player.getStatus() != PlayerStatus.BUSTED) {
+                haveAllEitherBJOrBusted = false;
+            }
+        }
+        return haveAllEitherBJOrBusted && atLeastOneBJ;
+    }
+
 }

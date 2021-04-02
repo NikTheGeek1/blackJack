@@ -74,6 +74,12 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         if (clickedObject === HoverOvertTypes.BET_BUTTON) {
             gameSocketManager.sendBet(canvasManager.thisPlayer.betTokens);
         }
+        if (clickedObject === HoverOvertTypes.DRAW_BUTTON) {
+            gameSocketManager.sendDraw();
+        }
+        if (clickedObject === HoverOvertTypes.STICK_BUTTON) {
+            gameSocketManager.sendStick();
+        }
     };
 
     const updateMousePos = e => {

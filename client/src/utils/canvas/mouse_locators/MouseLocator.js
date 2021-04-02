@@ -5,6 +5,9 @@ import StartGameButtonLocator from './StartGameButtonLocator';
 import BetButtonLocator from './BetButtonLocator';
 import TokenUtils from '../TokenUtils';
 import PlayerStatus from '../../../constants/PlayerStatus';
+import DrawButtonLocator from './DrawButtonLocator';
+import StickButtonLocator from './StickButtonLocator';
+
 class MouseLocator {
 
     constructor(screenDims, mousePos, thisPlayer, game) {
@@ -20,6 +23,9 @@ class MouseLocator {
         let onBetTokens;
         let onCards;
         let onBetButton;
+        let onStickButton;
+        let onDrawButton;
+
         if (this._canThisPlayerClickOnStartGame()) {
             onStartGameButton = new StartGameButtonLocator(this.mousePos).mouseOnButton();
         }
@@ -36,7 +42,17 @@ class MouseLocator {
             onBetButton = new BetButtonLocator(this.mousePos).mouseOnBetButton();
         }
 
-        return onTokens || onCards || onBetTokens || onStartGameButton || onBetButton;
+        if (this.isThisPlayerPlaying()) {
+            onDrawButton = new DrawButtonLocator(this.mousePos).mouseOnDrawButton();
+            onStickButton = new StickButtonLocator(this.mousePos).mouseOnStickButton();
+        }
+
+
+        return onTokens || onCards || onBetTokens || onStartGameButton || onBetButton || onDrawButton || onStickButton;
+    }
+
+    isThisPlayerPlaying() {
+        return this.thisPlayer.status === PlayerStatus.PLAYING;
     }
 
     isThisPlayerReadyToBet() {
