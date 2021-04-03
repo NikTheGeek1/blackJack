@@ -28,6 +28,10 @@ class MessagesManager {
             this._drawDrawButton();
             this._drawStickButton();
         }
+
+        if (this.canvasManager.thisPlayer.status === PlayerStatus.BETTING) {
+            this._drawTimeToBet();
+        }
     }
 
     _isThisPlayerPlaying() {
@@ -38,6 +42,19 @@ class MessagesManager {
         return TokenUtils.tokensToMoney(this.canvasManager.thisPlayer.betTokens) && 
             this.canvasManager.thisPlayer.status === PlayerStatus.BETTING;
     }
+
+    _drawTimeToBet() {
+        const x = Constants.BET_ARROW_COORDS.x + Constants.BET_MESSAGE_OFFSETS.x;
+        const y = Constants.BET_ARROW_COORDS.y + Constants.BET_MESSAGE_OFFSETS.y;
+        this.canvasContext.font = '28px serif';
+        this.canvasContext.fillStyle = 'black';
+        this.canvasContext.save();
+        this.canvasContext.translate(x, y);
+        this.canvasContext.rotate(Constants.BET_MESSAGE_OFFSETS.angle * Math.PI / 180);
+        this.canvasContext.fillText('Time to bet!', 0, 0);
+        this.canvasContext.restore();
+    }
+
 
     _drawWaitForDealerToSartTheGame() {
         this.canvasContext.font = '48px serif';

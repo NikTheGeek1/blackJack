@@ -69,6 +69,7 @@ class CanvasManager {
 
     _drawPositionOverlay(type, x, y) {
         this.canvasContext.save();
+        // TODO: make current and this player enums
         if (type === "CURRENT_PLAYER") { // playing player
             const colour = "rgba(255, 0, 0, .7)";
             this.canvasContext.fillStyle = colour;
@@ -146,6 +147,18 @@ class CanvasManager {
         this.canvasContext.restore();
     }
 
+    _drawBettingArrow() {
+        let cardImgObj = this._findImageToDraw(CanvasImgNames.ARROW);
+        const cardSize = CanvasDynamicSizesManager.originalSizes.ARROW;
+        const arrowCoords = CanvasDynamicSizesManager.constants.BET_ARROW_COORDS;
+        this.canvasContext.save();
+        this.canvasContext.translate(arrowCoords.x, arrowCoords.y);
+        this.canvasContext.rotate(arrowCoords.angle * Math.PI / 180);
+        this.canvasContext.drawImage(cardImgObj.img, 0, 0,cardSize.width,cardSize.height); // TODO: MAKE THE ENLARGED SIZES CONSTANT
+        this.canvasContext.restore();
+    }
+
+
     _drawCards() {
         for (let playerIdx = 0; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
             const player = this.game.allPlayersDealerFirst[playerIdx];
@@ -198,6 +211,9 @@ class CanvasManager {
         this._drawCards();
         if (drawTokens) {
             this._drawTokens();
+        }
+        if (this.thisPlayer.status === PlayerStatus.BETTING) {
+            this._drawBettingArrow();
         }
         this._drawAllPlayerBetTokens();
         this._drawMessages();

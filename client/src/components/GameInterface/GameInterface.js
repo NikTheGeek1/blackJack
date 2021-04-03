@@ -14,7 +14,7 @@ import MouseLocator from '../../utils/canvas/mouse_locators/MouseLocator';
 import HoverOvertTypes from '../../utils/canvas/mouse_locators/HoverOverTypes';
 import BetTokenAnimation from '../../utils/canvas/animations/BetToken';
 import CancelBetTokenAnimation from '../../utils/canvas/animations/CancelBetToken';
-import TokenUtils from '../../utils/canvas/TokenUtils';
+import arrowImg from '../../assets/arrow.png';
 
 let canvasManager;
 const GameInterface = ({ screenDimensions, gameSocketManager }) => {
@@ -34,7 +34,8 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         // TODO: export the importing of these images in a different file, as you've done with the cardImgs and tokenImgs
         { src: tableImg, name: CanvasImgNames.TABLE },
         { src: positionImg, name: CanvasImgNames.POSITION },
-        { src: cardBackBlueImg, name: CanvasImgNames.CARD_BACK_BLUE }
+        { src: cardBackBlueImg, name: CanvasImgNames.CARD_BACK_BLUE },
+        { src: arrowImg, name: CanvasImgNames.ARROW }
         ];
         // TODO: canvas renders anew couple of times, put a debugger somewhere and check render cycles 
         canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match.game);

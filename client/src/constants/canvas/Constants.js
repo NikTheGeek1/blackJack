@@ -98,6 +98,8 @@ class CanvasConstants {
         { x: 910, y: 440, angle: -55 },
     ];
 
+    static BET_ARROW_COORDS = { x: 100, y: 600, angle: -90 };
+    static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
 }
 
 
