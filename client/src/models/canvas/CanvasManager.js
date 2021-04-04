@@ -102,7 +102,7 @@ class CanvasManager {
 
 
     _drawPlayerName(playerIdx, player) {
-        this.canvasContext.font = '30px serif';
+        this.canvasContext.font = CanvasDynamicSizesManager.constants.PLAYER_NAMES_FONT;
         const nameCoords = this.dynamicSizesManager.NAMES_COORDS(playerIdx);
         this.canvasContext.save();
         this.canvasContext.fillStyle = "#ffffff";

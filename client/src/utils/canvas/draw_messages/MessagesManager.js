@@ -46,7 +46,7 @@ class MessagesManager {
     _drawTimeToBet() {
         const x = Constants.BET_ARROW_COORDS.x + Constants.BET_MESSAGE_OFFSETS.x;
         const y = Constants.BET_ARROW_COORDS.y + Constants.BET_MESSAGE_OFFSETS.y;
-        this.canvasContext.font = '28px serif';
+        this.canvasContext.font = Constants.TIME_TO_BET_FONT;
         this.canvasContext.fillStyle = 'black';
         this.canvasContext.save();
         this.canvasContext.translate(x, y);
@@ -57,32 +57,32 @@ class MessagesManager {
 
 
     _drawWaitForDealerToSartTheGame() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('Wait for dealer to start the game', 150, 400);
     }
 
     _drawStartTheGameButton() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('Start game', Constants.START_BUTTON_COORDS.x, Constants.START_BUTTON_COORDS.y);
     }
 
     _drawPleaseWaitForAnotherPlayer() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('Please wait for another player to join', 150, 400);
     }
 
     _drawBetButton() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('BET!', Constants.BET_BUTTON_COORDS.x, Constants.BET_BUTTON_COORDS.y);
     }
 
     _drawDrawButton() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('DRAW!', Constants.DRAW_BUTTON_COORDS.x, Constants.DRAW_BUTTON_COORDS.y);
     }
 
     _drawStickButton() {
-        this.canvasContext.font = '48px serif';
+        this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('STICK!', Constants.STICK_BUTTON_COORDS.x, Constants.STICK_BUTTON_COORDS.y);
     }
 

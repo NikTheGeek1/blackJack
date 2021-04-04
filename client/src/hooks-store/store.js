@@ -7,12 +7,14 @@ let actions = {};
 export const useStore = (shouldListen = true) => {
     const setState = useState(globalState)[1];
 
-    const dispatch = (actionIdentifief, payload) => {
+    const dispatch = (actionIdentifief, payload, shouldNotify = true) => {
         const newState = actions[actionIdentifief](globalState, payload);
         globalState = { ...globalState, ...newState };
 
-        for (let i = 0; i < listeners.length; i++) {
-            listeners[i](globalState);
+        if (shouldNotify) {
+            for (let i = 0; i < listeners.length; i++) {
+                listeners[i](globalState);
+            }
         }
     };
 

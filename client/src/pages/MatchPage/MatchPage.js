@@ -23,8 +23,8 @@ const MatchPage = () => {
         window.addEventListener("resize", screenDimensionsHandler);
         if (match && thisPlayer) {
             gameSocketManager = new GameSocketsManager(
-                matchParsed => dispatch(SET_MATCH, matchParsed),
-                player => dispatch(SET_PLAYER, player),
+                matchParsed => dispatch(SET_MATCH, matchParsed, false),
+                player => dispatch(SET_PLAYER, player, false),
                 choice => dispatch(SET_PLAYER_CHOICE, choice),
                 match.matchName,
                 thisPlayer.email

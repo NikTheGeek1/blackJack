@@ -100,6 +100,11 @@ class CanvasConstants {
 
     static BET_ARROW_COORDS = { x: 100, y: 600, angle: -90 };
     static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
+
+    static MESSAGES_FONT = "48px serif";
+    static MESSAGES_COLOUR = "";
+    static PLAYER_NAMES_FONT = "30px serif";
+    static TIME_TO_BET_FONT = "28px serif";
 }
 
 

@@ -30,7 +30,7 @@ public class GameController {
     public void enterGame(@DestinationVariable String gameName) {
         Match match = activeMatchesManager.getMatch(gameName);
         GamePrep.setUpGameOrAddPlayer(match);
-        PlayerChoice playerChoice = new PlayerChoice(null, PlayerChoiceType.NULL);
+        PlayerChoice playerChoice = new PlayerChoice(null, null);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
     }
 
@@ -63,7 +63,7 @@ public class GameController {
         try {
             match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
             if (match.getGame().hasEveryoneBet()) match.getGame().startRound(match);
-            PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), PlayerChoiceType.BET);
+            PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), null);
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
             if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                 sendChangedTurn_Delayed(match);
@@ -79,7 +79,7 @@ public class GameController {
                     @Override
                     public void run() {
                             match.getGame().nextRound(match.getGameType());
-                        PlayerChoice playerChoice = new PlayerChoice(null, PlayerChoiceType.NULL);
+                        PlayerChoice playerChoice = new PlayerChoice(null, null);
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                     }
                 },
@@ -97,7 +97,7 @@ public class GameController {
                         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                             sendChangedTurn_Delayed(match);
                         }
-                        PlayerChoice playerChoice = new PlayerChoice(null, PlayerChoiceType.NULL);
+                        PlayerChoice playerChoice = new PlayerChoice(null, null);
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                         if (match.getGame().isVerdictOut()) {
                             sendChangedRound_Delayed(match);
@@ -117,7 +117,7 @@ public class GameController {
                         if (match.getHasSimulationStared()) {
                             sendDealerNextMove_Delayed(match);
                         }
-                        PlayerChoice playerChoice = new PlayerChoice(null, PlayerChoiceType.NULL);
+                        PlayerChoice playerChoice = new PlayerChoice(null, null);
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match,playerChoice));
                         if (match.getGame().isVerdictOut()) {
                             sendChangedRound_Delayed(match);
@@ -132,7 +132,7 @@ public class GameController {
     public void stick(@DestinationVariable String gameName, @DestinationVariable String playerEmail) {
         Match match = activeMatchesManager.getMatch(gameName);
         GamePrep.playerSticks(match);
-        PlayerChoice playerChoice = new PlayerChoice(playerEmail, PlayerChoiceType.STUCK);
+        PlayerChoice playerChoice = new PlayerChoice(playerEmail, null);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
             sendChangedTurn_Delayed(match);

@@ -24,6 +24,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const [allImgsLoaded, setAllImgsLoaded] = useState(false);
     const [isInitialAnimationOver, setIsInitialAnimationOver] = useState(false);
     const [globalState, dispatch] = useStore();
+    const [animationPlaying, setAnimationPlaying] = useState(false);
     const match = globalState.matchState.matchObj;
     const thisPlayer = globalState.playerState.playerObj;
     const playerChoice = globalState.playerChoiceState.playerChoiceObj;
@@ -44,10 +45,27 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     useEffect(() => {
         if (!allImgsLoaded) return;
+        console.log(playerChoice, 'GameInterface.js', 'line: ', '121');
+        if (playerChoice?.playerChoiceType) {
+            // TODO: enable no clicking
+            setAnimationPlaying(true);
+            console.log("animationPlaying", 'GameInterface.js', 'line: ', '52');
+            canvasManager.updateGame(match.game);
+            canvasManager.updateThisPlayer(thisPlayer);
+            animationChoser(playerChoice, canvasManager, dispatch, { setIsInitialAnimationOver, setAnimationPlaying });
+        } else {
+            // enable clicking
+        }
+
+    }, [thisPlayer, match, playerChoice, allImgsLoaded]);
+
+    useEffect(() => {
+        console.log(animationPlaying, 'GameInterface.js', 'line: ', '62');
+        if (!allImgsLoaded || animationPlaying) return;
         canvasManager.updateGame(match.game);
         canvasManager.updateThisPlayer(thisPlayer);
         canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
-    }, [match, thisPlayer]);
+    }, [match, thisPlayer, animationPlaying]);
 
     useEffect(() => {
         if (!allImgsLoaded) return;
@@ -56,6 +74,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     }, [screenDimensions]);
 
     const clickHandler = e => {
+        if (animationPlaying) return;
         // if (mousePosOrigin.x !== 0 && mousePosOrigin.y !== 0) {
         //     setMousePosOrigin({ x: 0, y: 0 });
         // } else {
@@ -89,7 +108,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         const x = Math.round((e.clientX - rect.left - mousePosOrigin.x) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / (screenDimensions.width < 800 ? 800 : screenDimensions.width)));// - root.scrollLeft;
         const y = Math.round((e.clientY - rect.top - mousePosOrigin.y) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / (screenDimensions.width < 800 ? 800 : screenDimensions.width)));// - root.scrollTop;
         setMousePos({ x, y });
-
+        if (animationPlaying) return;
         const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);
         const mouseOnWhat = mouseLocator.analyseMouseLocation();
 
@@ -115,19 +134,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             canvasManager.canvas.removeEventListener('mousemove', updateMousePos);
         };
     }, [clickHandler, updateMousePos]);
-
-    useEffect(() => {
-        if (!allImgsLoaded) return;
-        if (playerChoice?.playerChoiceType) {
-            // TODO: enable no clicking
-            canvasManager.updateGame(match.game);
-            canvasManager.updateThisPlayer(thisPlayer);
-            animationChoser(playerChoice, canvasManager, dispatch, setIsInitialAnimationOver);
-        } else {
-            // enable clicking
-        }
-
-    }, [match, playerChoice, allImgsLoaded]);
 
 
     return (
