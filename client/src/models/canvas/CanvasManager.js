@@ -18,6 +18,7 @@ class CanvasManager {
         this.game = game;
         this.backupCanvas = null;
         this.isBackupCanvasDrawn = false;
+        this.initialAnimationFinished = false;
     }
 
     updateGame(game) {
@@ -212,7 +213,7 @@ class CanvasManager {
         if (drawTokens) {
             this._drawTokens();
         }
-        if (this.thisPlayer.status === PlayerStatus.BETTING) {
+        if (this.thisPlayer.status === PlayerStatus.BETTING && this.initialAnimationFinished) {
             this._drawBettingArrow();
         }
         this._drawAllPlayerBetTokens();

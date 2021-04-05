@@ -46,7 +46,6 @@ class CancelBetToken {
 
     _drawTokenRecursively() {
             this.drawBackupCanvasStateToCanvas(false);
-            console.log(CanvasDynamicSizesManager.originalSizes.TOKEN.width , 'CancelBetToken.js', 'line: ', '50');
             const shrinkedSize = CanvasDynamicSizesManager.originalSizes.TOKEN.width - (34 - this.data.shrinkIncrement); // TODO: make this constant
             this.canvasManager._drawToken(this.data.tokenCurrentCoords.x, this.data.tokenCurrentCoords.y, this.tokenColumnIdx, true, true, shrinkedSize);
             this._incrementCoords(this.data.tokenCurrentCoords, this.data.allTokenCoords);

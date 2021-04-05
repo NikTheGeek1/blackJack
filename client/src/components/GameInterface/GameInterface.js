@@ -15,6 +15,7 @@ import HoverOvertTypes from '../../utils/canvas/mouse_locators/HoverOverTypes';
 import BetTokenAnimation from '../../utils/canvas/animations/BetToken';
 import CancelBetTokenAnimation from '../../utils/canvas/animations/CancelBetToken';
 import arrowImg from '../../assets/arrow.png';
+import { UNSET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
 
 let canvasManager;
 const GameInterface = ({ screenDimensions, gameSocketManager }) => {
@@ -45,14 +46,14 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     useEffect(() => {
         if (!allImgsLoaded) return;
-        console.log(playerChoice, 'GameInterface.js', 'line: ', '121');
         if (playerChoice?.playerChoiceType) {
             // TODO: enable no clicking
             setAnimationPlaying(true);
-            console.log("animationPlaying", 'GameInterface.js', 'line: ', '52');
+            document.getElementsByTagName("body")[0].style.cursor = "initial";
             canvasManager.updateGame(match.game);
             canvasManager.updateThisPlayer(thisPlayer);
-            animationChoser(playerChoice, canvasManager, dispatch, { setIsInitialAnimationOver, setAnimationPlaying });
+            animationChoser(playerChoice, canvasManager, { setIsInitialAnimationOver, setAnimationPlaying });
+            dispatch(UNSET_PLAYER_CHOICE);
         } else {
             // enable clicking
         }
@@ -60,7 +61,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     }, [thisPlayer, match, playerChoice, allImgsLoaded]);
 
     useEffect(() => {
-        console.log(animationPlaying, 'GameInterface.js', 'line: ', '62');
         if (!allImgsLoaded || animationPlaying) return;
         canvasManager.updateGame(match.game);
         canvasManager.updateThisPlayer(thisPlayer);
@@ -111,7 +111,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         if (animationPlaying) return;
         const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);
         const mouseOnWhat = mouseLocator.analyseMouseLocation();
-
         if (mouseOnWhat && !canvasManager.isBackupCanvasDrawn) {
             document.getElementsByTagName("body")[0].style.cursor = "pointer";
             if (HoverOvertTypes.PLAYER_CARDS.includes(mouseOnWhat)) {
@@ -125,6 +124,10 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             document.getElementsByTagName("body")[0].style.cursor = "initial";
         }
     };
+
+    useEffect(() => {
+        canvasManager.initialAnimationFinished = isInitialAnimationOver;
+    }, [isInitialAnimationOver]);
 
     useEffect(() => {
         canvasManager.canvas.addEventListener('click', clickHandler);

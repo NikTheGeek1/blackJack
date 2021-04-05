@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useStore } from '../../hooks-store/store';
 import './MatchPage.css';
 import URLs from '../../services/DEV-URLs';
-import { SET_MATCH } from '../../hooks-store/stores/match-store';
+import { SET_MATCH, PARTIALLY_SET_MATCH } from '../../hooks-store/stores/match-store';
 import { SET_PLAYER } from '../../hooks-store/stores/player-store';
 import { SET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
 import Match from '../../models/matches/Match';
@@ -24,6 +24,7 @@ const MatchPage = () => {
         if (match && thisPlayer) {
             gameSocketManager = new GameSocketsManager(
                 matchParsed => dispatch(SET_MATCH, matchParsed, false),
+                payload => dispatch(PARTIALLY_SET_MATCH, payload, false),
                 player => dispatch(SET_PLAYER, player, false),
                 choice => dispatch(SET_PLAYER_CHOICE, choice),
                 match.matchName,
@@ -103,7 +104,7 @@ const MatchPage = () => {
 
     return (
         <div className="match-page-container">
-            {(gameSocketManager && match.game) && <GameInterface screenDimensions={screenDimensions} gameSocketManager={gameSocketManager}/>}
+            {(gameSocketManager && match.game) && <GameInterface screenDimensions={screenDimensions} gameSocketManager={gameSocketManager} />}
             <Chat screenDimensions={screenDimensions} />
         </div>
     );

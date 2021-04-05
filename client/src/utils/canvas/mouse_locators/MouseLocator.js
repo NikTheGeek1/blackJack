@@ -7,6 +7,7 @@ import TokenUtils from '../TokenUtils';
 import PlayerStatus from '../../../constants/PlayerStatus';
 import DrawButtonLocator from './DrawButtonLocator';
 import StickButtonLocator from './StickButtonLocator';
+import MessagesManager from '../draw_messages/MessagesManager';
 
 class MouseLocator {
 
@@ -42,7 +43,7 @@ class MouseLocator {
             onBetButton = new BetButtonLocator(this.mousePos).mouseOnBetButton();
         }
 
-        if (this.isThisPlayerPlaying()) {
+        if (this.isThisPlayerPlaying() && !MessagesManager.anotherMessageIsDisplayed) {
             onDrawButton = new DrawButtonLocator(this.mousePos).mouseOnDrawButton();
             onStickButton = new StickButtonLocator(this.mousePos).mouseOnStickButton();
         }

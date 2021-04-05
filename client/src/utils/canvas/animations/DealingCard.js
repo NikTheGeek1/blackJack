@@ -1,6 +1,5 @@
 import DynamicManager from '../coordinates_sizes/DynamicManager';
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
-import PlayerStatus from '../../../constants/PlayerStatus';
 
 class DealingCards {
     constructor(canvasManager, playingPlayerEmail, onFinishCb) {
@@ -30,7 +29,7 @@ class DealingCards {
         let y = DynamicManager.constants.DEALING_CARD_INITIAL_COORDS.y;
         let cardIdx;
         try {
-            cardIdx = this.canvasManager.game.allPlayersDealerFirst[this.playingPlayerIdx].displayedCards.length;
+            cardIdx = this.canvasManager.game.allPlayersDealerFirst[this.playingPlayerIdx].displayedCards.length - 1;
         } catch (error) {
             debugger;
         }

@@ -5,7 +5,7 @@ public enum PlayerChoiceType {
     BUSTED,
     STUCK,
     STARTED_GAME,
-    NULL,
     LEFT_GAME,
-    BET;
+    BET,
+    BLACKJACKED;
 }

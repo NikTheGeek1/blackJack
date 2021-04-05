@@ -1,13 +1,28 @@
 import { initStore } from '../store';
 import Match from '../../models/matches/Match';
+import PlayerUtils from '../../utils/game-utils/players-utils';
 
 export const SET_MATCH = "SET_MATCH";
+export const PARTIALLY_SET_MATCH = "PARTIALLY_SET_MATCH";
 export const UNSET_MATCH = "UNSET_MATCH";
 
 const configureStore = () => {
     const actions = {
         [SET_MATCH]: (curState, matchObj) => {
             return { matchState: { inMatch: true, matchObj: new Match(matchObj) } };
+        },
+        [PARTIALLY_SET_MATCH]: (curState, payload) => {
+            PlayerUtils.findAndReplacePlayerByEmail(
+                payload.thisPlayerEmail,
+                payload.match.game.players,
+                curState.playerState.playerObj
+            );
+            PlayerUtils.findAndReplacePlayerByEmail(
+                payload.thisPlayerEmail,
+                payload.match.game.allPlayersDealerFirst,
+                curState.playerState.playerObj
+            );
+            return { matchState: { inMatch: true, matchObj: new Match(payload.match) } };
         },
         [UNSET_MATCH]: () => {
             return { matchState: { inMatch: false, matchObj: null } };
@@ -17,7 +32,7 @@ const configureStore = () => {
         matchState: {
             inMatch: false, matchObj: null
         }
-    });  
+    });
 }
 
 

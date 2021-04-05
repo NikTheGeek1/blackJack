@@ -1,8 +1,10 @@
 import PlayerStatus from '../../../constants/PlayerStatus';
 import Constants from '../../../constants/canvas/Constants';
 import TokenUtils from '../TokenUtils';
+import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
 
 class MessagesManager {
+    static anotherMessageIsDisplayed = false;
     constructor(canvasManager) {
         this.canvasManager = canvasManager;
         this.allPlayersDealerFirst = canvasManager.game.allPlayersDealerFirst;
@@ -23,13 +25,13 @@ class MessagesManager {
         if (this._isReadyToBet()) {
             this._drawBetButton();
         }
-
-        if (this._isThisPlayerPlaying()) {
+        if (this._isThisPlayerPlaying() && !MessagesManager.anotherMessageIsDisplayed) {
             this._drawDrawButton();
             this._drawStickButton();
         }
 
-        if (this.canvasManager.thisPlayer.status === PlayerStatus.BETTING) {
+        if (this.canvasManager.thisPlayer.status === PlayerStatus.BETTING &&
+            this.canvasManager.initialAnimationFinished) {
             this._drawTimeToBet();
         }
     }
@@ -84,6 +86,39 @@ class MessagesManager {
     _drawStickButton() {
         this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('STICK!', Constants.STICK_BUTTON_COORDS.x, Constants.STICK_BUTTON_COORDS.y);
+    }
+
+    static drawBusted(canvasManager, onFinishCb) {
+        canvasManager.canvasContext.save();
+        canvasManager.canvasContext.scale(
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+        );
+      
+        canvasManager.canvasContext.font = Constants.BUSTED_FONT;
+        canvasManager.canvasContext.fillText('BUSTED!', Constants.BUSTED_MSG_COORDS.x, Constants.BUSTED_MSG_COORDS.y);
+        canvasManager.canvasContext.restore();
+        const timeOut = setTimeout(() => {
+            onFinishCb();
+            MessagesManager.anotherMessageIsDisplayed = false;
+            clearTimeout(timeOut);
+        }, 2000);
+    }
+
+    static drawBJ(canvasManager, onFinishCb) {
+        canvasManager.canvasContext.save();
+        canvasManager.canvasContext.scale(
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+        );
+        canvasManager.canvasContext.font = Constants.BJ_FONT;
+        canvasManager.canvasContext.fillText('BLACK JACK!!!', Constants.BJ_MSG_COORDS.x, Constants.BJ_MSG_COORDS.y);  
+        canvasManager.canvasContext.restore();
+        const timeOut = setTimeout(() => {
+            onFinishCb();
+            MessagesManager.anotherMessageIsDisplayed = false;
+            clearTimeout(timeOut);
+        }, 2000);
     }
 
 }

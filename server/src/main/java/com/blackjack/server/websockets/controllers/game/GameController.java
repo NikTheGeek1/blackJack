@@ -1,9 +1,6 @@
 package com.blackjack.server.websockets.controllers.game;
 
-import com.blackjack.server.models.game.Bet;
-import com.blackjack.server.models.game.GamePrep;
-import com.blackjack.server.models.game.PlayerChoice;
-import com.blackjack.server.models.game.PlayerChoiceType;
+import com.blackjack.server.models.game.*;
 import com.blackjack.server.models.match.Match;
 import com.blackjack.server.urls.URLs;
 import com.blackjack.server.websockets.managers.ActiveMatchesManager;
@@ -63,7 +60,7 @@ public class GameController {
         try {
             match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
             if (match.getGame().hasEveryoneBet()) match.getGame().startRound(match);
-            PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), null);
+            PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), PlayerChoiceType.BET);
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
             if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                 sendChangedTurn_Delayed(match);
@@ -150,7 +147,18 @@ public class GameController {
     public void draw(@DestinationVariable String gameName, @DestinationVariable String playerEmail) {
         Match match = activeMatchesManager.getMatch(gameName);
         match.getGame().draws(match);
-        PlayerChoice playerChoice = new PlayerChoice(playerEmail, PlayerChoiceType.DREW);
+        PlayerChoiceType playerChoiceType;
+        PlayerStatus playerStatus = match.getGame().getPlayerByEmail(playerEmail).getStatus();
+        System.out.println(playerStatus);
+        if (playerStatus == PlayerStatus.BUSTED || playerStatus == PlayerStatus.LOST) {
+            playerChoiceType = PlayerChoiceType.BUSTED;
+        } else if (playerStatus == PlayerStatus.BLACKJACK) {
+            playerChoiceType = PlayerChoiceType.BLACKJACKED;
+        } else {
+            playerChoiceType = PlayerChoiceType.DREW;
+        }
+        System.out.println(playerChoiceType);
+        PlayerChoice playerChoice = new PlayerChoice(playerEmail, playerChoiceType);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
             sendChangedTurn_Delayed(match);

@@ -2,12 +2,15 @@ import { initSocket } from './web-sockets-game-rep';
 import URLs from '../services/DEV-URLs';
 import Bet from '../models/matches/Bet';
 import PlayerUtils from '../utils/game-utils/players-utils';
+import PlayerStatus from '../constants/PlayerStatus';
+import PlayerChoiceType from '../models/matches/PlayerChoiceType';
 
 class GameSocketsManager {
-    constructor(matchSetter, playerSetter, playerChoiceSetter, matchName, thisPlayerEmail) {
+    constructor(matchSetter, partiallyMatchSetter, playerSetter, playerChoiceSetter, matchName, thisPlayerEmail) {
         this.socket = null;
         this.updateGameSubscription = null;
         this.matchSetter = matchSetter;
+        this.partiallyMatchSetter = partiallyMatchSetter;
         this.playerSetter = playerSetter;
         this.playerChoiceSetter = playerChoiceSetter;
         this.matchName = matchName;
@@ -34,10 +37,17 @@ class GameSocketsManager {
             const bodyParsed = JSON.parse(msg.body);
             const matchParsed = bodyParsed.match;
             const playerChoiceParsed = bodyParsed.playerChoice;
-            this.matchSetter(matchParsed);
             const thisPlayerUpdated = PlayerUtils.findPlayerByEmail(this.thisPlayerEmail, matchParsed.game.allPlayersDealerFirst);
-            this.playerSetter(thisPlayerUpdated);
-            this.playerChoiceSetter(playerChoiceParsed);
+            if (thisPlayerUpdated.status === PlayerStatus.BETTING &&
+                playerChoiceParsed.playerChoiceType === PlayerChoiceType.BET) {
+                    // when someone else betted, do not update thisPlayer
+                    this.partiallyMatchSetter({match: matchParsed, thisPlayerEmail: this.thisPlayerEmail });
+                } else {
+                    // update player normally
+                    this.matchSetter(matchParsed);
+                    this.playerSetter(thisPlayerUpdated);
+                }
+                this.playerChoiceSetter(playerChoiceParsed); // this setter actually triggers the update so we need it in
             console.log(matchParsed, 'GameSocketsManager.js', 'line: ', '41');
             console.log("updated match", 'GameSocketsManager.js', 'line: ', '41');
         });

@@ -80,8 +80,8 @@ class CanvasConstants {
 
     static START_BUTTON_COORDS = { x: 400, y: 400 };
     static BET_BUTTON_COORDS = { x: 400, y: 400 };
-    static DRAW_BUTTON_COORDS = { x: 550, y: 400 };
-    static STICK_BUTTON_COORDS = { x: 250, y: 400 };
+    static DRAW_BUTTON_COORDS = { x: 500, y: 400 };
+    static STICK_BUTTON_COORDS = { x: 300, y: 400 };
 
     static START_BUTTON_SIZE = { width: 300, height: 50 };
     static BET_BUTTON_SIZE = { width: 300, height: 50 };
@@ -98,13 +98,17 @@ class CanvasConstants {
         { x: 910, y: 440, angle: -55 },
     ];
 
-    static BET_ARROW_COORDS = { x: 100, y: 600, angle: -90 };
+    static BET_ARROW_COORDS = { x: 70, y: 625, angle: -90 };
     static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
+    static BUSTED_MSG_COORDS = { x: 400, y: 380 };
+    static BJ_MSG_COORDS = { x: 400, y: 380 };
 
     static MESSAGES_FONT = "48px serif";
     static MESSAGES_COLOUR = "";
     static PLAYER_NAMES_FONT = "30px serif";
     static TIME_TO_BET_FONT = "28px serif";
+    static BUSTED_FONT = "48px serif";
+    static BJ_FONT = "48px serif";
 }
 
 
