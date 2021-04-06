@@ -102,6 +102,7 @@ class CanvasConstants {
     static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
     static BUSTED_MSG_COORDS = { x: 400, y: 380 };
     static BJ_MSG_COORDS = { x: 400, y: 380 };
+    static VERDICT_COORDS = { x: 400, y: 380};
 
     static MESSAGES_FONT = "48px serif";
     static MESSAGES_COLOUR = "";
@@ -109,6 +110,8 @@ class CanvasConstants {
     static TIME_TO_BET_FONT = "28px serif";
     static BUSTED_FONT = "48px serif";
     static BJ_FONT = "48px serif";
+    static VERDICT_FONT = "48px serif";
+
 }
 
 

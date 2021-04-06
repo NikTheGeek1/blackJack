@@ -10,6 +10,7 @@ class Game {
         }
         this.players = fetchedGame.players.map(player => new Player(player));
         this.dealer = new Dealer(fetchedGame.dealer);
+        this.verdictOut = fetchedGame.verdictOut;
     }
 
     _deepCopyAllPlayers(allPlayersDealerFirst) {

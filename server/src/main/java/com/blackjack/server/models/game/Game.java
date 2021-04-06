@@ -12,7 +12,6 @@ public abstract class Game {
     private LinkedList<Player> allPlayersDealerFirst;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Deck deck;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean isVerdictOut;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Player playerWhoJustGotDealtBlackJack;

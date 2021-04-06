@@ -3,16 +3,33 @@ import DynamicManager from '../coordinates_sizes/DynamicManager';
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
 
 class DealingCards {
-    constructor(canvasManager, onFinishCb) {
+    constructor(canvasManager, onFinishCb, quitAnimationCb) {
         this.onFinishCb = onFinishCb;
         this.animationUtils = new AnimationUtils(canvasManager.game);
         this.canvasManager = canvasManager;
         this.backupCanvas = null;
         this.data = this._initialValues();
+        this.quitAnimationCb = quitAnimationCb;
+        this.isTabVisible = !document.hidden;
+    }
 
+    _onSwitchTabs() {
+        if (document.hidden) {
+            this.isTabVisible = false;
+            this._quitingAnimation();
+        }
+    }
+
+    _registerTabSwitchingListener() {
+        document.addEventListener("visibilitychange", this._onSwitchTabs.bind(this));
+    }
+
+    _removeEventListener() {
+        document.removeEventListener("visibilitychange", this._onSwitchTabs)
     }
 
     start() {
+        this._registerTabSwitchingListener();
         this.drawCanvasStateToBackupCanvas();
         this._dealingCardRecursive();
     }
@@ -28,23 +45,34 @@ class DealingCards {
     }
 
     _dealingCardRecursive() {
-        if (!this.animationUtils.animationFinished) {
-            this.drawBackupCanvasStateToCanvas(false);
-            this.canvasManager._drawCard(this.data.x, this.data.y, this.data.cardAngle, null, true);
-            this.data.y = this.data.y + this.data.allCardCoords.y;
-            this.data.x = this.data.x + this.data.allCardCoords.x;
-            if (this.data.y > this.data.allCardCoords.finalY) {
-                this.animationUtils.nextFrame();
-                this._persistFrame();
-                this.drawCanvasStateToBackupCanvas();
-                this.data = this._initialValues();
+        if (this.isTabVisible) {
+            if (!this.animationUtils.animationFinished) {
+                this.drawBackupCanvasStateToCanvas(false);
+                this.canvasManager._drawCard(this.data.x, this.data.y, this.data.cardAngle, null, true);
+                this.data.y = this.data.y + this.data.allCardCoords.y;
+                this.data.x = this.data.x + this.data.allCardCoords.x;
+                if (this.data.y > this.data.allCardCoords.finalY) {
+                    this.animationUtils.nextFrame();
+                    this._persistFrame();
+                    this.drawCanvasStateToBackupCanvas();
+                    this.data = this._initialValues();
+                }
+                requestAnimationFrame(this._dealingCardRecursive.bind(this));
+            } else {
+                this.canvasManager.drawAll(true, false);
+                this.onFinishCb();
+                this._removeEventListener();
             }
-            requestAnimationFrame(this._dealingCardRecursive.bind(this));
-        } else {
-            this.canvasManager.drawAll(true, false);
-            this.onFinishCb();
+        } else { // tab not visible
+            this._quitingAnimation();
         }
+    }
 
+    _quitingAnimation() {
+        this.quitAnimationCb();
+        this.canvasManager.initialAnimationFinished = true;
+        this.canvasManager.drawAll(true, true);
+        this._removeEventListener();
     }
 
     _persistFrame() {

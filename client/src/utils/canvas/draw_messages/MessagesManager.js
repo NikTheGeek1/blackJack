@@ -106,6 +106,7 @@ class MessagesManager {
     }
 
     static drawBJ(canvasManager, onFinishCb) {
+        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
             canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
@@ -113,6 +114,28 @@ class MessagesManager {
         );
         canvasManager.canvasContext.font = Constants.BJ_FONT;
         canvasManager.canvasContext.fillText('BLACK JACK!!!', Constants.BJ_MSG_COORDS.x, Constants.BJ_MSG_COORDS.y);  
+        canvasManager.canvasContext.restore();
+        const timeOut = setTimeout(() => {
+            onFinishCb();
+            MessagesManager.anotherMessageIsDisplayed = false;
+            clearTimeout(timeOut);
+        }, 2000);
+    }
+
+    static drawVerdict(canvasManager, verdict, onFinishCb) {
+        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
+        canvasManager.canvasContext.save();
+        canvasManager.canvasContext.scale(
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+        );
+        canvasManager.canvasContext.font = Constants.VERDICT_FONT;
+        if (verdict === "WON") {
+            canvasManager.canvasContext.fillText('YOU WON!', Constants.VERDICT_COORDS.x, Constants.VERDICT_COORDS.y);  
+            
+        } else if (verdict === "LOST") {
+            canvasManager.canvasContext.fillText('YOU LOST!', Constants.VERDICT_COORDS.x, Constants.VERDICT_COORDS.y);  
+        }
         canvasManager.canvasContext.restore();
         const timeOut = setTimeout(() => {
             onFinishCb();

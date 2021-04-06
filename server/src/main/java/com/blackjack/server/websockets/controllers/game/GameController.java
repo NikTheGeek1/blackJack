@@ -129,7 +129,7 @@ public class GameController {
     public void stick(@DestinationVariable String gameName, @DestinationVariable String playerEmail) {
         Match match = activeMatchesManager.getMatch(gameName);
         GamePrep.playerSticks(match);
-        PlayerChoice playerChoice = new PlayerChoice(playerEmail, null);
+        PlayerChoice playerChoice = new PlayerChoice(playerEmail, PlayerChoiceType.STUCK);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
             sendChangedTurn_Delayed(match);
@@ -149,7 +149,6 @@ public class GameController {
         match.getGame().draws(match);
         PlayerChoiceType playerChoiceType;
         PlayerStatus playerStatus = match.getGame().getPlayerByEmail(playerEmail).getStatus();
-        System.out.println(playerStatus);
         if (playerStatus == PlayerStatus.BUSTED || playerStatus == PlayerStatus.LOST) {
             playerChoiceType = PlayerChoiceType.BUSTED;
         } else if (playerStatus == PlayerStatus.BLACKJACK) {
@@ -157,7 +156,6 @@ public class GameController {
         } else {
             playerChoiceType = PlayerChoiceType.DREW;
         }
-        System.out.println(playerChoiceType);
         PlayerChoice playerChoice = new PlayerChoice(playerEmail, playerChoiceType);
         webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {

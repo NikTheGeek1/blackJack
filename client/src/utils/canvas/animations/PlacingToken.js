@@ -2,15 +2,33 @@ import AnimationUtils from './PlaceTokensAnimationUtils';
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
 
 class PlacingTokens {
-    constructor(canvasManager, onFinishCb) {
+    constructor(canvasManager, onFinishCb, quitAnimationCb) {
         this.onFinishCb = onFinishCb;
         this.animationUtils = new AnimationUtils(canvasManager.thisPlayer);
         this.canvasManager = canvasManager;
         this.backupCanvas = null;
         this.data = this._initialValues();
+        this.quitAnimationCb = quitAnimationCb;
+        this.isTabVisible = !document.hidden;
+    }
+
+    _onSwitchTabs() {
+        if (document.hidden) {
+            this.isTabVisible = false;
+            this._quitingAnimation();
+        }
+    }
+
+    _registerTabSwitchingListener() {
+        document.addEventListener("visibilitychange", this._onSwitchTabs.bind(this));
+    }
+
+    _removeEventListener() {
+        document.removeEventListener("visibilitychange", this._onSwitchTabs)
     }
 
     start() {
+        this._registerTabSwitchingListener();
         this.drawCanvasStateToBackupCanvas();
         this._drawTokensRecursively();
     }
@@ -59,23 +77,36 @@ class PlacingTokens {
     }
 
     _drawTokensRecursively() {
-        if (!this.animationUtils.animationFinished) {
-            this.drawBackupCanvasStateToCanvas(false);
-            const shouldDrawToken = this._shouldDrawTokensArray(this.data.tokensCurrentCoords, this.data.allTokenCoords);
-            this._drawMovementOrPlaceTokenAtFinalPosition(shouldDrawToken, this.data.tokensCurrentCoords, this.data.tokensFinalCoords, this.data.allTokenCoords);
-            this._incrementCoords(this.data.tokensCurrentCoords, this.data.allTokenCoords);
-            if (this._shouldDrawNextBatchOfTokens(shouldDrawToken)) {
-                this.animationUtils.nextFrame();
-                this._persistFrame();
-                this.drawCanvasStateToBackupCanvas();
-                this.data = this._initialValues();
+        if (this.isTabVisible) {
+            if (!this.animationUtils.animationFinished) {
+                this.drawBackupCanvasStateToCanvas(false);
+                const shouldDrawToken = this._shouldDrawTokensArray(this.data.tokensCurrentCoords, this.data.allTokenCoords);
+                this._drawMovementOrPlaceTokenAtFinalPosition(shouldDrawToken, this.data.tokensCurrentCoords, this.data.tokensFinalCoords, this.data.allTokenCoords);
+                this._incrementCoords(this.data.tokensCurrentCoords, this.data.allTokenCoords);
+                if (this._shouldDrawNextBatchOfTokens(shouldDrawToken)) {
+                    this.animationUtils.nextFrame();
+                    this._persistFrame();
+                    this.drawCanvasStateToBackupCanvas();
+                    this.data = this._initialValues();
+                }
+                requestAnimationFrame(this._drawTokensRecursively.bind(this));
+            } else {
+                this.canvasManager.drawAll(true, true);
+                this.onFinishCb();
+                this._removeEventListener();
             }
-            requestAnimationFrame(this._drawTokensRecursively.bind(this));
-        } else {
-            this.canvasManager.drawAll(true, true);
-            this.onFinishCb();
-        }
+        } else { // tab not visible
+            this._quitingAnimation();
+        }   
     }
+
+    _quitingAnimation() {
+        this.quitAnimationCb();
+        this.canvasManager.initialAnimationFinished = true; // updating from inside the quiteAnimationCb is asynchronous.
+        this.canvasManager.drawAll(true, true);
+        this._removeEventListener();
+    }
+
 
     _persistFrame() {
         this.canvasManager.updateThisPlayer(this.animationUtils.currentFrame);

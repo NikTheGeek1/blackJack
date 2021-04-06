@@ -6,6 +6,7 @@ class PlayerChoiceType {
     static BLACKJACKED = "BLACKJACKED";
     static BET = "BET";
     static LEFT_GAME = "LEFT_GAME";
+    static STUCK = "STUCK";
 }
 
 export default PlayerChoiceType;

@@ -18,6 +18,7 @@ import arrowImg from '../../assets/arrow.png';
 import { UNSET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
 
 let canvasManager;
+let animationPlaying;
 const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const canvasRef = useRef(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -25,7 +26,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const [allImgsLoaded, setAllImgsLoaded] = useState(false);
     const [isInitialAnimationOver, setIsInitialAnimationOver] = useState(false);
     const [globalState, dispatch] = useStore();
-    const [animationPlaying, setAnimationPlaying] = useState(false);
     const match = globalState.matchState.matchObj;
     const thisPlayer = globalState.playerState.playerObj;
     const playerChoice = globalState.playerChoiceState.playerChoiceObj;
@@ -48,11 +48,15 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         if (!allImgsLoaded) return;
         if (playerChoice?.playerChoiceType) {
             // TODO: enable no clicking
-            setAnimationPlaying(true);
+            animationPlaying = true;
             document.getElementsByTagName("body")[0].style.cursor = "initial";
             canvasManager.updateGame(match.game);
             canvasManager.updateThisPlayer(thisPlayer);
-            animationChoser(playerChoice, canvasManager, { setIsInitialAnimationOver, setAnimationPlaying });
+            animationChoser(playerChoice, canvasManager,
+                {
+                    setIsInitialAnimationOver: setIsInitialAnimationOver,
+                    setAnimationPlaying: isPlaying => animationPlaying = isPlaying
+                });
             dispatch(UNSET_PLAYER_CHOICE);
         } else {
             // enable clicking

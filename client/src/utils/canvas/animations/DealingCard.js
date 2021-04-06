@@ -28,11 +28,7 @@ class DealingCards {
         let x = DynamicManager.constants.DEALING_CARD_INITIAL_COORDS.x;
         let y = DynamicManager.constants.DEALING_CARD_INITIAL_COORDS.y;
         let cardIdx;
-        try {
-            cardIdx = this.canvasManager.game.allPlayersDealerFirst[this.playingPlayerIdx].displayedCards.length - 1;
-        } catch (error) {
-            debugger;
-        }
+        cardIdx = this.canvasManager.game.allPlayersDealerFirst[this.playingPlayerIdx].displayedCards.length - 1;
         const allCardCoords = this.canvasManager.dynamicSizesManager.getCoordsForDealingCard(this.playingPlayerIdx, cardIdx);
         const cardAngle = allCardCoords.angle;
         return { x, y, allCardCoords, cardAngle };
