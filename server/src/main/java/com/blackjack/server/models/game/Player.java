@@ -84,6 +84,7 @@ public class Player extends User  {
         this.displayedCards = dispCards;
     }
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public List<Card> getRevealedCards() {
         List<Card> revCards = this.displayedCards.stream()
                 .filter(card -> card.getVisibility() == CardVisibility.REVEALED)

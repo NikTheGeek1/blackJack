@@ -16,15 +16,17 @@ import BetTokenAnimation from '../../utils/canvas/animations/BetToken';
 import CancelBetTokenAnimation from '../../utils/canvas/animations/CancelBetToken';
 import arrowImg from '../../assets/arrow.png';
 import { UNSET_PLAYER_CHOICE } from '../../hooks-store/stores/player-choice-store';
+import PlayerChoiceType from '../../models/matches/PlayerChoiceType';
 
 let canvasManager;
-let animationPlaying;
+// let animationPlaying;
 const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const canvasRef = useRef(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [mousePosOrigin, setMousePosOrigin] = useState({ x: 0, y: 0 });
     const [allImgsLoaded, setAllImgsLoaded] = useState(false);
     const [isInitialAnimationOver, setIsInitialAnimationOver] = useState(false);
+    const [animationPlaying, setAnimationPlaying] = useState(false);
     const [globalState, dispatch] = useStore();
     const match = globalState.matchState.matchObj;
     const thisPlayer = globalState.playerState.playerObj;
@@ -45,17 +47,31 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     }, []);
 
     useEffect(() => {
+        if (!allImgsLoaded || animationPlaying || 
+            //these 3 have to stay ugly. when a player has either DREW, BUSTED or BJed
+            // then we want the animation to go first (useEffect below), and then 
+            // the current useEffect will run
+            playerChoice?.playerChoiceType === PlayerChoiceType.DREW ||
+            playerChoice?.playerChoiceType === PlayerChoiceType.BUSTED ||
+            playerChoice?.playerChoiceType === PlayerChoiceType.BLACKJACKED) return;
+        canvasManager.updateGame(match.game);
+        canvasManager.updateThisPlayer(thisPlayer);
+        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
+    }, [match, thisPlayer, animationPlaying]);
+
+
+    useEffect(() => {
         if (!allImgsLoaded) return;
         if (playerChoice?.playerChoiceType) {
             // TODO: enable no clicking
-            animationPlaying = true;
+            setAnimationPlaying(true);
             document.getElementsByTagName("body")[0].style.cursor = "initial";
             canvasManager.updateGame(match.game);
             canvasManager.updateThisPlayer(thisPlayer);
             animationChoser(playerChoice, canvasManager,
                 {
                     setIsInitialAnimationOver: setIsInitialAnimationOver,
-                    setAnimationPlaying: isPlaying => animationPlaying = isPlaying
+                    setAnimationPlaying: setAnimationPlaying
                 });
             dispatch(UNSET_PLAYER_CHOICE);
         } else {
@@ -64,13 +80,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     }, [thisPlayer, match, playerChoice, allImgsLoaded]);
 
-    useEffect(() => {
-        if (!allImgsLoaded || animationPlaying) return;
-        canvasManager.updateGame(match.game);
-        canvasManager.updateThisPlayer(thisPlayer);
-        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
-    }, [match, thisPlayer, animationPlaying]);
-
+   
     useEffect(() => {
         if (!allImgsLoaded) return;
         canvasManager.setScreenDimensions(screenDimensions);
@@ -79,11 +89,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     const clickHandler = e => {
         if (animationPlaying) return;
-        // if (mousePosOrigin.x !== 0 && mousePosOrigin.y !== 0) {
-        //     setMousePosOrigin({ x: 0, y: 0 });
-        // } else {
-        //     setMousePosOrigin({ x: mousePos.x, y: mousePos.y });
-        // }
         const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, match.game);
         const clickedObject = mouseLocator.analyseMouseLocation();
         if (HoverOvertTypes.TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.tokens[clickedObject]) { // and in BETTING state
@@ -115,13 +120,19 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         if (animationPlaying) return;
         const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);
         const mouseOnWhat = mouseLocator.analyseMouseLocation();
+      
+        if (mouseOnWhat) {
+            document.getElementsByTagName("body")[0].style.cursor = "pointer";
+        }
+
         if (mouseOnWhat && !canvasManager.isBackupCanvasDrawn) {
             document.getElementsByTagName("body")[0].style.cursor = "pointer";
             if (HoverOvertTypes.PLAYER_CARDS.includes(mouseOnWhat)) {
                 canvasManager.drawCanvasStateToBackupCanvas();
                 canvasManager.enlargeCards(mouseOnWhat);
             }
-        } else if (!mouseOnWhat && canvasManager.isBackupCanvasDrawn) {
+        }
+        else if (!mouseOnWhat && canvasManager.isBackupCanvasDrawn) {
             document.getElementsByTagName("body")[0].style.cursor = "initial";
             canvasManager.drawBackupCanvasStateToCanvas(true);
         } else if (!mouseOnWhat && !canvasManager.isBackupCanvasDrawn) {

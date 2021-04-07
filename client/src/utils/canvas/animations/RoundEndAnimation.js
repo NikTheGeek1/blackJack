@@ -1,4 +1,5 @@
 import MessagesManager from "../draw_messages/MessagesManager";
+import VerdictSlidingToken from './VerdictSlidingToken';
 
 class RoundEndAnimation {
     constructor(canvasManager, onFinish) {
@@ -16,17 +17,13 @@ class RoundEndAnimation {
     }
 
     start() {
+        const vst = new VerdictSlidingToken(this.canvasManager, () => {});
         if (this._isThisPlayerDealer()) {
-            this.onFinish();
-            MessagesManager.anotherMessageIsDisplayed = false;
+            MessagesManager.drawDealersLastStatus(this.canvasManager, this.canvasManager.thisPlayer.status, this.onFinish, () => vst.start());
         } else {
-            MessagesManager.drawVerdict(this.canvasManager, this.thisPlayerVerdict, this.onFinish);
+            MessagesManager.drawVerdict(this.canvasManager, this.thisPlayerVerdict, this.onFinish, () => vst.start());
         }
-    }
-
-
-    _persistFrame() {
-        this.canvasManager.drawAll(true, true);
+        
     }
 }
 

@@ -60,7 +60,13 @@ public class GameController {
         try {
             match.getGame().placeBet(bet.getPlayerEmail(), bet.getBetTokens());
             if (match.getGame().hasEveryoneBet()) match.getGame().startRound(match);
-            PlayerChoice playerChoice = new PlayerChoice(bet.getPlayerEmail(), PlayerChoiceType.BET);
+            PlayerChoice playerChoice;
+            if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+                playerChoice = new PlayerChoice(match.getGame().getPlayerWhoJustGotDealtBlackJack().getEmail(), PlayerChoiceType.BLACKJACKED);
+            }else {
+                playerChoice = new PlayerChoice(bet.getPlayerEmail(), PlayerChoiceType.BET);
+            }
+
             webSocket.convertAndSend(URLs.UPDATE_GAME(gameName), new UpdateGameResponse(match, playerChoice));
             if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                 sendChangedTurn_Delayed(match);
@@ -75,7 +81,7 @@ public class GameController {
                 new TimerTask() {
                     @Override
                     public void run() {
-                            match.getGame().nextRound(match.getGameType());
+                        match.getGame().nextRound(match.getGameType());
                         PlayerChoice playerChoice = new PlayerChoice(null, null);
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                     }
@@ -94,7 +100,12 @@ public class GameController {
                         if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
                             sendChangedTurn_Delayed(match);
                         }
-                        PlayerChoice playerChoice = new PlayerChoice(null, null);
+                        PlayerChoice playerChoice;
+                        if (match.getGame().getPlayerWhoJustGotDealtBlackJack() != null) {
+                            playerChoice = new PlayerChoice(match.getGame().getPlayerWhoJustGotDealtBlackJack().getEmail(), PlayerChoiceType.BLACKJACKED);
+                        } else {
+                            playerChoice = new PlayerChoice(null, null);
+                        }
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                         if (match.getGame().isVerdictOut()) {
                             sendChangedRound_Delayed(match);

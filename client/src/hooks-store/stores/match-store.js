@@ -1,6 +1,7 @@
 import { initStore } from '../store';
 import Match from '../../models/matches/Match';
 import PlayerUtils from '../../utils/game-utils/players-utils';
+import Player from '../../models/matches/Player';
 
 export const SET_MATCH = "SET_MATCH";
 export const PARTIALLY_SET_MATCH = "PARTIALLY_SET_MATCH";
@@ -12,10 +13,12 @@ const configureStore = () => {
             return { matchState: { inMatch: true, matchObj: new Match(matchObj) } };
         },
         [PARTIALLY_SET_MATCH]: (curState, payload) => {
+            const copiedPlayer = new Player(curState.playerState.playerObj, true);
+            console.log(copiedPlayer, 'match-store.js', 'line: ', '16');
             PlayerUtils.findAndReplacePlayerByEmail(
                 payload.thisPlayerEmail,
                 payload.match.game.players,
-                curState.playerState.playerObj
+                copiedPlayer
             );
             PlayerUtils.findAndReplacePlayerByEmail(
                 payload.thisPlayerEmail,

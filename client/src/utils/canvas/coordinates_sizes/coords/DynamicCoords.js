@@ -2,6 +2,7 @@ import SizeUtils from '../sizes/SizeUtils';
 import CanvasConstants from '../../../../constants/canvas/Constants';
 import CanvasDynamicSizes from '../sizes/DynamicSizes';
 import CanvasImgOriginalSizes from '../../../../constants/canvas/ImgsOriginalSizes';
+import PlayerStatus from '../../../../constants/PlayerStatus';
 
 class CanvasDynamicCoords extends CanvasDynamicSizes {
 
@@ -59,12 +60,17 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
         });
     }
 
-    NAMES_COORDS(playerIdx, playerName) {
+    NAMES_COORDS(playerIdx) {
         const constantCoords = CanvasConstants.NAMES_COORDS[playerIdx];
         return constantCoords;
-    };
+    }
 
-    
+    VERDICTS_COORDS(playerIdx) {
+        const constantCoords = CanvasConstants.VERDICTS_COORDS[playerIdx];
+        return constantCoords;
+    }
+
+
 
     CARD_COORDS(playerIdx, cardIdx) {
         return {
@@ -114,44 +120,67 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
     getCoordsForPlacingToken(tokenIdx) {
         const finalFrameCoords = this.TOKEN_COORDS(tokenIdx);
         const initialFrameCoords = CanvasConstants.TOKENS_ANIMATION_INITIAL_COORDS;
-        
+
         const slopes = initialFrameCoords.map((_, i) => {
             return this._calculateSlope(initialFrameCoords[i].y, finalFrameCoords[i].y, initialFrameCoords[i].x, finalFrameCoords[i].x);
         });
-        
+
         const X = initialFrameCoords.map((_, i) => {
             return (finalFrameCoords[i].x - initialFrameCoords[i].x) * .07; // TODO: Make this constant
         });
-        
+
         const Y = slopes.map((_, i) => slopes[i] * X[i]);
-        
+
         return slopes.map((_, i) => ({ x: X[i], y: Y[i], finalY: finalFrameCoords[i].y }));
     }
 
     getCoordsForPlacingBetToken(tokenColumnIdx, tokenIdx, playerIdx) {
         const finalFrameCoords = this.BET_TOKEN_COORDS(playerIdx, tokenIdx)[tokenColumnIdx];
         const initialFrameCoords = this.TOKEN_COORDS(tokenIdx)[tokenColumnIdx];
-        
+
         const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
-        
+
         const x = (finalFrameCoords.x - initialFrameCoords.x) * .03; // TODO: Make this constant
-        
+
         const y = slope * x;
-        
-        return {x, y, finalY: finalFrameCoords.y};
+
+        return { x, y, finalY: finalFrameCoords.y };
     }
 
     getCoordsForCancellingBetToken(tokenColumnIdx, tokenIdx, playerIdx) {
         const initialFrameCoords = this.BET_TOKEN_COORDS(playerIdx, tokenIdx)[tokenColumnIdx];
         const finalFrameCoords = this.TOKEN_COORDS(tokenIdx)[tokenColumnIdx];
-        
+
         const slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
-        
+
         const x = (initialFrameCoords.x - finalFrameCoords.x) * .03; // TODO: Make this constant
+
+        const y = slope * x;
+
+        return { x, y, finalY: finalFrameCoords.y };
+    }
+
+    getCoordsForVerdictTokens(tokenColumnIdx, tokenIdx, playerIdx, verdict) {
+        let initialFrameCoords, finalFrameCoords;
+        let x, slope;
+        if (verdict === PlayerStatus.WON) {
+            initialFrameCoords = this.BET_TOKEN_COORDS(0, tokenIdx)[tokenColumnIdx];
+            finalFrameCoords = this.BET_TOKEN_COORDS(playerIdx + 1, tokenIdx)[tokenColumnIdx]; // +1 because BET_TOKEN_COORDS is allPlayers while the current is without dealer
+            slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
+            } else {
+            initialFrameCoords = this.BET_TOKEN_COORDS(playerIdx + 1, tokenIdx)[tokenColumnIdx]; // +1 because BET_TOKEN_COORDS is allPlayers while the current is without dealer
+            finalFrameCoords = this.BET_TOKEN_COORDS(0, tokenIdx)[tokenColumnIdx];
+            slope = this._calculateSlope(initialFrameCoords.y, finalFrameCoords.y, initialFrameCoords.x, finalFrameCoords.x);
+        }
+        x = 20; // TODO: Make this constant
         
         const y = slope * x;
-        
-        return {x, y, finalY: finalFrameCoords.y};
+        return { x, y, 
+            finalY: finalFrameCoords.y, 
+            initialCoords: { ...initialFrameCoords },
+            verdict: verdict,
+            reachedFinalDestination: false
+        };
     }
 
 }

@@ -98,6 +98,17 @@ class CanvasConstants {
         { x: 910, y: 440, angle: -55 },
     ];
 
+
+    static VERDICTS_COORDS = [
+        { x: null, y: null, angle: null }, // dealer doesn't have a verdict
+        { x: 10, y: 310, angle: 70 },
+        { x: 130, y: 485, angle: 45 },
+        { x: 340, y: 590, angle: 13 },
+        { x: 590, y: 615, angle: -13 },
+        { x: 800, y: 537, angle: -40 },
+        { x: 910, y: 440, angle: -55 },  
+    ]
+
     static BET_ARROW_COORDS = { x: 70, y: 625, angle: -90 };
     static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
     static BUSTED_MSG_COORDS = { x: 400, y: 380 };
@@ -107,6 +118,7 @@ class CanvasConstants {
     static MESSAGES_FONT = "48px serif";
     static MESSAGES_COLOUR = "";
     static PLAYER_NAMES_FONT = "30px serif";
+    static ALL_VERDICTS_FONT = "30px serif";
     static TIME_TO_BET_FONT = "28px serif";
     static BUSTED_FONT = "48px serif";
     static BJ_FONT = "48px serif";

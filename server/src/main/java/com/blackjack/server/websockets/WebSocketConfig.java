@@ -2,7 +2,6 @@ package com.blackjack.server.websockets;
 
 import com.blackjack.server.urls.URLs;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -21,15 +20,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(URLs.WEBSOCKETS_MATCHES)
-                .setAllowedOrigins(URLs.DEV_CLIENT)
+                .setAllowedOrigins(URLs.DEV_CLIENT, "http://192.168.1.2:3000")
                 .withSockJS();
 
         registry.addEndpoint(URLs.WEBSOCKETS_GAME)
-                .setAllowedOrigins(URLs.DEV_CLIENT)
+                .setAllowedOrigins(URLs.DEV_CLIENT, "http://192.168.1.2:3000")
                 .withSockJS();
 
         registry.addEndpoint(URLs.WEBSOCKETS_CHAT)
-                .setAllowedOrigins(URLs.DEV_CLIENT)
+                .setAllowedOrigins(URLs.DEV_CLIENT, "http://192.168.1.2:3000")
                 .withSockJS();
     }
 

@@ -28,6 +28,7 @@ public class Deck {
 
     public void shuffle() {
         Collections.shuffle(cards);
+//        this.cards = DummyDeck.getDummyCards();
     }
 
     public void resetDeck() {

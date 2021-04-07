@@ -10,7 +10,7 @@ public class GlobalConfigs implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**").allowCredentials(true)
-                .allowedOrigins(URLs.DEV_CLIENT)
+                .allowedOrigins(URLs.DEV_CLIENT, "http://192.168.1.2:3000")
                 .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Application", "X-CSRF-TOKEN")
                 .allowedMethods("POST", "GET", "OPTIONS", "DELETE", "PATCH");
     }

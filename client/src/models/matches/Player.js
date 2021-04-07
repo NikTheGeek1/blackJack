@@ -1,16 +1,26 @@
 import User from "../users/User";
 
 class Player extends User {
-    constructor(fecthedPlayer) {
-        super(fecthedPlayer);
-        this.displayedCards = fecthedPlayer.displayedCards;
-        this.betTokens = fecthedPlayer.betTokens;
-        this.tokens = fecthedPlayer.tokens;
-        this.isDealer = fecthedPlayer.isDealer;
-        this.status = fecthedPlayer.status;
+    constructor(fetchedPlayer, deepCopyFlag) {
+        let copiedPlayer = fetchedPlayer;
+        if (deepCopyFlag) {
+            const displayedCards = [...fetchedPlayer.displayedCards];
+            const tokens = { ...fetchedPlayer.tokens };
+            const betTokens = { ...fetchedPlayer.betTokens };
+            const isDealer = fetchedPlayer.isDealer;
+            const status = fetchedPlayer.status;
+            copiedPlayer = { ...fetchedPlayer, displayedCards, betTokens, tokens, isDealer, status };
+        }
+        super(copiedPlayer);
+        this.displayedCards = copiedPlayer.displayedCards;
+        this.betTokens = copiedPlayer.betTokens;
+        this.tokens = copiedPlayer.tokens;
+        this.isDealer = copiedPlayer.isDealer;
+        this.status = copiedPlayer.status;
     }
 
-    getRevealedCards () {
+
+    getRevealedCards() {
         return this.displayedCards.filter(card => card.visibility === "REVEALED"); // TODO: CHANGE THIS TO ENUM
     }
 }

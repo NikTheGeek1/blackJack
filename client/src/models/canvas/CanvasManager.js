@@ -101,6 +101,17 @@ class CanvasManager {
         }
     }
 
+    _drawVerdict(playerIdx, player) {
+        this.canvasContext.font = CanvasDynamicSizesManager.constants.ALL_VERDICTS_FONT;
+        const coords = this.dynamicSizesManager.VERDICTS_COORDS(playerIdx);
+        this.canvasContext.save();
+        this.canvasContext.fillStyle = "#ffffff";
+        this.canvasContext.translate(coords.x, coords.y);
+        this.canvasContext.rotate(coords.angle * Math.PI / 180);
+        this.canvasContext.fillText(player.status, 0, 0);
+        this.canvasContext.restore();
+    }
+
 
     _drawPlayerName(playerIdx, player) {
         this.canvasContext.font = CanvasDynamicSizesManager.constants.PLAYER_NAMES_FONT;
@@ -112,7 +123,6 @@ class CanvasManager {
         this.canvasContext.fillText(player.name, 0, 0);
         this.canvasContext.restore();
     }
-
 
     _drawPositions() {
         for (let i = 0; i < this.game.allPlayersDealerFirst.length; i++) {
@@ -194,6 +204,12 @@ class CanvasManager {
         }
     }
 
+    _drawAllVerdicts() {
+        for (let playerIdx = 1; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
+            this._drawVerdict(playerIdx, this.game.allPlayersDealerFirst[playerIdx]);
+        }
+    }
+
     drawAll(drawCards, drawTokens) {
         this.canvasContext.save();
         this.canvasContext.scale(
@@ -202,7 +218,11 @@ class CanvasManager {
         );
         this._drawBackground();
         this._drawTable();
-        this._drawPlayerNames();
+        if (this.game.verdictOut) {
+            this._drawAllVerdicts();
+        } else {
+            this._drawPlayerNames();
+        }
         this._drawPositions();
         if (!drawCards) {
             this._drawMessages();

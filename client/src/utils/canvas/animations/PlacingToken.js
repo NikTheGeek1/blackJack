@@ -91,8 +91,8 @@ class PlacingTokens {
                 }
                 requestAnimationFrame(this._drawTokensRecursively.bind(this));
             } else {
-                this.canvasManager.drawAll(true, true);
                 this.onFinishCb();
+                this.canvasManager.drawAll(true, true);
                 this._removeEventListener();
             }
         } else { // tab not visible

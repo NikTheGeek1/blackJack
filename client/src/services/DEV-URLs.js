@@ -1,6 +1,6 @@
 class URLs {
     // DEV SERVER
-    static DEV_SERVER = "http://localhost:8080";
+    static DEV_SERVER = "http://192.168.1.2:8080";
     
     // WEBSOCKETS GAME
     static WEBSOCKETS_GAME = this.DEV_SERVER + "/websockets/game";

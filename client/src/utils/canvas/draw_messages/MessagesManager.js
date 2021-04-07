@@ -122,7 +122,7 @@ class MessagesManager {
         }, 2000);
     }
 
-    static drawVerdict(canvasManager, verdict, onFinishCb) {
+    static drawVerdict(canvasManager, verdict, onFinishCb, verdictSlideAnimation) {
         canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
@@ -136,7 +136,32 @@ class MessagesManager {
         } else if (verdict === "LOST") {
             canvasManager.canvasContext.fillText('YOU LOST!', Constants.VERDICT_COORDS.x, Constants.VERDICT_COORDS.y);  
         }
+        
         canvasManager.canvasContext.restore();
+        verdictSlideAnimation();
+        const timeOut = setTimeout(() => {
+            onFinishCb();
+            MessagesManager.anotherMessageIsDisplayed = false;
+            clearTimeout(timeOut);
+        }, 2000);
+    }
+
+    static drawDealersLastStatus(canvasManager, dealerStatus, onFinishCb, verdictSlideAnimation) {
+        canvasManager.canvasContext.save();
+        canvasManager.canvasContext.scale(
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
+            canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR
+        );
+        if (dealerStatus === PlayerStatus.BLACKJACK) {
+            canvasManager.canvasContext.font = Constants.BJ_FONT;
+            canvasManager.canvasContext.fillText('BLACK JACK!', Constants.BJ_MSG_COORDS.x, Constants.BJ_MSG_COORDS.y);  
+            
+        } else if (dealerStatus === PlayerStatus.BUSTED) {
+            canvasManager.canvasContext.font = Constants.BUSTED_FONT;
+            canvasManager.canvasContext.fillText('BUSTED!', Constants.BUSTED_MSG_COORDS.x, Constants.BUSTED_MSG_COORDS.y);  
+        }
+        canvasManager.canvasContext.restore();
+        verdictSlideAnimation();
         const timeOut = setTimeout(() => {
             onFinishCb();
             MessagesManager.anotherMessageIsDisplayed = false;
