@@ -25,6 +25,7 @@ class VerdictSlidingToken {
         if (this._shouldStopDrawingTokens(this.data.tokenCurrentCoords, this.data.allTokenCoords)) {
             this.drawBackupCanvasStateToCanvas(false);
             this.onFinishCb();
+            VerdictSlidingTokenUtils.destroy();
         } else {
             requestAnimationFrame(this._drawSlidingTokenRecursively.bind(this));
         }

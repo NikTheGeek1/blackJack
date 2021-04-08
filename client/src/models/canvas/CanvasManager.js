@@ -82,7 +82,7 @@ class CanvasManager {
             this.canvasContext.strokeStyle = colour;
         }
         this.canvasContext.beginPath();
-        this.canvasContext.arc(x+36.5, y+39, 25, 0, 2 * Math.PI);
+        this.canvasContext.arc(x + 36.5, y + 39, 25, 0, 2 * Math.PI);
         this.canvasContext.fill();
         this.canvasContext.stroke();
         this.canvasContext.restore();
@@ -165,10 +165,9 @@ class CanvasManager {
         this.canvasContext.save();
         this.canvasContext.translate(arrowCoords.x, arrowCoords.y);
         this.canvasContext.rotate(arrowCoords.angle * Math.PI / 180);
-        this.canvasContext.drawImage(cardImgObj.img, 0, 0,cardSize.width,cardSize.height); // TODO: MAKE THE ENLARGED SIZES CONSTANT
+        this.canvasContext.drawImage(cardImgObj.img, 0, 0, cardSize.width, cardSize.height);
         this.canvasContext.restore();
     }
-
 
     _drawCards() {
         for (let playerIdx = 0; playerIdx < this.game.allPlayersDealerFirst.length; playerIdx++) {
@@ -182,6 +181,18 @@ class CanvasManager {
                 } else {
                     this._drawCard(cardCoords.x, cardCoords.y, cardAngle, card);
                 }
+            }
+        }
+    }
+
+    _drawThisPlayerCardsEnlarged() {
+        for (let cardIdx = 0; cardIdx < this.thisPlayer.displayedCards.length; cardIdx++) {
+            const card = this.thisPlayer.displayedCards[cardIdx];
+            const cardCoords = CanvasDynamicSizesManager.constants.THIS_PLAYER_ENLARGED_CARDS[cardIdx];
+            if (card.visibility === "HIDDEN") { // TODO: transform this to enum
+                this._drawCard(cardCoords.x, cardCoords.y, cardCoords.angle, undefined, false, true);
+            } else {
+                this._drawCard(cardCoords.x, cardCoords.y, cardCoords.angle, card, false, true);
             }
         }
     }
@@ -232,6 +243,7 @@ class CanvasManager {
         this._drawCards();
         if (drawTokens) {
             this._drawTokens();
+            this._drawThisPlayerCardsEnlarged();
         }
 
         if (this.thisPlayer.status === PlayerStatus.BETTING && this.initialAnimationFinished) {
@@ -308,9 +320,10 @@ class CanvasManager {
 
     _enlargePlayerCards(playerIdx) {
         const player = this.game.allPlayersDealerFirst[playerIdx];
+        const enlarged = true;
         for (let cardIdx = 0; cardIdx < player.displayedCards.length; cardIdx++) {
-            const cardCoords = this.dynamicSizesManager.CARD_COORDS(playerIdx, cardIdx);
-            const cardAngle = CanvasDynamicSizesManager.constants.CARD_NUM_OFFSETS[cardIdx].angle;
+            const cardCoords = this.dynamicSizesManager.CARD_COORDS(playerIdx, cardIdx, enlarged);
+            const cardAngle = CanvasDynamicSizesManager.constants.ENLARGED_CARD_NUM_OFFSETS[cardIdx].angle;
             const card = player.displayedCards[cardIdx];
             if (card.visibility === "HIDDEN") { // TODO: transform this to enum
                 this._drawCard(cardCoords.x, cardCoords.y, cardAngle, undefined, true, true);
@@ -352,7 +365,6 @@ class CanvasManager {
             this.isBackupCanvasDrawn = false;
         }
     }
-
 
 }
 

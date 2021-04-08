@@ -29,6 +29,15 @@ class CanvasConstants {
         { x: 140, y: 85, angle: 60 }
     ];
 
+    static ENLARGED_CARD_NUM_OFFSETS = [
+        { x: -50, y: -50, angle: -20 },
+        { x: -10, y: -60, angle: -10 },
+        { x: 30, y: -70, angle: 0 },
+        { x: 70, y: -80, angle: 10 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
+        { x: 110, y: -90, angle: 20 },
+        { x: 150, y: -100, angle: 30 }
+    ];
+
     static TOKENS_IN_EACH_WRAP = 5;
     static TOKEN_WRAP_MULTIPLIER = 80;
     static TOKEN_NUM_Y_OFFSET = -10;
@@ -106,14 +115,15 @@ class CanvasConstants {
         { x: 340, y: 590, angle: 13 },
         { x: 590, y: 615, angle: -13 },
         { x: 800, y: 537, angle: -40 },
-        { x: 910, y: 440, angle: -55 },  
+        { x: 910, y: 440, angle: -55 },
     ]
 
     static BET_ARROW_COORDS = { x: 70, y: 625, angle: -90 };
     static BET_MESSAGE_OFFSETS = { x: -30, y: -20, angle: -40 };
     static BUSTED_MSG_COORDS = { x: 400, y: 380 };
     static BJ_MSG_COORDS = { x: 400, y: 380 };
-    static VERDICT_COORDS = { x: 400, y: 380};
+    static VERDICT_COORDS = { x: 400, y: 380 };
+    static DEALER_WAITING_MSG_COORDS = { x: 350, y: 350 };
 
     static MESSAGES_FONT = "48px serif";
     static MESSAGES_COLOUR = "";
@@ -124,6 +134,14 @@ class CanvasConstants {
     static BJ_FONT = "48px serif";
     static VERDICT_FONT = "48px serif";
 
+    static THIS_PLAYER_ENLARGED_CARDS = [
+        {x: 630, y: 580, angle: -20}, // card 1;
+        {x: 670, y: 570, angle: -10},
+        {x: 710, y: 560, angle: 0},
+        {x: 750, y: 550, angle: 10},
+        {x: 790, y: 540, angle: 20},
+        {x: 830, y: 530, angle: 30},
+    ]
 }
 
 

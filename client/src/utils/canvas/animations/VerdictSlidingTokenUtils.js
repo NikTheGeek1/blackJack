@@ -23,6 +23,10 @@ class VerdictSlidingTokenUtils {
         return VerdictSlidingTokenUtils.instance;
     }
 
+    static destroy() {
+        VerdictSlidingTokenUtils.instance = null;
+    }
+
     static setVerdicts(players) {
         if (!VerdictSlidingTokenUtils.instance) {
             throw new Error("VerdictSlidingTokenUtils instance has not been initialised");

@@ -34,6 +34,18 @@ class MessagesManager {
             this.canvasManager.initialAnimationFinished) {
             this._drawTimeToBet();
         }
+
+        if (this._atLeastOnePlayerStillBetting() && 
+        (this.canvasManager.thisPlayer.isDealer || this.canvasManager.thisPlayer.status === PlayerStatus.WAITING_TURN)) {
+            this._drawPlayersAreBetting();
+        }
+    }
+
+    _atLeastOnePlayerStillBetting() {
+        for (let player of this.canvasManager.game.players) {
+            if (player.status === PlayerStatus.BETTING) return true;
+        }
+        return false;
     }
 
     _isThisPlayerPlaying() {
@@ -43,6 +55,13 @@ class MessagesManager {
     _isReadyToBet() {
         return TokenUtils.tokensToMoney(this.canvasManager.thisPlayer.betTokens) && 
             this.canvasManager.thisPlayer.status === PlayerStatus.BETTING;
+    }
+
+    _drawPlayersAreBetting() {
+        this.canvasContext.font = Constants.MESSAGES_FONT;
+        this.canvasContext.fillText('Players are betting', 
+        Constants.DEALER_WAITING_MSG_COORDS.x, 
+        Constants.DEALER_WAITING_MSG_COORDS.y);
     }
 
     _drawTimeToBet() {
@@ -106,7 +125,7 @@ class MessagesManager {
     }
 
     static drawBJ(canvasManager, onFinishCb) {
-        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
+        // canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
             canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
@@ -123,7 +142,7 @@ class MessagesManager {
     }
 
     static drawVerdict(canvasManager, verdict, onFinishCb, verdictSlideAnimation) {
-        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
+        // canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
             canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,

@@ -72,7 +72,13 @@ class CanvasDynamicCoords extends CanvasDynamicSizes {
 
 
 
-    CARD_COORDS(playerIdx, cardIdx) {
+    CARD_COORDS(playerIdx, cardIdx, enlarged) {
+        if (enlarged) {
+            return {
+                x: this.POSISITIONS_COORDS[playerIdx].x + CanvasConstants.Ps_CARD_OFFSETS[playerIdx].x + CanvasConstants.ENLARGED_CARD_NUM_OFFSETS[cardIdx].x,
+                y: this.POSISITIONS_COORDS[playerIdx].y + CanvasConstants.Ps_CARD_OFFSETS[playerIdx].y + CanvasConstants.ENLARGED_CARD_NUM_OFFSETS[cardIdx].y
+            };
+        }
         return {
             x: this.POSISITIONS_COORDS[playerIdx].x + CanvasConstants.Ps_CARD_OFFSETS[playerIdx].x + CanvasConstants.CARD_NUM_OFFSETS[cardIdx].x,
             y: this.POSISITIONS_COORDS[playerIdx].y + CanvasConstants.Ps_CARD_OFFSETS[playerIdx].y + CanvasConstants.CARD_NUM_OFFSETS[cardIdx].y
