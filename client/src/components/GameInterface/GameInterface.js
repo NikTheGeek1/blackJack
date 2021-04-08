@@ -62,7 +62,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     useEffect(() => {
         if (!allImgsLoaded) return;
-        if (playerChoice?.playerChoiceType) {
+        if (playerChoice?.playerChoiceType || match.game.verdictOut) {
             // TODO: enable no clicking
             setAnimationPlaying(true);
             document.getElementsByTagName("body")[0].style.cursor = "initial";

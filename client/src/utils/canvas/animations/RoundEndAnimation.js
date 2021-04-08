@@ -17,6 +17,7 @@ class RoundEndAnimation {
     }
 
     start() {
+        this.canvasManager.drawAll(true, true);
         const vst = new VerdictSlidingToken(this.canvasManager, () => {});
         if (this._isThisPlayerDealer()) {
             MessagesManager.drawDealersLastStatus(this.canvasManager, this.canvasManager.thisPlayer.status, this.onFinish, () => vst.start());

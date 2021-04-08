@@ -13,7 +13,7 @@ const animationChoser = (playerChoice, canvasManager, setters) => {
         // But when the player sticks then we don't need it
         MessagesManager.anotherMessageIsDisplayed = true;
         const onRoundEnd = new RoundEndAnimation(canvasManager, setters.setAnimationPlaying.bind(this, false));
-        if (playerChoice.playerChoiceType === PlayerChoiceType.BUSTED) {
+        if (playerChoice?.playerChoiceType === PlayerChoiceType.BUSTED) {
             const onDealingAnimationFinish = () => onRoundEnd.start();
             const dealingCardAnimation = new DealingCardAnimation(canvasManager, playerChoice.playerEmail, onDealingAnimationFinish);
             return dealingCardAnimation.start();
