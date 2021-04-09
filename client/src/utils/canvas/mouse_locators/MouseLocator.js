@@ -11,11 +11,12 @@ import MessagesManager from '../draw_messages/MessagesManager';
 
 class MouseLocator {
 
-    constructor(screenDims, mousePos, thisPlayer, game) {
+    constructor(screenDims, mousePos, thisPlayer, game, gameType) {
         this.screenDims = screenDims;
         this.mousePos = mousePos;
         this.game = game;
         this.thisPlayer = thisPlayer;
+        this.gameType = gameType;
     }
 
     analyseMouseLocation() {
@@ -71,7 +72,13 @@ class MouseLocator {
     }
 
     _canThisPlayerClickOnStartGame() {
-        return !this._hasGameStarted() && this.thisPlayer.isDealer && this.game.allPlayersDealerFirst.length > 1;
+        return !this._hasGameStarted() && 
+        ((this.thisPlayer.isDealer && this.game.allPlayersDealerFirst.length > 1 && this.gameType === "HUMANS") ||
+        (this._isThisPlayerAfterDealer() && this.gameType === "COMPUTER"));
+    }
+
+    _isThisPlayerAfterDealer() {
+        return this.game.allPlayersDealerFirst[1].email === this.thisPlayer.email;
     }
 
 

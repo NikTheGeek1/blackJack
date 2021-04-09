@@ -15,13 +15,26 @@ class MessagesManager {
         if (this.allPlayersDealerFirst.length === 1) {
             this._drawPleaseWaitForAnotherPlayer();
         }
-        if (this.allPlayersDealerFirst.length > 1 && this.allPlayersDealerFirst.every(player => player.status === PlayerStatus.WAITING_GAME)) {
+
+        if (this.allPlayersDealerFirst.length > 1 && 
+            this.canvasManager.gameType === "HUMANS" &&
+            this.allPlayersDealerFirst.every(player => player.status === PlayerStatus.WAITING_GAME)) {
             if (this.canvasManager.thisPlayer.isDealer) {
                 this._drawStartTheGameButton();
             } else {
                 this._drawWaitForDealerToSartTheGame();
             }
         }
+
+        if (this.canvasManager.gameType === "COMPUTER" &&
+            this.allPlayersDealerFirst.every(player => player.status === PlayerStatus.WAITING_GAME)) {
+            if (this._isThisPlayerAfterDealer()) {
+                this._drawStartTheGameButton();
+            } else {
+                this._drawWaitForCreatorToSartTheGame();
+            }
+        }
+        
         if (this._isReadyToBet()) {
             this._drawBetButton();
         }
@@ -39,6 +52,10 @@ class MessagesManager {
         (this.canvasManager.thisPlayer.isDealer || this.canvasManager.thisPlayer.status === PlayerStatus.WAITING_TURN)) {
             this._drawPlayersAreBetting();
         }
+    }
+
+    _isThisPlayerAfterDealer() {
+        return this.allPlayersDealerFirst[1].email === this.canvasManager.thisPlayer.email;
     }
 
     _atLeastOnePlayerStillBetting() {
@@ -80,6 +97,11 @@ class MessagesManager {
     _drawWaitForDealerToSartTheGame() {
         this.canvasContext.font = Constants.MESSAGES_FONT;
         this.canvasContext.fillText('Wait for dealer to start the game', 150, 400);
+    
+    }
+    _drawWaitForCreatorToSartTheGame() {
+        this.canvasContext.font = Constants.MESSAGES_FONT;
+        this.canvasContext.fillText('Wait for creator to start the game', 150, 400);
     }
 
     _drawStartTheGameButton() {
@@ -108,6 +130,7 @@ class MessagesManager {
     }
 
     static drawBusted(canvasManager, onFinishCb) {
+        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
             canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,
@@ -125,7 +148,7 @@ class MessagesManager {
     }
 
     static drawBJ(canvasManager, onFinishCb) {
-        // canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
+        canvasManager.drawAll(true, true); // we need this to remove the STICK/DRAW message
         canvasManager.canvasContext.save();
         canvasManager.canvasContext.scale(
             canvasManager.screenDims.width / CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR,

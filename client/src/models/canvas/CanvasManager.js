@@ -7,7 +7,7 @@ import MessagesManagers from '../../utils/canvas/draw_messages/MessagesManager';
 import PlayerStatus from '../../constants/PlayerStatus';
 
 class CanvasManager {
-    constructor(canvas, screenDims, imgsArray, thisPlayer, game) {
+    constructor(canvas, screenDims, imgsArray, thisPlayer, game, gameType) {
         this.screenDims = screenDims;
         this.dynamicSizesManager = new CanvasDynamicSizesManager(screenDims);
         this.canvas = canvas;
@@ -19,6 +19,7 @@ class CanvasManager {
         this.backupCanvas = null;
         this.isBackupCanvasDrawn = false;
         this.initialAnimationFinished = false;
+        this.gameType = gameType;
     }
 
     updateGame(game) {

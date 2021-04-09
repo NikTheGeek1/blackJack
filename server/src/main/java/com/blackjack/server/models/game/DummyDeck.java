@@ -7,13 +7,23 @@ public class DummyDeck {
     static List<Card> getDummyCards() {
         List<Card> cards = new ArrayList<>();
         cards.add(new Card(Suit.CLUBS, Rank.ACE11));
+        cards.add(new Card(Suit.CLUBS, Rank.ACE11));
+        cards.add(new Card(Suit.CLUBS, Rank.ACE11));
+
+        cards.add(new Card(Suit.CLUBS, Rank.NINE));
+        cards.add(new Card(Suit.CLUBS, Rank.NINE));
         cards.add(new Card(Suit.CLUBS, Rank.TEN));
-//        cards.add(new Card(Suit.CLUBS, Rank.ACE11));
 
         cards.add(new Card(Suit.CLUBS, Rank.TEN));
         cards.add(new Card(Suit.CLUBS, Rank.TEN));
-
         cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+        cards.add(new Card(Suit.CLUBS, Rank.TEN));
+
 
     return cards;
     }

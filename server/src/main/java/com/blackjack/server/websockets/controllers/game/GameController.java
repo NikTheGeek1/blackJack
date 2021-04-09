@@ -125,8 +125,21 @@ public class GameController {
                         if (match.getHasSimulationStared()) {
                             sendDealerNextMove_Delayed(match);
                         }
-                        PlayerChoice playerChoice = new PlayerChoice(null, null);
-                        webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match,playerChoice));
+                        PlayerChoice playerChoice;
+                        switch (match.getGame().getDealer().getStatus() ) {
+                            case PLAYING:
+                                playerChoice = new PlayerChoice("Dealer", PlayerChoiceType.DREW);
+                                break;
+                            case BUSTED:
+                                playerChoice = new PlayerChoice("Dealer", PlayerChoiceType.BUSTED);
+                                break;
+                            case BLACKJACK:
+                                playerChoice = new PlayerChoice("Dealer", PlayerChoiceType.BLACKJACKED);
+                                break;
+                            default:
+                                playerChoice = new PlayerChoice(null, null);
+                        }
+                        webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                         if (match.getGame().isVerdictOut()) {
                             sendChangedRound_Delayed(match);
                         }

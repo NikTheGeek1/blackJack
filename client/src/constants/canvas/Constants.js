@@ -24,18 +24,30 @@ class CanvasConstants {
         { x: 0, y: 0, angle: 0 },
         { x: 30, y: 0, angle: 20 },
         { x: 60, y: 10, angle: 30 },
-        { x: 85, y: 25, angle: 40 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
+        { x: 85, y: 25, angle: 40 }, 
         { x: 110, y: 45, angle: 50 },
-        { x: 140, y: 85, angle: 60 }
+        { x: 140, y: 85, angle: 60 },
+        { x: 170, y: 120, angle: 70 },
+        { x: 200, y: 160, angle: 80 },
+        { x: 230, y: 200, angle: 90 },
+        { x: 260, y: 240, angle: 100 }, 
+        { x: 290, y: 280, angle: 110 },
+        { x: 320, y: 320, angle: 120 }
     ];
 
     static ENLARGED_CARD_NUM_OFFSETS = [
         { x: -50, y: -50, angle: -20 },
         { x: -10, y: -60, angle: -10 },
         { x: 30, y: -70, angle: 0 },
-        { x: 70, y: -80, angle: 10 }, //TODO: ADD MORE OFFSETS HERE FOR MORE CARDS. IMPORTANT!
+        { x: 70, y: -80, angle: 10 }, 
         { x: 110, y: -90, angle: 20 },
-        { x: 150, y: -100, angle: 30 }
+        { x: 150, y: -100, angle: 30 },
+        { x: 190, y: -110, angle: 40 },
+        { x: 270, y: -120, angle: 50 },
+        { x: 310, y: -130, angle: 60 },
+        { x: 350, y: -140, angle: 70 }, 
+        { x: 390, y: -150, angle: 80 },
+        { x: 430, y: -160, angle: 90 },
     ];
 
     static TOKENS_IN_EACH_WRAP = 5;
@@ -141,6 +153,12 @@ class CanvasConstants {
         {x: 750, y: 550, angle: 10},
         {x: 790, y: 540, angle: 20},
         {x: 830, y: 530, angle: 30},
+        {x: 870, y: 520, angle: 40},
+        {x: 910, y: 510, angle: 50},
+        {x: 950, y: 500, angle: 60},
+        {x: 990, y: 490, angle: 70},
+        {x: 1030, y: 480, angle: 80},
+        {x: 1070, y: 470, angle: 90},
     ]
 }
 

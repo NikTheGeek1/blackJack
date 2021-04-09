@@ -13,6 +13,18 @@ class PlayerUtils {
             }
         }
     }
+
+    static getNextPlayerIfThereIsOne = (currentPlayerEmail, allPlayers) => {
+        for (let playerIdx = 0; playerIdx < allPlayers.length; playerIdx++) {
+            if (allPlayers[playerIdx].email === currentPlayerEmail) {
+                if (playerIdx < (allPlayers.length - 1)) {
+                    return allPlayers[playerIdx + 1];
+                } else {
+                    return -1;
+                }
+            }
+        }
+    }
 }
 
 export default PlayerUtils;

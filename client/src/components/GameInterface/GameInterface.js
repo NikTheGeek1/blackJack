@@ -42,7 +42,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         { src: arrowImg, name: CanvasImgNames.ARROW }
         ];
         // TODO: canvas renders anew couple of times, put a debugger somewhere and check render cycles 
-        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match.game);
+        canvasManager = new CanvasManager(canvasRefCurrent, screenDimensions, imgsArray, thisPlayer, match.game, match.gameType);
         canvasManager.loadImagesAndStart(screenDimensions, setAllImgsLoaded);
     }, []);
 
@@ -89,7 +89,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
 
     const clickHandler = e => {
         if (animationPlaying) return;
-        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, match.game);
+        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, match.game, match.gameType);
         const clickedObject = mouseLocator.analyseMouseLocation();
         if (HoverOvertTypes.TOKEN_COLUMNS.includes(clickedObject) && canvasManager.thisPlayer.tokens[clickedObject]) { // and in BETTING state
             new BetTokenAnimation(canvasManager, clickedObject).playAnimation();
@@ -118,7 +118,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         const y = Math.round((e.clientY - rect.top - mousePosOrigin.y) * (CanvasDynamicSizesManager.constants.SCALING_DENOMINATOR / (screenDimensions.width < 800 ? 800 : screenDimensions.width)));// - root.scrollTop;
         setMousePos({ x, y });
         if (animationPlaying) return;
-        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game);
+        const mouseLocator = new MouseLocator(screenDimensions, mousePos, canvasManager.thisPlayer, canvasManager.game, match.gameType);
         const mouseOnWhat = mouseLocator.analyseMouseLocation();
       
         if (mouseOnWhat) {
