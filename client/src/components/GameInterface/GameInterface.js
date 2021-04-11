@@ -25,7 +25,8 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [mousePosOrigin, setMousePosOrigin] = useState({ x: 0, y: 0 });
     const [allImgsLoaded, setAllImgsLoaded] = useState(false);
-    const [isInitialAnimationOver, setIsInitialAnimationOver] = useState(false);
+    const [isDealingCardsAnimationOver, setIsDealingCardsAnimationOver] = useState(false);
+    const [isPlacingTokensAnimationOver, setIsPlacingTokensAnimationOver] = useState(false);
     const [animationPlaying, setAnimationPlaying] = useState(false);
     const [globalState, dispatch] = useStore();
     const match = globalState.matchState.matchObj;
@@ -56,7 +57,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             playerChoice?.playerChoiceType === PlayerChoiceType.BLACKJACKED) return;
         canvasManager.updateGame(match.game);
         canvasManager.updateThisPlayer(thisPlayer);
-        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
+        canvasManager.drawAll(isDealingCardsAnimationOver, isPlacingTokensAnimationOver);
     }, [match, thisPlayer, animationPlaying]);
 
 
@@ -70,7 +71,8 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             canvasManager.updateThisPlayer(thisPlayer);
             animationChoser(playerChoice, canvasManager,
                 {
-                    setIsInitialAnimationOver: setIsInitialAnimationOver,
+                    setIsDealingCardsAnimationOver: setIsDealingCardsAnimationOver,
+                    setIsPlacingTokensAnimationOver: setIsPlacingTokensAnimationOver,
                     setAnimationPlaying: setAnimationPlaying
                 });
             dispatch(UNSET_PLAYER_CHOICE);
@@ -84,7 +86,7 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     useEffect(() => {
         if (!allImgsLoaded) return;
         canvasManager.setScreenDimensions(screenDimensions);
-        canvasManager.drawAll(isInitialAnimationOver, isInitialAnimationOver);
+        canvasManager.drawAll(isDealingCardsAnimationOver, isPlacingTokensAnimationOver);
     }, [screenDimensions]);
 
     const clickHandler = e => {
@@ -141,8 +143,9 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
     };
 
     useEffect(() => {
-        canvasManager.initialAnimationFinished = isInitialAnimationOver;
-    }, [isInitialAnimationOver]);
+        canvasManager.dealingCardsAnimationFinished = isDealingCardsAnimationOver;
+        canvasManager.placingTokensAnimationFinished = isPlacingTokensAnimationOver;
+    }, [isDealingCardsAnimationOver, isPlacingTokensAnimationOver]);
 
     useEffect(() => {
         canvasManager.canvas.addEventListener('click', clickHandler);

@@ -1,9 +1,10 @@
 import AnimationUtils from './DealingCardAnimationUtils';
 import DynamicManager from '../coordinates_sizes/DynamicManager';
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
+import AnimationType from '../../../models/canvas/AnimationType';
 
 class DealingCards {
-    constructor(canvasManager, onFinishCb, quitAnimationCb) {
+    constructor(canvasManager, onFinishCb, quitAnimationCb, startGameOrStartRound) {
         this.onFinishCb = onFinishCb;
         this.animationUtils = new AnimationUtils(canvasManager.game);
         this.canvasManager = canvasManager;
@@ -11,6 +12,7 @@ class DealingCards {
         this.data = this._initialValues();
         this.quitAnimationCb = quitAnimationCb;
         this.isTabVisible = !document.hidden;
+        this.startGameOrStartRound = startGameOrStartRound;
     }
 
     _onSwitchTabs() {
@@ -70,14 +72,15 @@ class DealingCards {
 
     _quitingAnimation() {
         this.quitAnimationCb();
-        this.canvasManager.initialAnimationFinished = true;
+        this.canvasManager.dealingCardsAnimationFinished = true;
+        this.canvasManager.placingTokensAnimationFinished = true;
         this.canvasManager.drawAll(true, true);
         this._removeEventListener();
     }
 
     _persistFrame() {
         this.canvasManager.updateGame(this.animationUtils.currentFrame);
-        this.canvasManager.drawAll(true, false);
+        this.canvasManager.drawAll(true, this.startGameOrStartRound !== AnimationType.START_GAME);
     }
 
     drawCanvasStateToBackupCanvas() {

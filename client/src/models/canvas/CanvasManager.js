@@ -18,7 +18,8 @@ class CanvasManager {
         this.game = game;
         this.backupCanvas = null;
         this.isBackupCanvasDrawn = false;
-        this.initialAnimationFinished = false;
+        this.dealingCardsAnimationFinished = false;
+        this.placingTokensAnimationFinished = false;
         this.gameType = gameType;
     }
 
@@ -230,26 +231,32 @@ class CanvasManager {
         );
         this._drawBackground();
         this._drawTable();
+
         if (this.game.verdictOut) {
             this._drawAllVerdicts();
         } else {
             this._drawPlayerNames();
         }
+
         this._drawPositions();
-        if (!drawCards) {
-            this._drawMessages();
-            this.canvasContext.restore();
-            return;
-        }
-        this._drawCards();
-        if (drawTokens) {
-            this._drawTokens();
-            this._drawThisPlayerCardsEnlarged();
+
+        if (drawCards) {
+            this._drawCards();
         }
 
-        if (this.thisPlayer.status === PlayerStatus.BETTING && this.initialAnimationFinished) {
+        if (drawTokens) {
+            this._drawTokens();
+            if (drawCards) {
+                this._drawThisPlayerCardsEnlarged();
+            }
+        }
+
+        if (this.thisPlayer.status === PlayerStatus.BETTING &&
+            this.dealingCardsAnimationFinished &&
+            this.placingTokensAnimationFinished) {
             this._drawBettingArrow();
         }
+
         this._drawAllPlayerBetTokens();
         this._drawMessages();
         this.drawCanvasStateToBackupCanvas()

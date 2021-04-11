@@ -74,15 +74,12 @@ class MouseLocator {
     _canThisPlayerClickOnStartGame() {
         return !this._hasGameStarted() && 
         ((this.thisPlayer.isDealer && this.game.allPlayersDealerFirst.length > 1 && this.gameType === "HUMANS") ||
-        (this._isThisPlayerAfterDealer() && this.gameType === "COMPUTER"));
+        (this.gameType === "COMPUTER" && this._isThisPlayerAfterDealer()));
     }
 
     _isThisPlayerAfterDealer() {
         return this.game.allPlayersDealerFirst[1].email === this.thisPlayer.email;
     }
-
-
-    
 }
 
 

@@ -102,7 +102,8 @@ class PlacingTokens {
 
     _quitingAnimation() {
         this.quitAnimationCb();
-        this.canvasManager.initialAnimationFinished = true; // updating from inside the quiteAnimationCb is asynchronous.
+        this.dealingCardsAnimationFinished = true;
+        this.placingTokensAnimationFinished = true; // updating from inside the quiteAnimationCb is asynchronous.
         this.canvasManager.drawAll(true, true);
         this._removeEventListener();
     }

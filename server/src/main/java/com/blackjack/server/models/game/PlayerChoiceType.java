@@ -7,5 +7,6 @@ public enum PlayerChoiceType {
     STARTED_GAME,
     LEFT_GAME,
     BET,
+    STARTED_ROUND,
     BLACKJACKED;
 }

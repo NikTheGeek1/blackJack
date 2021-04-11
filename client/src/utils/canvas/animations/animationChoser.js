@@ -7,6 +7,7 @@ import RoundEndAnimation from './RoundEndAnimation';
 import VerdictSlidingTokenUtils from './VerdictSlidingTokenUtils';
 import PlayerUtils from '../../../utils/game-utils/players-utils';
 import PlayerStatus from '../../../constants/PlayerStatus';
+import AnimationType from '../../../models/canvas/AnimationType';
 
 const animationChoser = (playerChoice, canvasManager, setters) => {
     if (canvasManager.game.verdictOut) {
@@ -16,7 +17,11 @@ const animationChoser = (playerChoice, canvasManager, setters) => {
         if (MessagesManager.anotherMessageIsDisplayed) return; // when dealer busts this gets executed twice
         // one with playerChoice === BUSTED and one with playerChoice null. we need to only render once that's why this check
         MessagesManager.anotherMessageIsDisplayed = true;
-        const onRoundEnd = new RoundEndAnimation(canvasManager, setters.setAnimationPlaying.bind(this, false));
+        const onRoundEndCb = () => {
+            setters.setIsDealingCardsAnimationOver(false);
+            setters.setAnimationPlaying(false);
+        }
+        const onRoundEnd = new RoundEndAnimation(canvasManager, onRoundEndCb);
         if (playerChoice?.playerChoiceType === PlayerChoiceType.BUSTED ||
             playerChoice?.playerChoiceType === PlayerChoiceType.BLACKJACKED) {
             const onDealingAnimationFinish = () => onRoundEnd.start();
@@ -26,17 +31,30 @@ const animationChoser = (playerChoice, canvasManager, setters) => {
         return onRoundEnd.start();
     }
     if (playerChoice.playerChoiceType === PlayerChoiceType.STARTED_GAME) {
-        const onFinishStartedGameAnimationCb = () => {
-            setters.setIsInitialAnimationOver(true);
+        const onPlacingTokensFinish = () => {
+            setters.setIsDealingCardsAnimationOver(true);
+            setters.setIsPlacingTokensAnimationOver(true);
             setters.setAnimationPlaying(false);
         };
         const quitAnimationCb = () => {
-            setters.setIsInitialAnimationOver(true);
+            setters.setIsDealingCardsAnimationOver(true);
+            setters.setIsPlacingTokensAnimationOver(true);
             setters.setAnimationPlaying(false);
         };
-        const placingTokensAnimation = new PlacingTokensAnimation(canvasManager, onFinishStartedGameAnimationCb, quitAnimationCb);
+        const placingTokensAnimation = new PlacingTokensAnimation(canvasManager, onPlacingTokensFinish, quitAnimationCb);
         const onDealingAnimationFinish = () => placingTokensAnimation.start();
-        const dealingCardsAnimation = new DealingCardsAnimation(canvasManager, onDealingAnimationFinish, quitAnimationCb);
+        const dealingCardsAnimation = new DealingCardsAnimation(canvasManager, onDealingAnimationFinish, quitAnimationCb, AnimationType.START_GAME);
+        dealingCardsAnimation.start();
+    } else if (playerChoice.playerChoiceType === PlayerChoiceType.STARTED_ROUND) {
+        const onFinishDealingCards = () => {
+            setters.setIsDealingCardsAnimationOver(true);
+            setters.setAnimationPlaying(false);
+        };
+        const quitAnimationCb = () => {
+            setters.setIsDealingCardsAnimationOver(true);
+            setters.setAnimationPlaying(false);
+        };
+        const dealingCardsAnimation = new DealingCardsAnimation(canvasManager, onFinishDealingCards, quitAnimationCb, AnimationType.START_ROUND);
         dealingCardsAnimation.start();
     } else if (playerChoice.playerChoiceType === PlayerChoiceType.DREW) {
         const dealingCardAnimation = new DealingCardAnimation(canvasManager, playerChoice.playerEmail, setters.setAnimationPlaying.bind(this, false));

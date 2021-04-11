@@ -44,7 +44,9 @@ class MessagesManager {
         }
 
         if (this.canvasManager.thisPlayer.status === PlayerStatus.BETTING &&
-            this.canvasManager.initialAnimationFinished) {
+            this.canvasManager.dealingCardsAnimationFinished && 
+            this.canvasManager.placingTokensAnimationFinished
+            ) {
             this._drawTimeToBet();
         }
 

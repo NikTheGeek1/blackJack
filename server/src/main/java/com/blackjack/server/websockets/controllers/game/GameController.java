@@ -82,7 +82,7 @@ public class GameController {
                     @Override
                     public void run() {
                         match.getGame().nextRound(match.getGameType());
-                        PlayerChoice playerChoice = new PlayerChoice(null, null);
+                        PlayerChoice playerChoice = new PlayerChoice(match.getGame().getDealer().getEmail(), PlayerChoiceType.STARTED_ROUND);
                         webSocket.convertAndSend(URLs.UPDATE_GAME(match.getMatchName()), new UpdateGameResponse(match, playerChoice));
                     }
                 },
