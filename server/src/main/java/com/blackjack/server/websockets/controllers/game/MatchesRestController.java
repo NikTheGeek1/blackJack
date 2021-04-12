@@ -3,6 +3,7 @@ package com.blackjack.server.websockets.controllers.game;
 import com.blackjack.server.controllers.ErrorMessage;
 import com.blackjack.server.models.User;
 import com.blackjack.server.models.match.Match;
+import com.blackjack.server.models.match.PrivateMatch;
 import com.blackjack.server.repositories.UserRepository;
 import com.blackjack.server.urls.URLs;
 import com.blackjack.server.websockets.managers.ActiveLobbyUsersManager;
@@ -27,9 +28,14 @@ public class MatchesRestController {
     private UserRepository userRepository;
 
     @PostMapping(URLs.ADD_MATCH)
-    public ResponseEntity addMatch(@RequestBody Match match, @RequestParam("userEmail") String userEmail) {
+    public ResponseEntity addMatch(@RequestBody Match match,
+                                   @RequestParam("userEmail") String userEmail,
+                                   @RequestParam(value = "matchPassword", required = false) String matchPassword) {
         if (activeMatchesManager.getAll().get(match.getMatchName()) != null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Game with that name already exists."));
+        if (matchPassword != null)
+            match = new PrivateMatch(match, matchPassword);
+
         User user = activeLobbyUsersManager.removeLobbyUser(userEmail);
         if (user == null) // null because it might be already removed from lobby since they left lobby
             user = userRepository.findByEmail(userEmail);
@@ -43,8 +49,15 @@ public class MatchesRestController {
 
     @PostMapping(URLs.ADD_USER_TO_MATCH)
     public ResponseEntity addUserToMatch(@RequestParam("userEmail") String userEmail,
-                                         @RequestParam("matchName") String matchName) {
+                                         @RequestParam("matchName") String matchName,
+                                         @RequestParam(value = "matchPassword", required = false) String matchPassword) {
         Match match = activeMatchesManager.getMatch(matchName);
+        if (match == null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Game doesn't exist."));
+        if (match instanceof PrivateMatch) {
+            if (!matchPassword.equals( ((PrivateMatch) match).getMatchPassword()))
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Incorrect password."));
+        }
         if (!match.hasSpace())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Room is full."));
         User user = activeLobbyUsersManager.removeLobbyUser(userEmail);

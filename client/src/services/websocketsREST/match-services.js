@@ -3,7 +3,7 @@ import ResponseOptions from '../ResponseOptions';
 import ErrorHandling from '../ErrorHandling';
 
 export const addMatch = (match, userEmail, cbSuccess, cbError) => {
-    fetch(URLs.ADD_MATCH(userEmail), ResponseOptions.POSTResponse(match))
+    fetch(URLs.ADD_MATCH(userEmail, match.matchPassword), ResponseOptions.POSTResponse(match))
         .then(res => res.json())
         .then(response => {
             ErrorHandling.simpleErrorHandler(response);
@@ -12,8 +12,8 @@ export const addMatch = (match, userEmail, cbSuccess, cbError) => {
         .catch(err => cbError(err));
 };
 
-export const addUserToMatch = (matchName, userEmail, cbSuccess, cbError) => {
-    fetch(URLs.ADD_USER_TO_MATCH(matchName, userEmail), ResponseOptions.POSTResponse())
+export const addUserToMatch = (matchName, matchPassword, userEmail, cbSuccess, cbError) => {
+    fetch(URLs.ADD_USER_TO_MATCH(matchName, userEmail, matchPassword), ResponseOptions.POSTResponse())
         .then(res => res.json())
         .then(response => {
             ErrorHandling.simpleErrorHandler(response);

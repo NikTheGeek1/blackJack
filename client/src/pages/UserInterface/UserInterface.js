@@ -5,11 +5,13 @@ import { LOG_USER_OUT } from '../../hooks-store/stores/user-credential-store';
 import './UserInterface.css';
 import { initSocket } from '../../websockets/web-sockets-matches-rep';
 import { useEffect, useState } from 'react';
-import { addMatch, addUserToMatch } from '../../services/websocketsREST/match-services';
+import { addMatch, addUserToMatch, addUserToPrivateMatch } from '../../services/websocketsREST/match-services';
 import { addLobbyUser, removeLobbyUser } from '../../services/websocketsREST/lobby-user-services';
 import URLs from '../../services/DEV-URLs';
 import { useHistory } from 'react-router';
 import NewMatchForm from '../../components/NewMatch/NewMatchForm/NewMatchForm';
+import MatchesTable from '../../components/UserInterface/MatchesTable/MatchesTable';
+import JoinPrivateMatch from '../../components/UserInterface/JoinPrivateMatch/JoinPrivateMatch';
 
 let matchesSocket;
 
@@ -49,8 +51,11 @@ const UserInterface = () => {
         }
     }, []);
 
-    const joinMatchHandler = (matchName) => {
-        addUserToMatch(matchName, globalState.userState.userObj.email,
+    const joinMatchHandler = (matchName, matchPassword) => {
+        // TODO: Add proper validation
+        if (!matchName) return;
+        if (matchPassword && matchPassword.trim() === '') return;
+        addUserToMatch(matchName, matchPassword, globalState.userState.userObj.email,
             sucRes => goToMatchPage(sucRes),
             errRes => console.log(errRes))
     };
@@ -67,27 +72,14 @@ const UserInterface = () => {
         history.push("/match");
     };
 
-    const matchesJSX = matches.map(match => {
-        return (
-            <div key={match.matchName}>
-                <p>{match.matchName} max players: {match.maxNumberOfPlayers} players num: {match.users.length} duration: {match.duration}</p>
-                <button onClick={() => joinMatchHandler(match.matchName)}>Join</button>
-            </div>
-        );
-    });
-
     return (
         <>
             <p>this is the user interface page</p>
             <button onClick={() => dispatch(LOG_USER_OUT)}>Logout</button>
-            <NewMatchForm addMatchHandler={addMatchHandler}/>
-            <p>
-            start working on humans game logic <br/>
-            represent players as a table (in MatchGame component) <br/>
-            the creator decides when the game starts, if the players num {'>'}= 2<br/>
-            </p>
+            <NewMatchForm addMatchHandler={addMatchHandler} />
+            <JoinPrivateMatch joinMatchHandler={joinMatchHandler} />
             <p>List of matches</p>
-            {matchesJSX}
+            <MatchesTable matches={matches} joinMatchHandler={joinMatchHandler} />
         </>
     );
 };
