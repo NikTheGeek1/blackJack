@@ -56,7 +56,9 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             playerChoice?.playerChoiceType === PlayerChoiceType.BUSTED ||
             playerChoice?.playerChoiceType === PlayerChoiceType.BLACKJACKED) return;
         canvasManager.updateGame(match.game);
+        canvasManager.updateThisPlayer(thisPlayer);
         if (match.game.allPlayersDealerFirst.length === 1) {
+            // I need this here so everytime a player's left alone, their tokens/cards are not drawn
             setIsDealingCardsAnimationOver(false);
             setIsPlacingTokensAnimationOver(false);
             canvasManager.dealingCardsAnimationFinished = false;
@@ -65,7 +67,6 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
         } else {
             canvasManager.drawAll(isDealingCardsAnimationOver, isPlacingTokensAnimationOver);
         }
-        canvasManager.updateThisPlayer(thisPlayer);
     }, [match, thisPlayer, animationPlaying]);
 
 
