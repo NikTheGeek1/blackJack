@@ -56,8 +56,16 @@ const GameInterface = ({ screenDimensions, gameSocketManager }) => {
             playerChoice?.playerChoiceType === PlayerChoiceType.BUSTED ||
             playerChoice?.playerChoiceType === PlayerChoiceType.BLACKJACKED) return;
         canvasManager.updateGame(match.game);
+        if (match.game.allPlayersDealerFirst.length === 1) {
+            setIsDealingCardsAnimationOver(false);
+            setIsPlacingTokensAnimationOver(false);
+            canvasManager.dealingCardsAnimationFinished = false;
+            canvasManager.placingTokensAnimationFinished = false;
+            canvasManager.drawAll(false, false);
+        } else {
+            canvasManager.drawAll(isDealingCardsAnimationOver, isPlacingTokensAnimationOver);
+        }
         canvasManager.updateThisPlayer(thisPlayer);
-        canvasManager.drawAll(isDealingCardsAnimationOver, isPlacingTokensAnimationOver);
     }, [match, thisPlayer, animationPlaying]);
 
 

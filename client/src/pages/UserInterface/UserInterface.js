@@ -5,7 +5,7 @@ import { LOG_USER_OUT } from '../../hooks-store/stores/user-credential-store';
 import './UserInterface.css';
 import { initSocket } from '../../websockets/web-sockets-matches-rep';
 import { useEffect, useState } from 'react';
-import { addMatch, addUserToMatch, addUserToPrivateMatch } from '../../services/websocketsREST/match-services';
+import { addMatch, addUserToMatch } from '../../services/websocketsREST/match-services';
 import { addLobbyUser, removeLobbyUser } from '../../services/websocketsREST/lobby-user-services';
 import URLs from '../../services/DEV-URLs';
 import { useHistory } from 'react-router';
@@ -33,7 +33,6 @@ const UserInterface = () => {
             });
             matchesSocket.send(URLs.REQUEST_LIST_OF_MATCHES, {}, "requesting list of matches");
         });
-
 
         return () => {
             removeLobbyUser(globalState.userState.userObj.email, sucRes => console.log(sucRes), errRes => console.log(errRes));

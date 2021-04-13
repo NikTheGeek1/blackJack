@@ -4,6 +4,7 @@ import TokenUtils from '../TokenUtils';
 import CanvasDynamicSizesManager from '../coordinates_sizes/DynamicManager';
 
 class MessagesManager {
+
     static anotherMessageIsDisplayed = false;
     constructor(canvasManager) {
         this.canvasManager = canvasManager;
