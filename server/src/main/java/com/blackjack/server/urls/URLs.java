@@ -44,6 +44,7 @@ public class URLs {
     // USER
     public final static String SIGN_USER_IN = "/user/sign-in";
     public final static String SIGN_USER_UP = "/user/sign-up";
+    public final static String ADD_MONEY = "/user/add-money";
 
     // DEV CLIENT
     public final static String DEV_CLIENT = "http://localhost:3000";

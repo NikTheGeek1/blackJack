@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
@@ -40,4 +37,21 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("User with that email already exists."));
         }
     }
+
+    @PatchMapping(URLs.ADD_MONEY)
+    public ResponseEntity addMoney(
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("amount") int amount
+    ) {
+
+        try {
+            userRepository.increaseMoneyByEmail(amount, userEmail);
+            User user = userRepository.findByEmail(userEmail);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(e.getMessage()));
+        }
+    }
+
 }

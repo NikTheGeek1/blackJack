@@ -7,6 +7,7 @@ import signUpORUserInterfaceDecider from '../../utils/signUpOrUserInterface';
 import { LOG_USER_IN } from '../../hooks-store/stores/user-credential-store';
 import matchPageDecider from '../../utils/matchPageDecider';
 import MatchPage from '../../pages/MatchPage/MatchPage';
+import ProfilePage from '../../pages/ProfilePage/ProfilePage';
 
 const LandingPage = () => {
     const [globalState, dispatch] = useStore();
@@ -31,6 +32,7 @@ const LandingPage = () => {
             <Switch>
                 <Route exact path="/">{slashRouteJSX}</Route>
                 <Route path="/match"><MatchPage /></Route>; 
+                <Route path="/profile"><ProfilePage /></Route>; 
                 {/* {slashMatchRouteJSX} */}
             </Switch>
         </Router>

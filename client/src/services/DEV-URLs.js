@@ -77,6 +77,10 @@ class URLs {
         return this.DEV_SERVER + `/user/sign-in?email=${email}&password=${password}`;
     }
 
+    static ADD_MONEY(userEmail, amount) {
+        return this.DEV_SERVER + `/user/add-money?userEmail=${userEmail}&amount=${amount}`;
+    }
+
 }
 
 export default URLs;

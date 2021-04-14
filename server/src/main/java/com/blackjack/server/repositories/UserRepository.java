@@ -43,15 +43,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Transactional
     @Query(value = "UPDATE users " +
-            "SET money = money + :amountToIncrease" +
-            "WHERE id = :id",
+            "SET money = money + :amountToIncrease " +
+            "WHERE email = :email",
             nativeQuery = true)
-    void increaseMoneyById(@Param("amountToIncrease") Double amountToIncrease, @Param("id") Long id);
+    void increaseMoneyByEmail(@Param("amountToIncrease") int amountToIncrease, @Param("email") String email);
 
     @Modifying
     @Transactional
     @Query(value = "UPDATE users " +
-            "SET money = money - :amountToDecrease" +
+            "SET money = money - :amountToDecrease " +
             "WHERE id = :id",
             nativeQuery = true)
     void decreaseMoneyById(@Param("amountToDecrease") Double amountToDecrease, @Param("id") Long id);

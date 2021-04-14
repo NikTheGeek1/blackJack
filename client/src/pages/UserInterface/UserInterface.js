@@ -12,6 +12,8 @@ import { useHistory } from 'react-router';
 import NewMatchForm from '../../components/NewMatch/NewMatchForm/NewMatchForm';
 import MatchesTable from '../../components/UserInterface/MatchesTable/MatchesTable';
 import JoinPrivateMatch from '../../components/UserInterface/JoinPrivateMatch/JoinPrivateMatch';
+import ProfileWindow from '../../components/UserInterface/ProfileWindow/ProfileWindow';
+
 
 let matchesSocket;
 
@@ -75,6 +77,7 @@ const UserInterface = () => {
         <>
             <p>this is the user interface page</p>
             <button onClick={() => dispatch(LOG_USER_OUT)}>Logout</button>
+            <ProfileWindow />
             <NewMatchForm addMatchHandler={addMatchHandler} />
             <JoinPrivateMatch joinMatchHandler={joinMatchHandler} />
             <p>List of matches</p>
