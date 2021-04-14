@@ -54,4 +54,59 @@ public class UserController {
         }
     }
 
+    @PatchMapping(URLs.CHANGE_NAME)
+    public ResponseEntity changeName(
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("newName") String name
+    ) {
+        try {
+            userRepository.updateNameByEmail(name, userEmail);
+            User user = userRepository.findByEmail(userEmail);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(e.getMessage()));
+        }
+    }
+
+    @PatchMapping(URLs.CHANGE_PASSWORD)
+    public ResponseEntity changePassword(
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("oldPassword") String oldPassword
+    ) {
+        try {
+            User user = userRepository.findByEmail(userEmail);
+            if (!UserValidation.isPasswordCorrect(user.getPassword(), oldPassword)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Old password is incorrect"));
+            }
+            userRepository.updatePasswordByEmail(newPassword, userEmail);
+            user.setPassword(newPassword);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(e.getMessage()));
+        }
+    }
+
+    @PatchMapping(URLs.CHANGE_EMAIL)
+    public ResponseEntity changeEmail(
+            @RequestParam("userId") Long userId,
+            @RequestParam("newEmail") String newEmail
+    ) {
+        try {
+            if (userRepository.existsByEmail(newEmail)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage("Email already in use."));
+            }
+            userRepository.updateEmailById(newEmail, userId);
+            User user = userRepository.findByEmail(newEmail);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(e.getMessage()));
+        }
+    }
+
+
+
 }

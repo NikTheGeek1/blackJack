@@ -3,6 +3,7 @@ import { initStore } from '../store';
 
 export const LOG_USER_OUT = "LOG_USER_OUT";
 export const LOG_USER_IN = "LOG_USER_IN";
+export const UPDATE_USER = "UPDATE_USER";
 
 const configureStore = () => {
     const actions = {
@@ -11,6 +12,9 @@ const configureStore = () => {
         },
         [LOG_USER_OUT]: () => {
             return { userState: { isLoggedIn: false, userObj: null }};
+        },
+        [UPDATE_USER]: (curState, updatedUserObj) => {
+            return { userState: { isLoggedIn: true, userObj: new User(updatedUserObj) }};
         }
     }
     initStore(actions, { userState: { isLoggedIn: false, userObj: null } });

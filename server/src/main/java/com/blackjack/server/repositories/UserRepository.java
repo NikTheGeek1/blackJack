@@ -19,18 +19,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Transactional
     @Query(value = "UPDATE users " +
-            "SET name = :name" +
-            "WHERE id = :id",
+            "SET name = :name " +
+            "WHERE email = :email",
             nativeQuery = true)
-    void updateNameById(@Param("name") String name, @Param("id") Long id);
+    void updateNameByEmail(@Param("name") String name, @Param("email") String email);
 
     @Modifying
     @Transactional
     @Query(value = "UPDATE users " +
-            "SET password = :password"+
-            "WHERE id = :id",
+            "SET password = :password "+
+            "WHERE email = :email",
             nativeQuery = true)
-    void updatePasswordById(@Param("password") String password, @Param("id") Long id);
+    void updatePasswordByEmail(@Param("password") String password, @Param("email") String email);
 
     @Modifying
     @Transactional
@@ -52,8 +52,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query(value = "UPDATE users " +
             "SET money = money - :amountToDecrease " +
-            "WHERE id = :id",
+            "WHERE email = :email",
             nativeQuery = true)
-    void decreaseMoneyById(@Param("amountToDecrease") Double amountToDecrease, @Param("id") Long id);
+    void decreaseMoneyByEmail(@Param("amountToDecrease") Double amountToDecrease, @Param("email") String email);
 
 }

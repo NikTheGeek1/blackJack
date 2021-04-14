@@ -81,6 +81,16 @@ class URLs {
         return this.DEV_SERVER + `/user/add-money?userEmail=${userEmail}&amount=${amount}`;
     }
 
+    static CHANGE_NAME(userEmail, newName) {
+        return this.DEV_SERVER + `/user/change-name?userEmail=${userEmail}&newName=${newName}`;
+    }
+    static CHANGE_PASSWORD(userEmail, oldPassword, newPassword) {
+        return this.DEV_SERVER + `/user/change-password?userEmail=${userEmail}&oldPassword=${oldPassword}&newPassword=${newPassword}`;
+    }
+    static CHANGE_EMAIL(userId, newEmail) {
+        return this.DEV_SERVER + `/user/change-email?userId=${userId}&newEmail=${newEmail}`;
+    }
+
 }
 
 export default URLs;
