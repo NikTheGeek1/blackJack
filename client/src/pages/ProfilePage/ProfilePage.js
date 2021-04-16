@@ -38,7 +38,6 @@ const ProfilePage = () => {
         );
     };
 
-
     const onChangeEmail = e => {
         e.preventDefault();
         if (!email.trim() || email === user.email) return;
