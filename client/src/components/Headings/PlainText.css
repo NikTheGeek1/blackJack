@@ -1,0 +1,8 @@
+.plain-text {
+
+	font-size: var(--small-font-size);
+	font-weight: 100;
+	line-height: 2rem;
+	letter-spacing: 0.5px;
+	margin: var(--larger-margin) 0 var(--bigger-margin);
+}

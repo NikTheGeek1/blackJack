@@ -4,6 +4,8 @@ import { createUser } from '../../../../services/user/create-user';
 import { useStore } from '../../../../hooks-store/store';
 import { LOG_USER_IN } from '../../../../hooks-store/stores/user-credential-store';
 import { FormButton, FormInput } from '../../../Form/components';
+import PlainText from '../../../Headings/PlainText';
+import SocialMedia from '../../../Form/SocialMedia';
 
 const SignUpForm = () => {
     const [errorMessage, setErrorMessage] = useState("");
@@ -27,12 +29,15 @@ const SignUpForm = () => {
     };
 
     return (
-        <form onSubmit={submitFormHandler}>
+        <form onSubmit={submitFormHandler} className="sign-in-and-up-form">
             {errorMessage && <p>{errorMessage}</p>}
+            <h1>Create Account</h1>
+            <SocialMedia />
+            <PlainText>or use your email for registration</PlainText>
             <FormInput title="Name" onChange={e => setName(e.target.value)} value={name} />
             <FormInput title="Email" onChange={e => setEmail(e.target.value)} value={email} />
             <FormInput title="Password" onChange={e => setPassword(e.target.value)} value={password} type="password" />
-            <FormButton title="Submit" />
+            <FormButton title="Sign Up" />
         </form>
     );
 };

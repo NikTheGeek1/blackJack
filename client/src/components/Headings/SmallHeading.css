@@ -1,0 +1,5 @@
+.small-heading {
+	font-weight: bold;
+	margin: 0;
+    font-size: var(--bigger-font-size);
+}

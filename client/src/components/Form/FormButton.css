@@ -1,0 +1,33 @@
+.form-button {
+	border-radius: var(--bigest-radius);
+	border: var(--primary-border);
+	background-color: var(--colour-primary);
+	color: var(--colour-white);
+	font-size: var(--smaller-font-size);
+	font-weight: bold;
+	padding: var(--smaller-padding) var(--huge-padding);
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	transition: all 80ms ease-in;
+    cursor: pointer;
+    outline: none;
+}
+
+
+.form-button:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--form-button-shadow);
+}
+
+.form-button:active {
+	box-shadow: var(--form-inset-active-button-shadow), var(--form-active-button-shadow);
+	transform: translateY(1px);
+}
+
+.form-button :focus {
+	outline: none;
+}
+.form-button .ghost {
+	background-color: transparent;
+	border-color: var(--colour-white);
+}

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { fetchUserByEmailAndPassword } from '../../../../services/user/fetch-user';
 import { useStore } from '../../../../hooks-store/store';
 import { LOG_USER_IN } from '../../../../hooks-store/stores/user-credential-store';
+import PlainText from '../../../Headings/PlainText';
+import SocialMedia from '../../../Form/SocialMedia';
 
 const SignInForm = () => {
     const dispatch = useStore()[1];
@@ -30,11 +32,14 @@ const SignInForm = () => {
     };
 
     return (
-        <form onSubmit={submitFormHandler}>
+        <form onSubmit={submitFormHandler} className="sign-in-and-up-form">
             {errorMessage && <p>{errorMessage}</p>}
-            <FormInput title="Email" value={email} onChange={e => setEmail(e.target.value)} />
-            <FormInput title="Password" value={password} onChange={e => setPassword(e.target.value)} />
-            <FormButton title="Submit" />
+                    <h1>Sign in</h1>
+                    <SocialMedia />
+                    <PlainText>or use your account</PlainText>
+                    <FormInput title="Email" onChange={e => setEmail(e.target.value)} value={email}/>
+                    <FormInput title="Password" onChange={e => setPassword(e.target.value)} value={password}/>
+                    <FormButton title="Sign In"/>
         </form>
     );
 };

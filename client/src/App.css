@@ -1,7 +1,102 @@
+/* VARIABLES */
 :root {
-  --primary-font-size: 1.6rem;
-}
+  /* COLOURS */
+    /* --colour-primary: #74f9ff; */
+    --colour-primary: #9297c4;
+    --colour-secondary: black;
+    --colour-tertiary: #9368b7;
+    --colour-quaternary: #aa3e98;
+    --colour-gray-blu: #99C3D4;
+    --colour-blue-gray: #a8d8ea;
+    --colour-gray-1: #333;
+    --colour-gray-2: #6e7376;
+    --colour-gray-3: #eee;
+    --colour-white: #fff;
 
+    /* FONT SIZES */
+    --hugest-font-size: 6.5rem;
+    --huger-font-size: 5.5rem;
+    --huge-font-size: 4.5rem;
+    --bigest-font-size: 3.5rem;
+    --bigger-font-size: 3rem;
+    --big-font-size: 2.5rem;
+    --largest-font-size: 2.2rem;
+    --larger-font-size: 2rem;
+    --large-font-size: 1.8rem;
+    --primary-font-size: 1.6rem;
+    --small-font-size: 1.4rem;
+    --smaller-font-size: 1.2rem;
+    --smallest-font-size: 1rem;
+
+    /* MARGINS */
+    --hugest-margin: 6.5rem;
+    --huger-margin: 5.5rem;
+    --huge-margin: 4.5rem;
+    --bigest-margin: 3.5rem;
+    --bigger-margin: 3rem;
+    --big-margin: 2.5rem;
+    --largest-margin: 2.2rem;
+    --larger-margin: 2rem;
+    --large-margin: 1.8rem;
+    --primary-margin: 1.6rem;
+    --small-margin: 1.4rem;
+    --smaller-margin: 1.2rem;
+    --smallest-margin: 1rem;
+
+    /* PADDINGS */
+    --hugest-padding: 6.5rem;
+    --huger-padding: 5.5rem;
+    --huge-padding: 4.5rem;
+    --bigest-padding: 3.5rem;
+    --bigger-padding: 3rem;
+    --big-padding: 2.5rem;
+    --largest-padding: 2.2rem;
+    --larger-padding: 2rem;
+    --large-padding: 1.8rem;
+    --primary-padding: 1.6rem;
+    --small-padding: 1.4rem;
+    --smaller-padding: 1.2rem;
+    --smallest-padding: 1rem;
+
+    /* RADIUSES */
+    --hugest-radius: 5rem;
+    --huger-radius: 4rem;
+    --huge-radius: 3rem;
+    --bigest-radius: 2rem;
+    --bigger-radius: 1rem;
+    --big-radius: 5px;
+    --largest-radius: 4.px;
+    --larger-radius: 3.5px;
+    --large-radius: 3px;
+    --primary-radius: 2.5px;
+    --small-radius: 2px;
+    --smaller-radius: 1.5px;
+    --smallest-radius: 1px;
+
+      /* GAPS */
+    --hugest-gap: 6.5rem;
+    --huger-gap: 5.5rem;
+    --huge-gap: 4.5rem;
+    --bigest-gap: 3.5rem;
+    --bigger-gap: 3rem;
+    --big-gap: 2.5rem;
+    --largest-gap: 2.2rem;
+    --larger-gap: 2rem;
+    --large-gap: 1.8rem;
+    --primary-gap: 1.6rem;
+    --small-gap: 1.4rem;
+    --smaller-gap: 1.2rem;
+    --smallest-gap: 1rem;
+    
+    /* SHADOWS */
+    --primary-shadow: 0px 1px 5px rgba(0,0,0.5);
+    --form-button-shadow: 2px 5px 12px rgba(0, 0, 0, .5);
+    --form-inset-active-button-shadow: inset 0px 0px 2px rgba(0, 0, 0, .5);
+    --form-active-button-shadow: 1px 0px 6px rgba(0, 0, 0, .5);
+
+    /* BORDERS */ 
+    --primary-border: 1px solid var(--colour-primary);
+  }
 
 *, 
 *::after,
