@@ -1,0 +1,12 @@
+.new-match-container {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    /* grid-template-columns: minmax(30rem, 50rem); */
+}
+
+.new-match-form {
+    justify-self: center;
+    align-self: center;
+    width: 30%;
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import './MatchesTable.css';
+import './JoinGame.css';
 
-const MatchesTalbe = ({ matches, joinMatchHandler }) => {
+const JoinGame = ({ matches, joinMatchHandler }) => {
 
     const [searchInput, setSearchInput] = useState('');
 
@@ -28,4 +28,4 @@ const MatchesTalbe = ({ matches, joinMatchHandler }) => {
     )
 };
 
-export default MatchesTalbe;
+export default JoinGame;
