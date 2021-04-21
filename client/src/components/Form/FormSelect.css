@@ -1,0 +1,88 @@
+
+.select-hidden {
+  display: none;
+  visibility: hidden;
+  padding-right: 10px;
+}
+
+
+.select {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  font-size: 16px;
+  color: var(--colour-gray-1);
+  width: 220px;
+  height: 40px;
+}
+
+
+.select-styled {
+  position: absolute; 
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--colour-tertiary-dark);
+  padding: 8px 15px;
+  transition: all 0.2s ease-in;
+}
+
+.select-styled:after {
+    top: 9px;
+    border-color: transparent transparent var(--colour-white) transparent;
+}
+
+.select-styled:active, .select-styled.active {
+    background-color: var(--colour-tertiary-darker);
+}
+
+.select-styled:hover {
+    background-color: var(--colour-tertiary-darker);
+}
+
+.select-styled:after {
+    content:"";
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    border-color: var(--colour-quaternary) transparent transparent transparent;
+    position: absolute;
+    top: 16px;
+    right: 10px;
+  }
+
+
+.select-options-display {
+    display: block !important; 
+}
+
+.select-options {
+  display: none; 
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 999;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background-color: var(--colour-tertiary-darker);
+}
+
+.select-li {
+  margin: 0;
+  padding: 12px 0;
+  text-indent: 15px;
+  border-top: 1px solid var(--colour-tertiary);
+  transition: all 0.15s ease-in;
+}
+
+.select-li[rel="hide"] {
+    display: none;
+}
+
+.select-li:hover {
+    color: var(--colour-primary);
+    background: var(--colour-white);
+  }
