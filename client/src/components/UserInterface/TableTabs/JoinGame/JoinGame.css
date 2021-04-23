@@ -1,0 +1,58 @@
+.join-game-section {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 6rem 1fr 10rem;
+}
+
+.join-game-search-container {
+    min-width: 5rem;
+    width: 20%;
+}
+
+.join-game-matches-table {
+    display: grid;
+    grid-template-areas: "column-names" "rows";
+    grid-template-rows: 3rem 1fr;
+}
+
+.join-game-table-column-names {
+    display: grid;
+    grid-template-areas: "name players duration type";
+    grid-template-columns: repeat(4, minmax(12rem, 1fr));
+}
+
+.joing-game-table-rows-container {
+    background-image: var(--very-transparent-black-overlay);
+    box-shadow: var(--games-table-inset-shadow);
+}
+
+.joing-game-table-row {
+    display: grid;
+    grid-template-areas: "name players duration type";
+    grid-template-columns: repeat(4, minmax(12rem, 1fr));
+    cursor: pointer;
+}
+
+.game-table-even-row {
+    background-color: aqua;
+}
+
+.game-table-odd-row {
+    background-color: aquamarine;
+}
+
+.selected-match {
+    background-color: red;
+}
+
+.join-game-btn-disabled {
+    cursor: not-allowed;
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
+}
+
+.joing-game-join-container {
+
+}
+

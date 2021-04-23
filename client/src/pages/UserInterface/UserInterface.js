@@ -9,29 +9,18 @@ import { addMatch, addUserToMatch } from '../../services/websocketsREST/match-se
 import { addLobbyUser, removeLobbyUser } from '../../services/websocketsREST/lobby-user-services';
 import URLs from '../../services/DEV-URLs';
 import { useHistory } from 'react-router';
-import NewMatchForm from '../../components/NewMatch/NewMatch';
+import NewMatch from '../../components/NewMatch/NewMatch';
 import JoinPrivateMatch from '../../components/UserInterface/JoinPrivateMatch/JoinPrivateMatch';
 import ProfileWindow from '../../components/UserInterface/ProfileWindow/ProfileWindow';
-import tabItems, { tabsValues } from '../../constants/userInterfaceTabItems';
+import UIBodies from '../../constants/userInterfaceTabItems';
+import JoinGame from '../../components/UserInterface/TableTabs/JoinGame/JoinGame';
 
 let matchesSocket;
-
 const UserInterface = () => {
-    const joinMatchHandler = (matchName, matchPassword) => {
-        // TODO: Add proper validation
-        if (!matchName) return;
-        if (matchPassword && matchPassword.trim() === '') return;
-        addUserToMatch(matchName, matchPassword, globalState.userState.userObj.email,
-            sucRes => goToMatchPage(sucRes),
-            errRes => console.log(errRes))
-    };
+
     const [globalState, dispatch] = useStore();
     const [matches, setMatches] = useState([]);
-    const [UIBodyJSX, setUIBodyJSX] = useState(
-        {
-            label: tabItems.JOIN_GAME.label,
-            component: <tabItems.JOIN_GAME.component matches={matches} joinMatchHandler={joinMatchHandler} />
-        });
+    const [UIBody, setUIBody] = useState(UIBodies.JOIN_GAME);
     const history = useHistory();
 
     useEffect(() => {
@@ -64,7 +53,14 @@ const UserInterface = () => {
         }
     }, []);
 
-
+    const joinMatchHandler = (matchName, matchPassword) => {
+        // TODO: Add proper validation
+        if (!matchName) return;
+        if (matchPassword && matchPassword.trim() === '') return;
+        addUserToMatch(matchName, matchPassword, globalState.userState.userObj.email,
+            sucRes => goToMatchPage(sucRes),
+            errRes => console.log(errRes))
+    };
 
     const addMatchHandler = (match) => {
         addMatch(match, globalState.userState.userObj.email,
@@ -78,37 +74,30 @@ const UserInterface = () => {
         history.push("/match");
     };
 
-    const tabHandler = tab => {
-        switch (tab) {
-            case tabItems.JOIN_GAME.label:
-                const joinGameJSX = <tabItems.JOIN_GAME.component matches={matches} joinMatchHandler={joinMatchHandler} />;
-                const joinGameLabel = tabItems.JOIN_GAME.label;
-                setUIBodyJSX({ label: joinGameLabel, component: joinGameJSX });
-                break;
-            case tabItems.CREATE_GAME.label:
-                const createGameJSX = <tabItems.CREATE_GAME.component addMatchHandler={addMatchHandler} />;
-                const createGameLabel = tabItems.CREATE_GAME.label;
-                setUIBodyJSX({ label: createGameLabel, component: createGameJSX });
-                break;
-            case tabItems.FIND_PRIVATE_GAME.label:
-
-                break;
-            case tabItems.INFORMATIONS.label:
-
-                break;
-
-            default:
-                break;
-        }
+    let UIBodyJSX;
+    switch (UIBody) {
+        case UIBodies.JOIN_GAME:
+            UIBodyJSX = <JoinGame matches={matches} joinMatchHandler={joinMatchHandler}/>;
+            break;
+        case UIBodies.CREATE_GAME:
+            UIBodyJSX = <NewMatch addMatchHandler={addMatchHandler} />;
+            break;
+        default:
+            UIBodyJSX = <h1>something went wrong</h1>
     }
 
-    const tabsJSX = tabsValues
-        .map(tab => {
-            const selectedTabClass = tab === UIBodyJSX.label && "selected-tab";
+    const tabHandler = tab => {
+        setUIBody(UIBodies[tab]);
+    }
+
+    const tabsJSX = Object.keys(UIBodies)
+        .map(key => {
+            const tab = UIBodies[key];
+            const selectedTabClass = tab === UIBody && "selected-tab";
             return (
                 <li className={"user-interface-tab-item " + selectedTabClass}
-                    key={tab}
-                    onClick={() => tabHandler(tab)}
+                    key={key}
+                    onClick={() => tabHandler(key)}
                 >
                     {tab}
                 </li>
@@ -120,7 +109,7 @@ const UserInterface = () => {
         //     <p>this is the user interface page</p>
         //     <button onClick={() => dispatch(LOG_USER_OUT)}>Logout</button>
         //     <ProfileWindow />
-        //     <NewMatchForm addMatchHandler={addMatchHandler} />
+        //     <NewMatch addMatchHandler={addMatchHandler} />
         //     <JoinPrivateMatch joinMatchHandler={joinMatchHandler} />
         //     <p>List of matches</p>
         //     <MatchesTable matches={matches} joinMatchHandler={joinMatchHandler} />
@@ -133,7 +122,7 @@ const UserInterface = () => {
                     </ul>
                 </div>
                 <div className="user-interface-body">
-                    {UIBodyJSX.component}
+                    {UIBodyJSX}
                 </div>
             </div>
         </section>

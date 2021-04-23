@@ -14,12 +14,12 @@
 }
 
 
-.form-button:hover {
+.form-button:hover:enabled {
 	transform: translateY(-2px);
 	box-shadow: var(--form-button-shadow);
 }
 
-.form-button:active {
+.form-button:active:enabled {
 	box-shadow: var(--form-inset-active-button-shadow), var(--form-active-button-shadow);
 	transform: translateY(1px);
 }

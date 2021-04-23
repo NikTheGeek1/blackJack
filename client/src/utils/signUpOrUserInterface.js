@@ -7,7 +7,7 @@ const signUpORUserInterface = (isUserLoggedIn) => {
     if (isUserLoggedIn) {
         JSX = <UserInterface />;
     }
-    return <UserInterface />;
+    return JSX;
 };
 
 export default signUpORUserInterface;
