@@ -1,0 +1,11 @@
+.join-private-match-section {
+    width: 100%;
+    height: 100%;
+    display: grid;
+}
+
+.join-private-match-form {
+    justify-self: center;
+    align-self: center;
+    width: 30%;
+}

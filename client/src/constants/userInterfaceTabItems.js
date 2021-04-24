@@ -1,7 +1,7 @@
 
 const UIBodies = {
-    JOIN_GAME: "Join_game",
-    CREATE_GAME: "Create_game",
+    JOIN_GAME: "Join game",
+    CREATE_GAME: "Create game",
     FIND_PRIVATE_GAME: "Find private game",
     INFORMATIONS: "Informations"
 };

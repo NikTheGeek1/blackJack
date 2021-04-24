@@ -21,6 +21,7 @@ const UserInterface = () => {
     const [globalState, dispatch] = useStore();
     const [matches, setMatches] = useState([]);
     const [UIBody, setUIBody] = useState(UIBodies.JOIN_GAME);
+    const [errorMessage, setErrorMessage] = useState('');
     const history = useHistory();
 
     useEffect(() => {
@@ -59,7 +60,7 @@ const UserInterface = () => {
         if (matchPassword && matchPassword.trim() === '') return;
         addUserToMatch(matchName, matchPassword, globalState.userState.userObj.email,
             sucRes => goToMatchPage(sucRes),
-            errRes => console.log(errRes))
+            errRes => setErrorMessage(errRes.errorMessage))
     };
 
     const addMatchHandler = (match) => {
@@ -77,18 +78,25 @@ const UserInterface = () => {
     let UIBodyJSX;
     switch (UIBody) {
         case UIBodies.JOIN_GAME:
-            UIBodyJSX = <JoinGame matches={matches} joinMatchHandler={joinMatchHandler}/>;
+            UIBodyJSX = <JoinGame matches={matches} joinMatchHandler={joinMatchHandler} />;
             break;
         case UIBodies.CREATE_GAME:
-            UIBodyJSX = <NewMatch addMatchHandler={addMatchHandler} />;
+            UIBodyJSX = <NewMatch addMatchHandler={addMatchHandler} errorMessage={errorMessage} />;
+            break;
+        case UIBodies.FIND_PRIVATE_GAME:
+            UIBodyJSX = <JoinPrivateMatch joinMatchHandler={joinMatchHandler} errorMessage={errorMessage} />;
+            break;
+        case UIBodies.INFORMATIONS:
+            UIBodyJSX = <ProfileWindow />;
             break;
         default:
             UIBodyJSX = <h1>something went wrong</h1>
     }
 
     const tabHandler = tab => {
+        setErrorMessage('');
         setUIBody(UIBodies[tab]);
-    }
+    };
 
     const tabsJSX = Object.keys(UIBodies)
         .map(key => {

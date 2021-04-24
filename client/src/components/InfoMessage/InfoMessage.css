@@ -1,0 +1,39 @@
+.information-box-container {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.information-box {
+    /* padding-right: 1px; */
+    /* padding-top: 1px; */
+    text-align: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: burlywood;
+    border-radius: 10rem;
+    cursor: pointer;
+    color: white;
+    font-size: var(--smaller-font-size);
+}
+
+.information-message {
+    opacity: 0;
+    background-color: burlywood;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000;
+    min-width: 10rem;
+    width: max-content;
+    max-width: 15rem;
+    padding: 5px;
+    color: white;
+    font-size: var(--small-font-size);
+    transition: all .1s;
+    cursor: default;
+}
+
+.information-box:hover~.information-message{
+    opacity: 1;
+}

@@ -2,11 +2,11 @@ import './FormInput.css';
 import './FormButton.css';
 import './FormSelect.css';
 import { useEffect, useState } from 'react';
+import InfoMessage from '../InfoMessage/InfoMessage';
 
-export const FormInput = ({ type, title, value, onChange, required, otherProps }) => {
+export const FormInput = ({ type, title, value, onChange, required, otherProps, infoMessage }) => {
     return (
-        <>
-            {/* <label htmlFor={title}>{title}</label> */}
+        <div className="form-input-container">
             <input className="form-input"
                 {...otherProps}
                 type={type ? type : "text"}
@@ -17,7 +17,8 @@ export const FormInput = ({ type, title, value, onChange, required, otherProps }
                 value={value}
                 required={required ? required : true}
             />
-        </>
+            {infoMessage && <InfoMessage message={infoMessage} />}
+        </div>
     );
 };
 
@@ -34,7 +35,7 @@ export const Button = ({ title, otherProps, extraClasses, onClick }) => {
 };
 
 
-export const FormSelect = ({ otherProps, onChange, defaultValue, value, valuesArray }) => {
+export const FormSelect = ({ otherProps, onChange, defaultValue, value, valuesArray, infoMessage }) => {
     const [activeClass, setActiveClass] = useState("");
     const [displayOptionsClass, setDisplayOptionsClass] = useState("");
     const [selectedOption, setSelectedOption] = useState(defaultValue);
@@ -50,7 +51,7 @@ export const FormSelect = ({ otherProps, onChange, defaultValue, value, valuesAr
         if (activeClass) {
             setActiveClass("");
             setDisplayOptionsClass("");
-        } 
+        }
     };
 
     const toggleActiveHandler = () => {
@@ -80,6 +81,7 @@ export const FormSelect = ({ otherProps, onChange, defaultValue, value, valuesAr
                 <li className="select-li" rel="hide">-- {defaultValue} --</li>
                 {valuesLI}
             </ul>
+            {infoMessage && <InfoMessage message={infoMessage} />}
         </div>
     );
 };
