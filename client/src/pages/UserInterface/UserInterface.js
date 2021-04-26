@@ -11,7 +11,7 @@ import URLs from '../../services/DEV-URLs';
 import { useHistory } from 'react-router';
 import NewMatch from '../../components/NewMatch/NewMatch';
 import JoinPrivateMatch from '../../components/UserInterface/JoinPrivateMatch/JoinPrivateMatch';
-import ProfileWindow from '../../components/UserInterface/ProfileWindow/ProfileWindow';
+import ProfilePage from '../ProfilePage/ProfilePage';
 import UIBodies from '../../constants/userInterfaceTabItems';
 import JoinGame from '../../components/UserInterface/TableTabs/JoinGame/JoinGame';
 
@@ -86,8 +86,8 @@ const UserInterface = () => {
         case UIBodies.FIND_PRIVATE_GAME:
             UIBodyJSX = <JoinPrivateMatch joinMatchHandler={joinMatchHandler} errorMessage={errorMessage} />;
             break;
-        case UIBodies.INFORMATIONS:
-            UIBodyJSX = <ProfileWindow />;
+        case UIBodies.PROFILE:
+            UIBodyJSX = <ProfilePage />;
             break;
         default:
             UIBodyJSX = <h1>something went wrong</h1>

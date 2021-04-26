@@ -8,6 +8,14 @@ import { changePassword } from '../../services/user/change-password';
 import { changeEmail } from '../../services/user/change-email';
 import { } from '../../services/user/change-email';
 import { UPDATE_USER } from '../../hooks-store/stores/user-credential-store';
+import PrimaryLink from '../../components/PrimaryLink/PrimaryLink';
+
+const formTypes = {
+    ADD_MONEY: "ADD_MONEY",
+    CHANGE_NAME: "CHANGE_NAME",
+    CHANGE_EMAIL: "CHANGE_EMAIL",
+    CHANGE_PASSWORD: "CHANGE_PASSWORD"
+};
 
 const ProfilePage = () => {
 
@@ -18,6 +26,7 @@ const ProfilePage = () => {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [formType, setFormType] = useState('');
     const user = globalState.userState.userObj;
 
     const onAddMoney = e => {
@@ -27,6 +36,8 @@ const ProfilePage = () => {
             updatedUser => dispatch(UPDATE_USER, updatedUser),
             succErr => setErrorMessage(succErr.errorMessage)
         );
+        setErrorMessage('');
+        setMoney('');
     };
 
     const onChangeName = e => {
@@ -36,6 +47,8 @@ const ProfilePage = () => {
             updatedUser => dispatch(UPDATE_USER, updatedUser),
             succErr => setErrorMessage(succErr.errorMessage)
         );
+        setErrorMessage('');
+        setName('');
     };
 
     const onChangeEmail = e => {
@@ -45,6 +58,8 @@ const ProfilePage = () => {
             updatedUser => dispatch(UPDATE_USER, updatedUser),
             succErr => setErrorMessage(succErr.errorMessage)
         );
+        setErrorMessage('');
+        setEmail('');
     };
 
     const onChangePassword = e => {
@@ -54,33 +69,71 @@ const ProfilePage = () => {
             updatedUser => dispatch(UPDATE_USER, updatedUser),
             succErr => setErrorMessage(succErr.errorMessage)
         );
+        setErrorMessage('');
+        setNewPassword('');
+        setOldPassword('');
     };
 
+    let formJSX;
+    switch (formType) {
+        case formTypes.ADD_MONEY:
+            formJSX = (
+                <form className="profile-form" onSubmit={onAddMoney}>
+                    {errorMessage && <p>{errorMessage}</p>}
+                    <FormInput title="Add money: " type="number" otherProps={{ min: 1, step: 1, max: 1000 }} value={money} onChange={e => setMoney(e.target.value)} />
+                    <FormButton title="Add" />
+                </form>
+            );
+            break;
+        case formTypes.CHANGE_NAME:
+            formJSX = (
+                <form className="profile-form" onSubmit={onChangeName}>
+                    {errorMessage && <p>{errorMessage}</p>}
+                    <FormInput title="Change name: " value={name} onChange={e => setName(e.target.value)} />
+                    <FormButton title="Change" />
+                </form>
+            );
+            break;
+        case formTypes.CHANGE_EMAIL:
+            formJSX = (
+                <form className="profile-form" onSubmit={onChangeEmail}>
+                    {errorMessage && <p>{errorMessage}</p>}
+                    <FormInput title="Change email: " value={email} onChange={e => setEmail(e.target.value)} />
+                    <FormButton title="Change" />
+                </form>
+            );
+            break;
+        case formTypes.CHANGE_PASSWORD:
+            formJSX = (
+                <form className="profile-form" onSubmit={onChangePassword}>
+                    {errorMessage && <p>{errorMessage}</p>}
+                    <FormInput title="Old password: " value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
+                    <FormInput title="Change password: " value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                    <FormButton title="Change" />
+                </form>
+            );
+            break;
+
+        default:
+            formJSX = null;
+            break;
+    }
+
     return (
-        <><div>
-            <div>Name: {user.name}</div>
-            <div>Email: {user.email}</div>
-            <div>Money: {user.money}</div>
-        </div>
-            {errorMessage && <p>{errorMessage}</p>}
-            <form onSubmit={onAddMoney}>
-                <FormInput title="Add money: " type="number" otherProps={{ min: 1, step: 1, max: 1000 }} value={money} onChange={e => setMoney(e.target.value)} />
-                <FormButton title="Add" />
-            </form>
-            <form onSubmit={onChangeName}>
-                <FormInput title="Change name: " value={name} onChange={e => setName(e.target.value)} />
-                <FormButton title="Change" />
-            </form>
-            <form onSubmit={onChangeEmail}>
-                <FormInput title="Change email: " value={email} onChange={e => setEmail(e.target.value)} />
-                <FormButton title="Change" />
-            </form>
-            <form onSubmit={onChangePassword}>
-                <FormInput title="Old password: " value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
-                <FormInput title="Change password: " value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                <FormButton title="Change" />
-            </form>
-        </>
+        <section className="profile-page-section">
+            <div className="profile-page-user-details-container">
+                <div>Name: {user.name}</div>
+                <div>Email: {user.email}</div>
+                <div>Money: {user.money}</div>
+            </div>
+            <div className="profile-page-change-user-details-buttons">
+                <PrimaryLink onClick={() => setFormType(formTypes.ADD_MONEY)} title="Add money" />
+                <PrimaryLink onClick={() => setFormType(formTypes.CHANGE_NAME)} title="Change name" />
+                <PrimaryLink onClick={() => setFormType(formTypes.CHANGE_EMAIL)} title="Change email" />
+                <PrimaryLink onClick={() => setFormType(formTypes.CHANGE_PASSWORD)} title="Change password" />
+            </div>
+            {formJSX}
+        </section>
     );
 };
 

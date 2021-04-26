@@ -1,0 +1,15 @@
+.profile-page-section {
+    display: grid;
+    height: 100%;
+    grid-template-rows: 10rem 10rem 1fr;
+}
+
+.profile-form {
+    width: 20rem;
+    justify-self: center;
+    align-self: center;
+}
+
+.profile-page-change-user-details-buttons {
+    display: grid;
+}

@@ -3,7 +3,7 @@ const UIBodies = {
     JOIN_GAME: "Join game",
     CREATE_GAME: "Create game",
     FIND_PRIVATE_GAME: "Find private game",
-    INFORMATIONS: "Informations"
+    PROFILE: "Your profile"
 };
 
 export default UIBodies;
