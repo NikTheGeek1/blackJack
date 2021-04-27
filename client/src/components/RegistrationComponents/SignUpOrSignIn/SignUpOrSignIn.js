@@ -8,6 +8,7 @@ import SignInForm from '../SignIn/SignInForm/SignInForm';
 import SignUpForm from '../SignUp/SignUpForm/SignUpForm';
 import SmallHeading from '../../Headings/SmallHeading';
 import PlainText from '../../Headings/PlainText';
+import BackgroundAnimation from '../../BackgroundAnimation/BackgroundAnimations';
 
 const SignUpOrSignIn = () => {
     const [containerClass, setContainerClass] = useState('');
@@ -20,9 +21,9 @@ const SignUpOrSignIn = () => {
         setContainerClass('');
     };
 
-
     return (
         <section className="susi-section">
+            <BackgroundAnimation />
             <div className={"susi-inner-container " + containerClass}>
                 <div className="form-container sign-up-container">
                     <SignUpForm />

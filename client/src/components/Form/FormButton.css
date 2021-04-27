@@ -1,7 +1,8 @@
+
 .form-button {
 	border-radius: var(--bigest-radius);
-	border: var(--primary-border);
-	background-color: var(--colour-primary);
+	border: var(--colour-tertiary);
+	background-color: var(--colour-tertiary);
 	color: var(--colour-white);
 	font-size: var(--smaller-font-size);
 	font-weight: bold;
@@ -15,13 +16,13 @@
 
 
 .form-button:hover:enabled {
-	transform: translateY(-2px);
+	transform: translateY(-1px);
 	box-shadow: var(--form-button-shadow);
 }
 
 .form-button:active:enabled {
 	box-shadow: var(--form-inset-active-button-shadow), var(--form-active-button-shadow);
-	transform: translateY(1px);
+	transform: translateY(.5px);
 }
 
 .form-button :focus {

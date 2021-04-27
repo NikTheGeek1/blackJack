@@ -2,12 +2,11 @@
 :root {
   /* COLOURS */
     /* --colour-primary: #74f9ff; */
-    --colour-primary: #9297c4;
-    --colour-secondary: black;
-    --colour-tertiary: #9368b7;
-    --colour-tertiary-dark: #8250aa;
-    --colour-tertiary-darker: #7f42b1;
-    --colour-quaternary: #aa3e98;
+    --colour-primary: #304b1e;
+    --colour-secondary: #7da33f;
+    --colour-tertiary: #b6acc4;
+    --colour-quaternary: #e3e3e3;
+    --colour-tertiary-darker: #aaada5;
     --colour-gray-blu: #99C3D4;
     --colour-blue-gray: #a8d8ea;
     --colour-gray-1: #333;
@@ -92,7 +91,7 @@
     
     /* SHADOWS */
     --primary-shadow: 0px 1px 5px rgba(0,0,0.5);
-    --form-button-shadow: 2px 5px 12px rgba(0, 0, 0, .5);
+    --form-button-shadow: 2px 5px 6px rgba(0, 0, 0, .5);
     --form-inset-active-button-shadow: inset 0px 0px 2px rgba(0, 0, 0, .5);
     --form-active-button-shadow: 1px 0px 6px rgba(0, 0, 0, .5);
     --games-table-inset-shadow: inset 0px 0px 12px rgba(0, 0, 0, .5);

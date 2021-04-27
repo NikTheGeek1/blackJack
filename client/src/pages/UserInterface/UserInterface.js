@@ -14,6 +14,7 @@ import JoinPrivateMatch from '../../components/UserInterface/JoinPrivateMatch/Jo
 import ProfilePage from '../ProfilePage/ProfilePage';
 import UIBodies from '../../constants/userInterfaceTabItems';
 import JoinGame from '../../components/UserInterface/TableTabs/JoinGame/JoinGame';
+import BackgroundAnimation from '../../components/BackgroundAnimation/BackgroundAnimations';
 
 let matchesSocket;
 const UserInterface = () => {
@@ -113,16 +114,8 @@ const UserInterface = () => {
         });
 
     return (
-        // <>
-        //     <p>this is the user interface page</p>
-        //     <button onClick={() => dispatch(LOG_USER_OUT)}>Logout</button>
-        //     <ProfileWindow />
-        //     <NewMatch addMatchHandler={addMatchHandler} />
-        //     <JoinPrivateMatch joinMatchHandler={joinMatchHandler} />
-        //     <p>List of matches</p>
-        //     <MatchesTable matches={matches} joinMatchHandler={joinMatchHandler} />
-        // </>
         <section className="user-interface-section">
+            <BackgroundAnimation />
             <div className="user-interface-container">
                 <div className="user-interface-header">
                     <ul className="user-interface-tabs-list">
