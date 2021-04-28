@@ -1,20 +1,20 @@
 import './BackgroundAnimation.css';
 
-const BackgroundAnimation = () => {
+const BackgroundAnimation = ({ zIndex }) => {
 
     return (
-        <ul class="circles">
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-            </ul>
+        <ul className="circles" style={{ zIndex: zIndex ? zIndex : -1 }}>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
     );
 };
 

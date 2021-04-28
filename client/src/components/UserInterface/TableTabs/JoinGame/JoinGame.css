@@ -19,11 +19,16 @@
     display: grid;
     grid-template-areas: "name players duration type";
     grid-template-columns: repeat(4, minmax(12rem, 1fr));
+    align-self: end;
+    font-size: 1.4rem;
+    padding: 0 1rem;
 }
 
 .joing-game-table-rows-container {
     background-image: var(--very-transparent-black-overlay);
     box-shadow: var(--games-table-inset-shadow);
+    border-radius: .5rem;
+    margin-bottom: 1rem;
 }
 
 .joing-game-table-row {
@@ -31,18 +36,23 @@
     grid-template-areas: "name players duration type";
     grid-template-columns: repeat(4, minmax(12rem, 1fr));
     cursor: pointer;
+    border-bottom: 1px solid var(--colour-secondary);
+    padding: 0 1rem;
+
 }
 
 .game-table-even-row {
-    background-color: aqua;
+    /* background-color: var(--colour-primary); */
 }
 
 .game-table-odd-row {
-    background-color: aquamarine;
+    /* background-color: var(--colour-secondary); */
 }
 
 .selected-match {
-    background-color: red;
+    background-color: var(--colour-secondary);
+    transition: all .1s;
+    color: aliceblue;
 }
 
 .join-game-btn-disabled {
@@ -53,6 +63,6 @@
 }
 
 .joing-game-join-form {
-
+    justify-self: end;
 }
 

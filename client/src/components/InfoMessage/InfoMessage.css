@@ -1,7 +1,7 @@
 .information-box-container {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: -.5rem;
+    right: -1.5rem;
 }
 
 .information-box {
@@ -22,7 +22,7 @@
     background-color: burlywood;
     position: absolute;
     top: 1rem;
-    left: 1rem;
+    left: 1.5rem;
     z-index: 1000;
     min-width: 10rem;
     width: max-content;

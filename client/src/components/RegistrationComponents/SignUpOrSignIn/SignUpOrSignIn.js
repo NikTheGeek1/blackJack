@@ -23,7 +23,7 @@ const SignUpOrSignIn = () => {
 
     return (
         <section className="susi-section">
-            <BackgroundAnimation />
+            <BackgroundAnimation zIndex={1}/>
             <div className={"susi-inner-container " + containerClass}>
                 <div className="form-container sign-up-container">
                     <SignUpForm />

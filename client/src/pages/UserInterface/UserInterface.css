@@ -17,15 +17,17 @@
     display: grid;
     grid-template-areas: "header" "body";
     grid-template-rows: minmax(min-content, 3rem) 1fr;
+    border-radius: .5rem;
+    overflow: hidden;
 }
 
 .user-interface-header {
     grid-area: header;
-    /* padding: var(--large-padding); */
-    background-color: var(--colour-primary);
+    background-color: var(--colour-secondary);
 }
 
 .user-interface-tabs-list {
+    padding: 0 1rem;
     display: grid;
     grid-auto-flow: column;
     list-style: none;
@@ -42,15 +44,23 @@
     height: 100%;
     margin-top: 1rem;
     margin-right: 4rem;
+    border-radius: .2rem;
+    transition: all .1s;
+}
+
+.user-interface-tab-item:not(.selected-tab):hover {
+    color: aliceblue;
+    background-color: var(--colour-primary);
 }
 
 .user-interface-body {
     grid-area: body;
-    background-color: var(--colour-tertiary);
+    background-color: var(--colour-quaternary);
+    padding: 0 1rem;
 }
 
 .selected-tab {
-    background-color: var(--colour-tertiary);
+    background-color: var(--colour-quaternary);
 }
 
 
