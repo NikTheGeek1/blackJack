@@ -122,9 +122,18 @@ const ProfilePage = () => {
     return (
         <section className="profile-page-section">
             <div className="profile-page-user-details-container">
-                <div>Name: {user.name}</div>
-                <div>Email: {user.email}</div>
-                <div>Money: {user.money}</div>
+                <div>
+                    <span className="profile-page-user-details-title" > Name: </span> 
+                    <span className="profile-page-user-details-value">{user.name}</span>
+                </div>
+                <div>
+                    <span className="profile-page-user-details-title" > Email: </span>
+                     <span className="profile-page-user-details-value">{user.email}</span>
+                </div>
+                <div>
+                    <span className="profile-page-user-details-title" > Money: </span> 
+                    <span className="profile-page-user-details-value">{user.money}</span>
+                </div>
             </div>
             <div className="profile-page-change-user-details-buttons">
                 <PrimaryLink onClick={() => setFormType(formTypes.ADD_MONEY)} title="Add money" />

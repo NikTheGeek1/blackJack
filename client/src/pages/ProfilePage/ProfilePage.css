@@ -13,3 +13,12 @@
 .profile-page-change-user-details-buttons {
     display: grid;
 }
+
+
+.profile-page-user-details-title {
+    font-size: var(--big-font-size);
+}
+
+.profile-page-user-details-value {
+    font-size: var(--larger-font-size);
+}
