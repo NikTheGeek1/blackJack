@@ -26,7 +26,7 @@ const Sender = ({ chatSocket }) => {
     return (
         <form className="chat-sender-container" onSubmit={e => sendMsgHandler(e)}>
             <FormInput type="text" otherProps={{ placeholder: "Aa" }} onChange={e => setMessage(e.target.value)} value={message} />
-            <FormButton title="Send" />
+            <input type="submit" value="Send" />
         </form>
     );
 };

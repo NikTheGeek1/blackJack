@@ -60,7 +60,7 @@ class CanvasManager {
 
     _drawBackground() {
         this.canvasContext.beginPath();
-        this.canvasContext.fillStyle = "gray";
+        this.canvasContext.fillStyle = "#aaada5";
         this.canvasContext.fillRect(0, 0, 1000, 1000); // TODO: MAKE THESE CONSTANTS
     }
 

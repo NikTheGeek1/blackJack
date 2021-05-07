@@ -55,7 +55,7 @@ const Chat = ({ screenDimensions }) => {
     return (    
         <div className="chat-outter-container">
             <div className="chat-inner-container">
-                <div className="chat-title-container">BJ Chat</div>
+                <div className="chat-title-container">CHAT</div>
                 <div className="chat-body-container">{messagesJSX}</div>
                 <Sender chatSocket={chatSocket} />
             </div>

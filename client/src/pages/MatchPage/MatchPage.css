@@ -1,4 +1,5 @@
 .match-page-container {
     overflow-x: scroll;
     min-width: 90rem;
+    background-color: var(--colour-tertiary-darker);
 }

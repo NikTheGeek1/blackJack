@@ -2,9 +2,11 @@
     position: fixed;
     top: 0;
     right: 0;
-    height: 100vh;
-    width: 225px;
-    background-color: red;
+    height: 10px;
+    width: 22.5rem;
+    background-color: var(--colour-blue-gray);
+    text-align: center;
+    font-size: 3rem;
 }
 
 .chat-inner-container {
@@ -17,13 +19,16 @@
 
 
 .chat-title-container {
-    background-color: aliceblue;
+    background-color: var(--colour-tertiary);
 }
 
 .chat-body-container {
-    background-color: aqua;
+    background-color: var(--colour-secondary);
+    color: var(--colour-white);
+    text-align: initial;
+    font-size: initial;
 }
 
 .chat-sender-container {
-    background-color: darkblue;
+    background-color: var(--colour-secondary);
 }
