@@ -1,0 +1,55 @@
+.chat-sender-container {
+    display: flex;
+}
+
+.sender-button {
+    position: relative;
+    border: none;
+    cursor: pointer;
+}
+.sender-button-span1,
+.sender-button-span2 {
+    width: 10px;
+}
+
+.sender-button-span1::before,
+.sender-button-span1::after {
+    content: "";
+    position: absolute;
+    width: 3rem;
+    height: 5px;
+    left: 1rem;
+    background-color: white;
+    border-radius: 1rem;
+}
+
+.sender-button-span1::before {
+    top: 2rem;
+    transform: rotate(20deg);
+}
+
+.sender-button-span1::after {
+    top: 3rem;
+    transform: rotate(-20deg);
+}
+
+
+.sender-button-span2::before,
+.sender-button-span2::after {
+    content: "";
+    position: absolute;
+    width: 1.5rem;
+    height: 1px;
+    left: 1.2rem;
+    background-color: white;
+}
+
+.sender-button-span2::before {
+    top: 2.5rem;
+    transform: rotate(20deg);
+}
+
+.sender-button-span2::after {
+    top: 2.9rem;
+    transform: rotate(-20deg);
+}

@@ -37,7 +37,7 @@ const JoinGame = ({ matches, joinMatchHandler }) => {
                     {matchesJSX}
                 </div>
             </div>
-            <form className="joing-game-join-form" onSubmit={joinMatchHandler}>
+            <form className="joing-game-join-form" onSubmit={e=> joinMatchHandler(e, selectedMatch)}>
                 <FormButton title="Join game" otherProps={{disabled: !!!selectedMatch}} extraClasses={!selectedMatch && 'join-game-btn-disabled'}/>
             </form>
         </section>

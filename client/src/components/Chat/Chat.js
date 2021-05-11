@@ -7,10 +7,17 @@ import Sender from './Sender/Sender';
 
 
 let chatSocket;
-const Chat = ({ screenDimensions }) => {
+const chatSizeToggler = {
+    MAX: "MIN",
+    MIN: "MAX"
+};
+
+const Chat = () => {
     const globalState = useStore(false)[0];
     const matchName = globalState.matchState.matchObj.matchName;
+    const thisPlayer = globalState.playerState.playerObj;
     const [chatHistory, setChatHistory] = useState([]);
+    const [chatSize, setChatSize] = useState("MAX");
 
     useEffect(() => {
         chatSocket = initSocket();
@@ -28,14 +35,12 @@ const Chat = ({ screenDimensions }) => {
                 setChatHistory(chatHistoryParsed);
             });
             chatSocket.send(URLs.GET_CHAT_HISTORY(matchName), {}, 'give me chat history');
-
         });
 
         return () => {
             leavingPageHandler([updateChatSubscription]);
         };
     }, []);
-
 
 
     const leavingPageHandler = (subscriptions) => {
@@ -46,16 +51,23 @@ const Chat = ({ screenDimensions }) => {
         chatSocket.disconnect();
     };
 
-    const messagesJSX = chatHistory.length && chatHistory.map((msg, idx) => {
+    const messagesJSX = !!chatHistory.length && chatHistory.map((msg, idx) => {
+        let whoseMsgClass = "OTHER-MSG";
+        if (msg.senderEmail === thisPlayer.email) {
+            whoseMsgClass = "MY-MSG";
+        }
         return (
-            <div key={msg.senderEmail + idx} className="message">{msg.senderName}: {msg.message}</div>
+                <div className={`chat-message-container-${whoseMsgClass}`}>
+                    <div className={`chat-message-sender-name-${whoseMsgClass}`}>{msg.senderName}</div>
+                    <div key={msg.senderEmail + idx} className="chat-message">{msg.message}</div>
+                </div>
         );
     });
 
-    return (    
-        <div className="chat-outter-container">
+    return (
+        <div className={`chat-outter-container-${chatSize}`}>
             <div className="chat-inner-container">
-                <div className="chat-title-container">CHAT</div>
+                <div className="chat-title-container" onClick={setChatSize.bind(this, chatSizeToggler[chatSize])}>CHAT</div>
                 <div className="chat-body-container">{messagesJSX}</div>
                 <Sender chatSocket={chatSocket} />
             </div>

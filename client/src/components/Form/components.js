@@ -15,7 +15,7 @@ export const FormInput = ({ type, title, value, onChange, required, otherProps, 
                 placeholder={title}
                 onChange={onChange}
                 value={value}
-                required={required ? required : true}
+                required={required === false ? required : true}
             />
             {infoMessage && <InfoMessage message={infoMessage} />}
         </div>

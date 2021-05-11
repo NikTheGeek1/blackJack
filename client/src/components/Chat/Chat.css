@@ -1,4 +1,5 @@
-.chat-outter-container {
+.chat-outter-container-MIN,
+.chat-outter-container-MAX {
     position: fixed;
     top: 0;
     right: 0;
@@ -7,6 +8,42 @@
     background-color: var(--colour-blue-gray);
     text-align: center;
     font-size: 3rem;
+    transition: all .2s;
+}
+
+.chat-outter-container-MIN::before,
+.chat-outter-container-MAX::before,
+.chat-outter-container-MIN::after,
+.chat-outter-container-MAX::after,
+.chat-title-container::after,
+.chat-title-container::after {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 2rem;
+    height: 2px;
+    background-color: aliceblue;
+    border-radius: 1rem;
+}
+
+.chat-title-container::after,
+.chat-title-container::after {
+    top: 2rem;
+}
+
+.chat-outter-container-MIN::after,
+.chat-outter-container-MAX::after {
+    top: 1.5rem;
+}
+
+.chat-outter-container-MIN {
+    height: 5rem;
+    overflow: hidden;
+}
+
+.chat-outter-container-MAX {
+    height: 100vh;
 }
 
 .chat-inner-container {
@@ -20,6 +57,11 @@
 
 .chat-title-container {
     background-color: var(--colour-tertiary);
+    cursor: pointer;
+}
+
+.chat-sender-container {
+    background-color: var(--colour-secondary);
 }
 
 .chat-body-container {
@@ -27,8 +69,53 @@
     color: var(--colour-white);
     text-align: initial;
     font-size: initial;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
 }
 
-.chat-sender-container {
-    background-color: var(--colour-secondary);
+
+.chat-message-container-OTHER-MSG,
+.chat-message-container-MY-MSG  {
+    position: relative;
+    margin: 1rem;
+    padding: .5rem 1rem;
+    width: fit-content;
+    max-width: 15rem;
+    border-radius: 1rem;
+    overflow-wrap: break-word;
+}
+
+.chat-message-container-OTHER-MSG {
+    background-color: var(--colour-tertiary);
+}
+
+.chat-message-container-MY-MSG {
+    background-color: var(--colour-white);
+    align-self: flex-end;
+}
+
+.chat-message {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    color: var(--colour-primary);
+}
+
+.chat-message-sender-name-MY-MSG,
+.chat-message-sender-name-OTHER-MSG
+ {
+    position: absolute;
+    top: -1.5rem;
+    font-size: var(--small-font-size);
+    color: var(--colour-gray-1);
+}
+
+.chat-message-sender-name-MY-MSG {
+    right: 1rem;
+}
+
+.chat-message-sender-name-OTHER-MSG
+ {
+    left: 1rem;
 }

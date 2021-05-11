@@ -49,7 +49,7 @@ const MatchPage = () => {
     return (
         <div className="match-page-container">
             {(gameSocketManager && match.game) && <GameInterface screenDimensions={screenDimensions} gameSocketManager={gameSocketManager} />}
-            <Chat screenDimensions={screenDimensions} />
+            <Chat />
         </div>
     );
 };

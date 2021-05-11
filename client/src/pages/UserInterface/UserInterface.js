@@ -55,7 +55,8 @@ const UserInterface = () => {
         }
     }, []);
 
-    const joinMatchHandler = (matchName, matchPassword) => {
+    const joinMatchHandler = (e, matchName, matchPassword) => {
+        e.preventDefault();
         // TODO: Add proper validation
         if (!matchName) return;
         if (matchPassword && matchPassword.trim() === '') return;
